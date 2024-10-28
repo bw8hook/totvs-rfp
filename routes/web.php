@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\NewProjectController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AgentController;
@@ -25,6 +26,8 @@ Route::get('/register', [RegisteredUserController::class, 'create']);
 // Route::get('/agent/dashboard', [AgentController::class,'dashboard'])->name('agent.dashboard');
 
 Route::get('/dashboard', [AdminController::class,'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/newproject', [NewProjectController::class,'index'])->middleware(['auth', 'verified']);
 
 Route::get('/delete-file/{public_folder}/{folder}/{userid}/{type}/{doc}', [AdminController::class,'delete'])->middleware(['auth', 'verified'])->name('delete');
 
