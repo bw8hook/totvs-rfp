@@ -1,0 +1,1 @@
+[22-Oct-2024 16:52:49 UTC] PHP Fatal error:  Cannot declare class App\Http\Requests\ProfileUpdateRequest, because the name is already in use in /home/ia/public_html/app/Http/Requests/ProfileUpdateUserRequest.php on line 9
