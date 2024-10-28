@@ -75,30 +75,13 @@ class UploadController extends Controller
         curl_close($ch);
     }
 
-    public function upload($file) {
-      if (!$file->isValid()) {
-        die('Invalid file upload.');
-      }
+    public function upload(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xml|max:2048',
+        ]);
 
-      $filePath = $file->getRealPath();
-      $fileName = $file->getClientOriginalName();
-      $fileMimeType = $file->getClientMimeType();
-
-      if (!is_readable($filePath)) {
-          die('Cannot access file.');
-      }
-
-      $curlFile = new \CURLFile($filePath, $fileMimeType, $fileName);
-
-      $userId = Auth::id();
-      $hash = hash('sha256', $userId);
-
-      $this->uploadFile('https://dev-ia2.hook.app.br/api/chatbotia/upload', $curlFile, $hash);
-
-      $this->uploadFile('https://dev-ia2.hook.app.br/api/ia/upload', $curlFile, $hash);
-    }
-        
-    public function indexGpt() {
-      dd("test");
+        $filePath = $request->file('file')->store('uploads');
+        return response()->json(['filePath' => $filePath], 200);
     }
 }
