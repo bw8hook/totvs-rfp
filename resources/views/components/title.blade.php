@@ -1,11 +1,8 @@
 <div class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative" style="background: #F9F9F9; height: 9.1vh; border-radius: 15px;">
     <div class="flex items-center space-x-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
+        <img src="{{ asset('icons/new-item.svg') }}" alt="Upload Icon" style="height: 33%; padding-right: 18px;">
         <span>{{$slot}}</span>
     </div>
-
     <div class="relative flex items-center">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" onclick="toggleMenu()">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6h.01M12 12h.01M12 18h.01" />
