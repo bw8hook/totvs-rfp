@@ -3,11 +3,14 @@
 use App\Http\Controllers\NewProjectController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [AdminController::class,'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/', function () {
+    return redirect()->route('newproject');
+});
 Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
 Route::get('/newproject', [NewProjectController::class,'index'])->middleware(['auth', 'verified'])->name('newproject');
 Route::get('/projects', [NewProjectController::class,'index'])->middleware(['auth', 'verified'])->name('projects');

@@ -1,5 +1,5 @@
 <script>
-    let fileList = [];
+    let fileListGlobal = [];
 
     function addFileItem(file) {
         const fileItem = document.createElement('div');
@@ -26,8 +26,10 @@
         deleteIcon.style.cursor = 'pointer';
         deleteIcon.innerHTML = '<img src="{{ asset('icons/trashbin.svg') }}" alt="Upload Icon">';
         deleteIcon.onclick = () => {
+            console.log(fileListGlobal, file)
+            fileListGlobal = fileListGlobal.filter(element => element != file.name)
             fileItem.remove();
-            alert('File deleted');
+            console.log(fileListGlobal, file)
         };
 
         fileItem.appendChild(fileName);
@@ -40,14 +42,14 @@
     function updateFileListDisplay() {
         const fileListDisplay = document.getElementById('fileList');
         fileListDisplay.innerHTML = '';
-        fileList.forEach((file, index) => {
+        fileListGlobal.forEach((file, index) => {
             const exampleFile = { name: file.name };
             addFileItem(exampleFile);
         });
     }
 
     function uploadFiles() {
-        fileList.forEach(file => {
+        fileListGlobal.forEach(file => {
             const formData = new FormData();
             formData.append('file', file);
 
@@ -81,7 +83,7 @@
             if (fileInput.files.length > 0) {
                 for (let file of fileInput.files) {
                     if (file.type === "text/xml") {
-                        fileList.push(file);
+                        fileListGlobal.push(file);
                     } else {
                         alert("Please select an XML file.");
                     }
@@ -107,7 +109,7 @@
             if (files.length > 0) {
                 for (let file of files) {
                     if (file.type === "text/xml") {
-                        fileList.push(file);
+                        fileListGlobal.push(file);
                     } else {
                         alert("Please drop an XML file");
                     }
@@ -117,8 +119,10 @@
         });
 
         uploadButton.addEventListener('click', () => {
-            if (fileList.length > 0) {
+            if (fileListGlobal.length > 0) {
                 uploadFiles();
+                fileListGlobal = []
+                updateFileListDisplay()
             } else {
                 alert("No files to upload.");
             }
@@ -146,8 +150,7 @@
             <p class="text-gray-400 text-sm">Carregue arquivos .xml soltando-os nesta janela</p>
         </div>
         <ul id="fileList" style="width: 100%;" class="flex flex-column text-sm text-gray-600 mb-4 items-center justify-center"></ul>
-        <button id="uploadButton" class="px-4 py-2"
-            style="background-color: #5570F1; width: 406px; height: 58px; border-radius: 10px; color: white; box-shadow: 0px 19px 34px -20px #43BBED;">Upload</button>
+        <button id="uploadButton" class="px-4 py-2" style="background-color: #5570F1; width: 406px; height: 58px; border-radius: 10px; color: white; box-shadow: 0px 19px 34px -20px #43BBED;">Upload</button>
         <input type="file" id="fileInput" style="display: none;" accept=".xml">
     </div>
 </div>
