@@ -3,7 +3,8 @@ name: Publish Docker image to GHCR
 on:
   push:
     branches:
-      - ci-app
+      - release 
+      - production
     tags:
       - 'v*.*.*'
 
