@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\UsersPosition;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -78,14 +79,29 @@ class UserProjectController extends Controller
      */
     public function create(): View
     {
+        
+        $UsersPosition = UsersPosition::all();
+        $ListPositions = array();
+
+        //$AgentId = Auth::user()->id;
+
+        foreach ($UsersPosition as $key => $User) {
+              $ListPosition = array();
+              $ListPosition['id'] = $User->user_position_id;
+              $ListPosition['position'] = $User->position;
+              $ListPosition['type'] = $User->type_position;
+              $ListPositions[] = $ListPosition;
+        }
 
         $data = array(
             'title' => 'Todos Arquivos',
-            // 'listaAgents' => $ListaAgents,
-            // 'listaBases' => $ListaBases
+            'ListPositions' => $ListPositions,
         );
 
-        return view('usersProject.register')->with($data);
+
+        //return view('auth.register')->with($data);
+
+       return view('usersProject.register')->with($data);
     }
 
 

@@ -49,11 +49,11 @@
             </x-primary-button>
         </div>
     </form>
-    <div class="flex flex-col items-center justify-center mt-4" style="">
+    <!-- <div class="flex flex-col items-center justify-center mt-4" style="">
         <p class="text-gray-600 rounded-md focus:outline-none">
             {{ __("Não possui uma conta?") }}
             <a href="{{ route('register2') }}" style="color: #3A57E8;
 "> {{ __('Cadastre-se') }} </a>
         </p>
-    </div>
+    </div> -->
 </x-guest-layout>
