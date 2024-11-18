@@ -19,7 +19,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased flex" style="overflow: hidden;">
+    
     @include('layouts.navigation')
+
     <div class="h-screen w-full" style="background-color: #F8F8F8; overflow:auto;">
         @if (isset($header))
             <header>

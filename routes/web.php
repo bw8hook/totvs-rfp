@@ -37,4 +37,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/user/{id}', [ProfileController::class, 'editUser'])->name('users.edit');
 });
 
+
 require __DIR__.'/auth.php';
