@@ -53,6 +53,9 @@
             const formData = new FormData();
             formData.append('file', file);
 
+            var select = document.getElementById('totvs-erp').value;
+            formData.append('totvs_erp', select);
+
             fetch('/upload', {
                 method: 'POST',
                 headers: {
@@ -62,10 +65,14 @@
             })
                 .then(response => response.json())
                 .then(data => {
+                    fileListGlobal = [];
+                    $('#fileList').empty();
                     console.log('Upload successful:', data);
+                    $("#sucesso_message").show().delay(3200).fadeOut(300);
                 })
                 .catch(error => {
-                    console.error('Error:', error);
+                    $("#erro_message").show().delay(3200).fadeOut(300);
+                    console.log(error);
                 });
         });
     }
@@ -82,11 +89,11 @@
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
                 for (let file of fileInput.files) {
-                    if (file.type === "text/xml") {
+                    //if (file.type === "text/xml") {
                         fileListGlobal.push(file);
-                    } else {
-                        alert("Please select an XML file.");
-                    }
+                    // } else {
+                    //     alert("Please select an XML file.");
+                    // }
                 }
                 updateFileListDisplay();
             }
@@ -108,11 +115,11 @@
             const files = e.dataTransfer.files;
             if (files.length > 0) {
                 for (let file of files) {
-                    if (file.type === "text/xml") {
+                    //if (file.type === "text/xml") {
                         fileListGlobal.push(file);
-                    } else {
-                        alert("Please drop an XML file");
-                    }
+                    //} else {
+                    //    alert("Please drop an XML file");
+                    //}
                 }
                 updateFileListDisplay();
             }
@@ -121,36 +128,61 @@
         uploadButton.addEventListener('click', () => {
             if (fileListGlobal.length > 0) {
                 uploadFiles();
-                fileListGlobal = []
+                
                 updateFileListDisplay()
             } else {
-                alert("No files to upload.");
+                alert("Nenhum arquivo enviado.");
             }
         });
     });
 </script>
 
+<div id="sucesso_message" class="bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md" role="alert" style="display:none; position: absolute; top: 10px; right: 10px;">
+  <div class="flex">
+    <div class="py-1"><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
+    <div>
+      <p class="font-bold">Upload bem-sucedido!</p>
+      <p class="text-sm">O seus arquivos foram enviado com sucesso.</p>
+    </div>
+  </div>
+</div>
+
+<div id="erro_message" class="bg-red-100 border-t-4 border-red-500 rounded-b text-red-900 px-4 py-3 shadow-md" role="alert" style="display:none; position: absolute; top: 10px; right: 10px;">
+  <div class="flex">
+    <div class="py-1"><svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
+    <div>
+      <p class="fonet-bold">Erro no Upload!</p>
+      <p class="text-sm">Não foi possível ao subir seus arquivos, tente novamente.</p>
+    </div>
+  </div>
+</div>
+
+
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-<div class="bg-white rounded-lg shadow-md p-8 w-full" style="height: 64vh;">
-    <div class="flex flex-column items-center justify-center" style="">
+<div class="bg-white rounded-lg shadow-md p-8 w-full" style=" margin-bottom: 100px;">
+    <div class="flex flex-column items-center justify-center">
         <div style="padding-top: 5%"></div>
         <div class="mb-6" style="width: 37%; height: 86px;">
-            <label for="project-name" class="block text-sm font-medium text-gray-700 mb-2">Nome do Projeto</label>
-            <input type="text" id="project-name"
-                class="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Digite o nome do projeto">
+            <label for="totvs-erp" class="block text-sm font-medium text-gray-700 mb-2">Selecione o Pacote</label>
+            <select id="totvs-erp" name="totvs-erp">
+                @foreach($ListBundles as $ListBundle)
+                    <!-- Código que será executado para cada item -->
+                    <option value="{{ $ListBundle['id'] }}">{{ $ListBundle['bundle'] }}</option>
+                @endforeach
+            </select>
+
+
         </div>
         <div style="padding-top: 10px"></div>
-        <div id="dropZone" class="border-2 border-gray-300 rounded-lg p-8 text-center mb-6 cursor-pointer"
-            style="border-style: dashed; width: 48%; box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);">
+        <div id="dropZone" class="border-2 border-gray-300 rounded-lg p-8 text-center mb-6 cursor-pointer" style="border-style: dashed; width: 48%; box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25); padding: 30px 0px;">
             <img src="{{ asset('icons/upload-cloud.svg') }}" alt="Upload Icon"
                 class="h-12 w-12 mx-auto text-gray-400 mb-2">
             <p class="text-gray-500 font-medium">Drop it like a pro!</p>
-            <p class="text-gray-400 text-sm">Carregue arquivos .xml soltando-os nesta janela</p>
+            <p class="text-gray-400 text-sm">Carregue arquivos .xls ou .xlxs soltando-os nesta janela</p>
         </div>
         <ul id="fileList" style="width: 100%;" class="flex flex-column text-sm text-gray-600 mb-4 items-center justify-center"></ul>
         <button id="uploadButton" class="px-4 py-2" style="background-color: #5570F1; width: 406px; height: 58px; border-radius: 10px; color: white; box-shadow: 0px 19px 34px -20px #43BBED;">Upload</button>
-        <input type="file" id="fileInput" style="display: none;" accept=".xml">
+        <input type="file" id="fileInput" style="display: none;"/>
     </div>
 </div>

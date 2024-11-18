@@ -19,9 +19,7 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-
         // BUSCA A LISTA DE AGENTS
-
         $CountAgentsPage = 1;
         $RetornoAgent = $this->SendCurl("GET", 'https://bw8.hook.app.br/arquivos-base-mentoria/api/agents?page='.$CountAgentsPage, null, 1);
         $ListaAgents = array();

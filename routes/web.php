@@ -6,16 +6,23 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\UserProjectController;
+
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('newproject');
 });
-Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
+
 Route::get('/newproject', [NewProjectController::class,'index'])->middleware(['auth', 'verified'])->name('newproject');
 Route::get('/projects', [NewProjectController::class,'index'])->middleware(['auth', 'verified'])->name('projects');
 Route::get('/data', [NewProjectController::class,'index'])->middleware(['auth', 'verified'])->name('data');
-Route::get('/subusers', [NewProjectController::class,'index'])->middleware(['auth', 'verified'])->name('subusers');
+
+// USUÁRIO
+Route::get('/list-users', [UserProjectController::class,'listUsers'])->middleware(['auth', 'verified'])->name('listUsers');
+Route::get('/new-user', [UserProjectController::class, 'create'])->middleware(['auth', 'verified'])->name('register');
+Route::get('/edit-user/{id}', [UserProjectController::class, 'edit'])->middleware(['auth', 'verified'])->name('register');
+Route::get('/remove-user/{id}', [UserProjectController::class, 'remove'])->middleware(['auth', 'verified'])->name('register');
 
 Route::get('/delete-file/{public_folder}/{folder}/{userid}/{type}/{doc}', [AdminController::class,'delete'])->middleware(['auth', 'verified'])->name('delete');
 
