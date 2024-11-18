@@ -24,34 +24,36 @@
         </div>
 
         <!-- Remember Me -->
-        <div class="block mt-4">
+        <!-- <div class="block mt-4">
             <label for="remember_me" class="inline-flex items-center">
                 <input id="remember_me" type="checkbox"
                     class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
                 <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
             </label>
-        </div>
+        </div> -->
 
-        <div class="flex flex-col items-center justify-center mt-2 gap-4">
+        <div class="flex flex-col items-center justify-center mt-2 gap-4" style="display: block;">
             @if (Route::has('password.request'))
                 <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
+                    href="{{ route('password.request') }}" style="float:right; color:#5E6470; text-decoration:none; margin-bottom:10px;">
+                    {{ __('Esqueci minha senha') }}
                 </a>
             @endif
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
+            <x-primary-button class="ms-3" style=" background: #5570F1;
+    width: 100%;
+    height: 50px;
+    text-align: center;
+    display: block; margin-left: 0px; margin-top: 20px;">
+                {{ __('Entrar') }}
             </x-primary-button>
         </div>
     </form>
-    <div class="flex flex-col items-center justify-center mt-4">
-        <p
-            class="text-gray-600 rounded-md focus:outline-none">
-            {{ __("Don't have an account?") }}
+    <div class="flex flex-col items-center justify-center mt-4" style="">
+        <p class="text-gray-600 rounded-md focus:outline-none">
+            {{ __("Não possui uma conta?") }}
+            <a href="{{ route('register2') }}" style="color: #3A57E8;
+"> {{ __('Cadastre-se') }} </a>
         </p>
-        <x-primary-button class="ms-2" onclick="window.location.href='{{ route('register2') }}'">
-            {{ __('Sign up') }}
-        </x-primary-button>
     </div>
 </x-guest-layout>

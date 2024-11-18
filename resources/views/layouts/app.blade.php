@@ -20,15 +20,34 @@
 </head>
 <body class="font-sans antialiased flex" style="overflow: hidden;">
     @include('layouts.navigation')
-    @if (isset($header))
-        <header class="bg-white shadow">
-            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                {{ $header }}
-            </div>
-        </header>
-    @endif
-    <div class="h-screen w-full">
-        {{ $slot }}
+    <div class="h-screen w-full" style="background-color: #F8F8F8; overflow:auto;">
+        @if (isset($header))
+            <header>
+
+             <!-- <header class="bg-white shadow"> -->
+                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8" style="display: flex; justify-content: flex-end; align-items: center; width: 100%; margin-right: 30px;">
+                    <!-- {{ $header }} -->
+                    
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <img src="{{ asset('icons/bell.svg') }}"/>
+                        <img src="{{ asset('icons/moon.svg') }}"/>
+                        <img src="{{ asset('icons/info.svg') }}"/>
+                        <span style="color: #333;">{{ Auth::user()->name }}</span>
+                        <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 1px solid #ccc;">
+                            <img src="{{ asset('icons/default-photo.png') }}"/>
+                        </div>
+                        <img src="{{ asset('icons/logout.svg') }}"/>
+                    </div>
+
+
+                </div>
+            </header>
+        @endif
+        <div class="h-screen w-full">
+            {{ $slot }}
+        </div>
+
     </div>
+    
 </body>
 </html>

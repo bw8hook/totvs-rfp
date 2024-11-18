@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+use App\Models\UsersPosition;
+
+
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
-
+    
     /**
      * The attributes that are mass assignable.
      *
@@ -20,8 +23,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'agent',
-        'base',
+        'user_position',
+        'status',
+        'account_type',
     ];
 
     /**
@@ -46,4 +50,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function userPosition(){
+        return $this->hasOne(UsersPosition::class, 'user_position_id', 'user_position');
+    }
+
 }

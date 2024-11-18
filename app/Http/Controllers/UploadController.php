@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Controllers\Users;
 use App\Models\User;
+use App\Models\KnowledgeBase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,8 +18,7 @@ class UploadController extends Controller
 {
     public function index($file) {
       $userId = Auth::id();
-      $AgenteId = Auth::user()->agent;
-  
+
       $directory =  'public/uploads/'.$userId."/";
       $storage = Storage::allFiles($directory);
 
@@ -26,8 +26,6 @@ class UploadController extends Controller
       foreach ($storage as $key => $file) {
         $NomeArquivo = str_replace($directory, "", $file);
         $NomeArquivo = str_replace("document/", "", $NomeArquivo);
-        $NomeArquivo = str_replace("image/", "", $NomeArquivo);
-
         $DownloadLink = str_replace("public", "storage", $file);
 
         if($NomeArquivo != 'diretriz.txt' && $NomeArquivo != '.DS_Store'){
@@ -46,7 +44,6 @@ class UploadController extends Controller
 
       $data = array(
         'files' => $Files,
-        'AgenteId' => $AgenteId,
         'stringUsers' => $stringUsers
       );
 
@@ -77,11 +74,28 @@ class UploadController extends Controller
 
     public function upload(Request $request)
     {
-        $request->validate([
-            'file' => 'required|file|mimes:xml|max:2048',
-        ]);
 
-        $filePath = $request->file('file')->store('uploads');
+        // $request->validate([
+        //     'file' => 'required|file|mimes:xml|max:2048',
+        // ]);
+
+        // pega o caminho da pasta do ERP selecionado
+        $UrlFiles = 'rfps/'.$request->totvs_erp;    
+        // Joga o arquivo na pasta do ERP selecionado
+        $File = $request->file('file');
+        $filePath = $File->store($UrlFiles);
+        $Filename = $File->hashName();
+        $FileExtension = $File->extension();
+
+        $KnowledgeBaseData = new KnowledgeBase();
+        $KnowledgeBaseData->user_id = Auth::id();
+        $KnowledgeBaseData->bundle_id = $request->totvs_erp;
+        $KnowledgeBaseData->filepath = $filePath;
+        $KnowledgeBaseData->filename = $Filename;
+        $KnowledgeBaseData->file_extension = $FileExtension;
+        $KnowledgeBaseData->save();
+      
+        // Retorna o JSON
         return response()->json(['filePath' => $filePath], 200);
     }
 }
