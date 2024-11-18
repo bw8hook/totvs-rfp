@@ -96,15 +96,14 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'agent' => $request->agent,
-            'base' => $request->base,
-            'role' => "user",
+            'user_position' => $request->user_position,
+            'status' => "ativo",
+            'account_type' => "default",
         ]);
 
-        event(new Registered($user));
-
-        Auth::login($user);
-
+        // event(new Registered($user));
+        // Auth::login($user);
+        
         return redirect(route('newproject', absolute: false));
     }
 
