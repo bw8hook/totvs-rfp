@@ -27,6 +27,22 @@
                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                 </div>
 
+
+                <!-- USER POSITION -->
+                <div class="mb-6" style="width: 37%; height: 86px;">
+                    <label for="totvs-erp" class="block text-sm font-medium text-gray-700 mb-2">Selecione o Cargo</label>
+                    <select id="totvs-erp" name="totvs-erp">
+                        @foreach($ListPositions as $ListPosition)
+                            <!-- Código que será executado para cada item -->
+                            <option value="{{ $ListPosition['id'] }}">{{ $ListPosition['position'] }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+
+
+
+
                 <!-- Password -->
                 <div class="mt-4">
                     <x-input-label for="password" :value="__('Senha')" />
