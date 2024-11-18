@@ -20,9 +20,9 @@ Route::get('/data', [NewProjectController::class,'index'])->middleware(['auth', 
 
 // USUÁRIO
 Route::get('/list-users', [UserProjectController::class,'listUsers'])->middleware(['auth', 'verified'])->name('listUsers');
-Route::get('/new-user', [UserProjectController::class, 'create'])->middleware(['auth', 'verified'])->name('register');
-Route::get('/edit-user/{id}', [UserProjectController::class, 'edit'])->middleware(['auth', 'verified'])->name('register');
-Route::get('/remove-user/{id}', [UserProjectController::class, 'remove'])->middleware(['auth', 'verified'])->name('register');
+Route::get('/new-user', [UserProjectController::class, 'create'])->middleware(['auth', 'verified'])->name('userproject.register');
+Route::get('/edit-user/{id}', [UserProjectController::class, 'edit'])->middleware(['auth', 'verified'])->name('userproject.edit');
+Route::get('/remove-user/{id}', [UserProjectController::class, 'remove'])->middleware(['auth', 'verified'])->name('userproject.remove');
 
 Route::get('/delete-file/{public_folder}/{folder}/{userid}/{type}/{doc}', [AdminController::class,'delete'])->middleware(['auth', 'verified'])->name('delete');
 
