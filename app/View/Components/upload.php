@@ -20,6 +20,23 @@ class upload extends Component
      */
     public function __construct()
     {
+
+        $rfpBundles = RfpBundle::all();
+        $ListBundles = array();
+
+        //$AgentId = Auth::user()->id;
+
+        foreach ($rfpBundles as $key => $User) {
+              $ListBundle = array();
+              $ListBundle['id'] = $User->bundle_id;
+              $ListBundle['bundle'] = $User->bundle;
+              $ListBundle['type'] = $User->type_bundle;
+              $ListBundles[] = $ListBundle;
+        }
+
+
+        $this->ListBundles = $ListBundles;
+
     
     }
 
