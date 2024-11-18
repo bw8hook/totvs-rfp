@@ -12,6 +12,9 @@ use App\Models\User;
 
 class upload extends Component
 {
+
+    public $ListBundles;
+
     /**
      * Create a new component instance.
      */
