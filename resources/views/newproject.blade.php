@@ -17,7 +17,7 @@
                 <x-title-component :showButton="false"> Enviar RFP Preparada </x-title-component>
 
                 <div style="padding: 2px;"></div>
-                <x-upload />
+                <x-upload/>
         </div>
     </div>
 </x-app-layout>
