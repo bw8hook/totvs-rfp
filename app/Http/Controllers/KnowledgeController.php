@@ -51,10 +51,26 @@ class KnowledgeController extends Controller
      */
     public function create()
     {
+
+        $rfpBundles = RfpBundle::all();
+        $ListBundles = array();
+
+        //$AgentId = Auth::user()->id;
+
+        foreach ($rfpBundles as $key => $User) {
+              $ListBundle = array();
+              $ListBundle['id'] = $User->bundle_id;
+              $ListBundle['bundle'] = $User->bundle;
+              $ListBundle['type'] = $User->type_bundle;
+              $ListBundles[] = $ListBundle;
+        }
+
+        //return view('auth.register')->with($data);
        
         $userId = auth()->user()->id;
         $data = [
-            'userId' => $userId
+            'userId' => $userId,
+            'ListBundles' => $ListBundles
         ];
     
         return view('knowledge.create')->with($data);

@@ -10,7 +10,7 @@ use App\Models\RfpBundle;
 use App\Models\User;
 
 
-class upload extends Component
+class Upload extends Component
 {
 
     public $ListBundles;
@@ -56,12 +56,6 @@ class upload extends Component
               $ListBundle['type'] = $User->type_bundle;
               $ListBundles[] = $ListBundle;
         }
-
-
-        $data = array(
-            'ListBundles' => $ListBundles,
-        );
-
 
         //return view('auth.register')->with($data);
 
