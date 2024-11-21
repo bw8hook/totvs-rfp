@@ -84,15 +84,14 @@ class UploadController extends Controller
         // Joga o arquivo na pasta do ERP selecionado
         $File = $request->file('file');
         $filePath = $File->store($UrlFiles);
-        $Filename = $File->hashName();
-        $FileExtension = $File->extension();
 
         $KnowledgeBaseData = new KnowledgeBase();
         $KnowledgeBaseData->user_id = Auth::id();
         $KnowledgeBaseData->bundle_id = $request->totvs_erp;
-        $KnowledgeBaseData->filepath = $filePath;
-        $KnowledgeBaseData->filename = $Filename;
-        $KnowledgeBaseData->file_extension = $FileExtension;
+        $KnowledgeBaseData->filename_original = $File->getClientOriginalName();
+        $KnowledgeBaseData->filepath = $File->store($UrlFiles);
+        $KnowledgeBaseData->filename = $File->hashName();
+        $KnowledgeBaseData->file_extension = $File->extension();
         $KnowledgeBaseData->save();
       
         // Retorna o JSON

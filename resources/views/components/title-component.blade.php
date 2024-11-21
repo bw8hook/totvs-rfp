@@ -11,11 +11,11 @@
 
 
     
-        <!-- @if($showButton)
+        @if($showButton)
             <a href="{{$urlButton}}" class="flex items-center justify-center w-full py-3 rounded-lg font-semibold transition mb-6 bg-#5570F1" style="box-shadow: 0px 19px 34px -20px #43BBED; background-color: #5570F1; color: white; padding: 0px 24px; height: 45px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-top: 28px;">
                 {{ $textButton }}
             </a>
-        @endif -->
+        @endif
 
         <!-- <div id="dropdownMenu" class="hidden absolute right-0 mt-8 w-32 bg-white border border-gray-200 rounded shadow-lg">
             <a href="new-user" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Adicioanr</a>

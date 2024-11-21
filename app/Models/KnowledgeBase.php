@@ -11,6 +11,7 @@ class KnowledgeBase extends Model
     protected $fillable = [
         'user_id',
         'bundle_id',
+        'filename_original',
         'filepath',
         'filename',
         'status',

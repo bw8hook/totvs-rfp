@@ -121,6 +121,7 @@ thead tr th{
     display: inline-block;
     padding: 33px;
     border-radius: 13px;
+    margin-bottom: 100px;
 }
 
 .list-form input{

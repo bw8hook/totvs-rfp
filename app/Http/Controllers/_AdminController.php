@@ -60,11 +60,7 @@ class AdminController extends Controller
         'AgenteId' => $AgenteId
       );
 
-
-      //return view('inc.file')->with($data);
-
-      
-      
+      //return view('inc.file')->with($data);      
       return view('admin.dashboard')->with($data);
     }
 
