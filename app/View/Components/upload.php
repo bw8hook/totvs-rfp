@@ -34,9 +34,7 @@ class upload extends Component
               $ListBundles[] = $ListBundle;
         }
 
-
         $this->ListBundles = $ListBundles;
-
     
     }
 
@@ -67,6 +65,8 @@ class upload extends Component
 
         //return view('auth.register')->with($data);
 
-       return view('components.upload')->with($data);
+        return view('components.upload', compact('ListBundles'));
+
+        //return view('components.upload')->with($data);
     }
 }
