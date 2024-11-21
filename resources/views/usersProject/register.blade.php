@@ -27,6 +27,14 @@
                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                 </div>
 
+                <!-- USER POSITION -->
+                <div class="mt-4" style="height: 86px;">
+                    <label for="user_position" class="block text-sm font-medium text-gray-700 mb-2">Selecione o tipo da conta</label>
+                    <select id="totvs-erp" name="user_position" style="background-color: #f1f1f1;">
+                        <option value="default" selected>Padrão</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
 
                 <!-- USER POSITION -->
                 <div class="mt-4" style="height: 86px;">
@@ -38,9 +46,6 @@
                         @endforeach
                     </select>
                 </div>
-
-
-
 
 
                 <!-- Password -->
@@ -65,7 +70,6 @@
 
                     <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
                 </div>
-
                 
                 <div class="flex items-center justify-end mt-4">
 

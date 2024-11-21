@@ -16,32 +16,8 @@ use Illuminate\View\View;
 class UserProjectController extends Controller
 {
 
-
     public function listUsers(Request $request): View
     {
-        // // BUSCA A LISTA DE AGENTS
-        // $CountAgentsPage = 1;
-        // $RetornoAgent = $this->SendCurl("GET", 'https://bw8.hook.app.br/arquivos-base-mentoria/api/agents?page='.$CountAgentsPage, null, 1);
-        // $ListaAgents = array();
-
-        // foreach ($RetornoAgent->Agents as $key => $Agent) {
-        //     $ListaAgents[$Agent->agent_id] =  $Agent;
-        // }
-  
-        // if($RetornoAgent->total > count($RetornoAgent->Agents)){
-        //     $QtdPagesAgents = intval(round($RetornoAgent->total/20));  
-        //     $CountAgentsPage++;
-
-        //     while ($CountAgentsPage < $QtdPagesAgents) {
-        //       $RetornoAgentWhile = $this->SendCurl("GET", 'https://bw8.hook.app.br/arquivos-base-mentoria/api/agents?page='.$CountAgentsPage, null, 1);
-        //       foreach ($RetornoAgentWhile->Agents as $key => $Agent) {
-        //         $ListaBases[$Agent->agent_id] =  $Agent;
-        //       }
-        //       $CountAgentsPage++;
-        //     }
-        // }
-  
-  
           $AllUsers = User::all();
           $ListUsers = array();
 
@@ -111,41 +87,40 @@ class UserProjectController extends Controller
     public function edit($id): View
     {
 
-        $user = User::findOrFail($id);
-       
-        // Recupera o usuário com base no ID
-        //$user = User::find($id)->toArray();
+        if(Auth::user()->account_type == "admin"){
+            $user = User::findOrFail($id);
 
-        if ($user) {
-            return view('usersProject.edit', compact('user'));
-            //return view('usersProject.edit')->with($user);
-        } else {
-            return redirect()->back()->with('error', 'Usuário não encontrado.');
+            if ($user) {
+                return view('usersProject.edit', compact('user'));
+                //return view('usersProject.edit')->with($user);
+            } else {
+                return redirect()->back()->with('error', 'Usuário não encontrado.');
+            }
+        }else{
+            return redirect()->back()->with('error', 'Usuário sem permissão para editar.');
         }
 
-
-        // $data = array(
-        //     'title' => 'Todos Arquivos',
-        //     // 'listaAgents' => $ListaAgents,
-        //     // 'listaBases' => $ListaBases
-        // );
-
-        // return view('usersProject.edit')->with($data);
     }
 
       /**
      * Display the registration view.
      */
-    public function remove(): View
+    public function remove($id)
     {
 
-        $data = array(
-            'title' => 'Todos Arquivos',
-            // 'listaAgents' => $ListaAgents,
-            // 'listaBases' => $ListaBases
-        );
+        if(Auth::user()->account_type == "admin"){
+            // Encontrar o usuário pelo ID
+            $user = User::find($id);
 
-        return view('usersProject.remove')->with($data);
+            if ($user) {
+                $user->delete(); // Exclui o usuário do banco de dados
+                return redirect()->back()->with('success', 'Usuário excluído com sucesso.');
+            } else {
+                return redirect()->back()->with('error', 'Usuário não encontrado.');
+            }
+        }else{
+            return redirect()->back()->with('error', 'Usuário sem permissão para editar.');
+        }
     }
 
 
@@ -175,7 +150,7 @@ class UserProjectController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('newproject', absolute: false));
+        return redirect(route('knowledge.list', absolute: false));
     }
 
     public function store2(Request $request): RedirectResponse

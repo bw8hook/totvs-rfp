@@ -4,6 +4,7 @@ use App\Http\Controllers\NewProjectController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\KnowledgeController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\UserProjectController;
@@ -11,10 +12,15 @@ use App\Http\Controllers\Auth\UserProjectController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('newproject');
+    return redirect()->route('knowledge.list');
 });
 
-Route::get('/newproject', [NewProjectController::class,'index'])->middleware(['auth', 'verified'])->name('newproject');
+Route::get('/knowledge-base', [KnowledgeController::class,'index'])->middleware(['auth', 'verified'])->name('knowledge.list');
+Route::get('/add-knowledge', [KnowledgeController::class,'create'])->middleware(['auth', 'verified'])->name('knowledge.add');
+Route::delete('/remove-knowledge/{id}', [KnowledgeController::class, 'destroy'])->middleware(['auth', 'verified'])->name('knowledge.remove');
+
+
+Route::get('/new-project', [NewProjectController::class,'index'])->middleware(['auth', 'verified'])->name('newproject');
 Route::get('/projects', [NewProjectController::class,'index'])->middleware(['auth', 'verified'])->name('projects');
 Route::get('/data', [NewProjectController::class,'index'])->middleware(['auth', 'verified'])->name('data');
 
@@ -22,7 +28,9 @@ Route::get('/data', [NewProjectController::class,'index'])->middleware(['auth', 
 Route::get('/list-users', [UserProjectController::class,'listUsers'])->middleware(['auth', 'verified'])->name('listUsers');
 Route::get('/new-user', [UserProjectController::class, 'create'])->middleware(['auth', 'verified'])->name('userproject.register');
 Route::get('/edit-user/{id}', [UserProjectController::class, 'edit'])->middleware(['auth', 'verified'])->name('userproject.edit');
-Route::get('/remove-user/{id}', [UserProjectController::class, 'remove'])->middleware(['auth', 'verified'])->name('userproject.remove');
+Route::delete('/remove/{id}', [UserProjectController::class, 'remove'])->middleware(['auth', 'verified'])->name('userproject.remove');
+Route::get('/new-password/{id}', [UserProjectController::class, 'newpassword'])->middleware(['auth', 'verified'])->name('userproject.newpassword');
+
 
 Route::get('/delete-file/{public_folder}/{folder}/{userid}/{type}/{doc}', [AdminController::class,'delete'])->middleware(['auth', 'verified'])->name('delete');
 

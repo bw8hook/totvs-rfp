@@ -49,9 +49,17 @@
     padding: 9px;
     right: 66px;
     bottom: -17px; border-radius: 10px;">
-                                    <a href="#" style="width: 100%; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 6px;">Editar</a>
-                                    <a href="#" style="width: 100%; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 6px;">Excluir</a>
-                                    <a href="#" style="width: 100%; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 6px;">Trocar Senha</a>
+                                    <a href="/edit-user/{{$User['id']}}" style="width: 100%; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 6px;">Editar</a>
+                                    <!-- <a href="/remove-user/{{$User['id']}}" style="width: 100%; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 6px;">Excluir</a> -->
+
+                                    <form action="{{ route('userproject.remove', $User['id']) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');" style="margin: 0px;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" style="width: 100%; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 6px;">Excluir</button>
+                                    </form>
+
+
+                                    <a href="/new-password/{{$User['id']}}" style="width: 100%; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 6px;">Trocar Senha</a>
                                 </div>
                             </x-dropdown>
 

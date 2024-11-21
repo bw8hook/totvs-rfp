@@ -19,61 +19,9 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        // BUSCA A LISTA DE AGENTS
-        $CountAgentsPage = 1;
-        $RetornoAgent = $this->SendCurl("GET", 'https://bw8.hook.app.br/arquivos-base-mentoria/api/agents?page='.$CountAgentsPage, null, 1);
-        $ListaAgents = array();
-        
-        foreach ($RetornoAgent->Agents as $key => $Agent) {
-            $ListaAgents[] =  $Agent;
-        }
-
-        if($RetornoAgent->total > count($RetornoAgent->Agents)){
-            $QtdPagesAgents = intval(round($RetornoAgent->total/20));
-            $CountAgentsPage++;
-            
-            while ($CountAgentsPage <= $QtdPagesAgents) {
-                $RetornoAgentWhile = $this->SendCurl("GET", 'https://bw8.hook.app.br/arquivos-base-mentoria/api/agents?page='.$CountAgentsPage, null, 1);
     
-                foreach ($RetornoAgentWhile->Agents as $key => $Agent) {
-                    $ListaBases[] =  $Agent;
-                }
-                $CountAgentsPage++;
-            }
-        }
-
-        // BUSCA A LISTA DE BASES
-
-        $CountBasesPage = 1;
-        $RetornoBase = $this->SendCurl("GET", 'https://bw8.hook.app.br/arquivos-base-mentoria/api/bases?page='.$CountBasesPage, null, 1);
-        $ListaBases = array();
-        
-        foreach ($RetornoBase->Bases as $key => $Base) {
-            if($Base->status == "succeeded"){
-               $ListaBases[] =  $Base;
-           }
-        }
-
-        if($RetornoBase->total > count($RetornoBase->Bases)){
-            $QtdPagesBases = intval(round($RetornoBase->total/20));    
-            $CountBasesPage++;
-
-            while ($CountBasesPage <= $QtdPagesBases) {
-                $RetornoBaseWhile = $this->SendCurl("GET", 'https://bw8.hook.app.br/arquivos-base-mentoria/api/bases?page='.$CountBasesPage, null, 1);
-                foreach ($RetornoBaseWhile->Bases as $key => $Base) {
-                    if($Base->status == "succeeded"){
-                       $ListaBases[] =  $Base;
-                    }
-                }
-                $CountBasesPage++;
-            }
-        }
-
-
         $data = array(
-            'title' => 'Todos Arquivos',
-            'listaAgents' => $ListaAgents,
-            'listaBases' => $ListaBases
+            'title' => 'Todos Arquivos'
         );
 
         return view('auth.register')->with($data);
@@ -103,8 +51,14 @@ class RegisteredUserController extends Controller
 
         // event(new Registered($user));
         // Auth::login($user);
+
+        if($user){
+            return redirect(route('listUsers', absolute: false))->with('success', 'Usuário criado com sucesso.');
+        } else {
+            return redirect()->back()->with('error', 'Erro ao criar usuário.');
+        }
         
-        return redirect(route('newproject', absolute: false));
+       
     }
 
     public function store2(Request $request): RedirectResponse
