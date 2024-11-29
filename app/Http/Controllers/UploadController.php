@@ -88,7 +88,7 @@ class UploadController extends Controller
 
               // Executa a importação
               $Excel = Excel::import($import, $filePath);
-              
+
                // Acessar a URL gerada dentro da classe de importação
               $MensagemErro = $import->Erros;
 
@@ -105,8 +105,6 @@ class UploadController extends Controller
 
           } catch (\Exception $e) {
               $CatchError = json_decode($e->getMessage());
-
-              dd($e);
 
               $InsertError = KnowledgeError::create([
                   'error_code' => 'ERR003',
