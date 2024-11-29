@@ -13,6 +13,7 @@
         "erlandmuchasaj/laravel-file-uploader": "^1.1",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
+        "maatwebsite/excel": "^3.1",
         "nesbot/carbon": "^2.1"
     },
     "require-dev": {
