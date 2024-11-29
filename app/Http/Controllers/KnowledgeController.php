@@ -6,6 +6,7 @@ use App\Models\RfpBundle;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class KnowledgeController extends Controller
@@ -17,8 +18,10 @@ class KnowledgeController extends Controller
     {
         $AllFiles = KnowledgeBase::where('user_id', Auth::id())->get();
         $ListFiles = array();
+        $CountRFPs = 0;
 
         foreach ($AllFiles as $key => $File) {
+                $CountRFPs++;
                 $ListFile = array();
                 $ListFile['knowledge_base_id'] = $File->knowledge_base_id;
                 $ListFile['bundle'] = RfpBundle::firstWhere('bundle_id', $File->bundle_id);
@@ -28,14 +31,32 @@ class KnowledgeController extends Controller
                 $ListFile['file_extension'] = $File->file_extension;
                 $ListFile['status'] = $File->status;
                 $ListFile['created_at'] = date("d/m/Y", strtotime($File->created_at));;
-    
 
                 $ListFiles[] = $ListFile;
           }
 
+
+          $resultados = DB::table(table: 'knowledge_records')
+          ->leftJoin('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id') // INNER JOIN
+          ->select('knowledge_records.bundle_id', 'rfp_bundles.bundle',  DB::raw('COUNT(*) as total'))
+          ->where('knowledge_records.user_id',  Auth::id()) // Filtra pelo ID do usuário
+          ->groupBy('knowledge_records.bundle_id') // Agrupa pelo ID do bundle
+          ->get();
+      
+          $CountResultado = 0;
+          $CountPacotes = 0;
+          //Exibindo o resultado
+          foreach ($resultados as $resultado) {
+              $CountPacotes++;
+              $CountResultado = $CountResultado + $resultado->total;
+          }
+      
           $data = array(
               'title' => 'Todos Arquivos',
               'ListFiles' => $ListFiles,
+              'CountResultado' => $CountResultado,
+              'CountPacotes' => $CountPacotes,
+              'CountRFPs' => $CountRFPs
           );
   
           //return view('auth.register')->with($data);
@@ -76,6 +97,26 @@ class KnowledgeController extends Controller
         return view('knowledge.create')->with($data);
     
     }
+
+
+
+     /**
+     * Show the form for creating a new resource.
+     */
+    public function createFile()
+    {
+       
+        $userId = auth()->user()->id;
+        $data = [
+            'userId' => $userId
+        ];
+    
+        return view('knowledge.createFile')->with($data);
+    
+    }
+
+
+
 
     /**
      * Store a newly created resource in storage.

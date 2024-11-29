@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KnowledgeController;
 use App\Http\Controllers\UploadController;
+use App\Http\Controllers\ImportController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\UserProjectController;
 
@@ -17,6 +18,7 @@ Route::get('/', function () {
 
 Route::get('/knowledge-base', [KnowledgeController::class,'index'])->middleware(['auth', 'verified'])->name('knowledge.list');
 Route::get('/add-knowledge', [KnowledgeController::class,'create'])->middleware(['auth', 'verified'])->name('knowledge.add');
+Route::get('/add-knowledge-file', [KnowledgeController::class,'createFile'])->middleware(['auth', 'verified'])->name('knowledge.addFile');
 Route::delete('/remove-knowledge/{id}', [KnowledgeController::class, 'destroy'])->middleware(['auth', 'verified'])->name('knowledge.remove');
 
 
@@ -31,10 +33,19 @@ Route::get('/edit-user/{id}', [UserProjectController::class, 'edit'])->middlewar
 Route::delete('/remove/{id}', [UserProjectController::class, 'remove'])->middleware(['auth', 'verified'])->name('userproject.remove');
 Route::get('/new-password/{id}', [UserProjectController::class, 'newpassword'])->middleware(['auth', 'verified'])->name('userproject.newpassword');
 
+Route::get('/import/{id}', [ImportController::class, 'listRecords'])->name('import.listRecords');
+Route::get('/import/erro/{id}', [ImportController::class, 'listErroRecords'])->name('import.listErroRecords');
+
+
+
+Route::get('/csrf-token', function () {
+    return response()->json(['csrf_token' => csrf_token()]);
+});
 
 Route::get('/delete-file/{public_folder}/{folder}/{userid}/{type}/{doc}', [AdminController::class,'delete'])->middleware(['auth', 'verified'])->name('delete');
 
 Route::post('/upload', [UploadController::class, 'upload']);
+Route::post('/upload-file', [UploadController::class, 'uploadFile'])->name('upload.file');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

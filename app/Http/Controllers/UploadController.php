@@ -6,6 +6,7 @@ use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Controllers\Users;
 use App\Models\User;
 use App\Models\KnowledgeBase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +14,11 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
+use App\Models\KnowledgeError;
+
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\KnowledgeBaseImport;
+use Maatwebsite\Excel\Validators\ValidationException;
 
 class UploadController extends Controller
 {
@@ -50,35 +56,86 @@ class UploadController extends Controller
       return view('test')->with($data);
     }
 
-    public function uploadFile($url, $curlFile, $hash) {
-        $ch = curl_init();
+    public function uploadFile(Request $request) {
+          // pega o caminho da pasta do ERP selecionado
+          if(isset($request->totvs_erp)){
+            $UrlFiles = 'rfps/'.$request->totvs_erp;
+            $TotvsERP = $request->totvs_erp;
+          }else{
+            $UrlFiles = 'rfps/user/'.Auth::id();
+            $TotvsERP = 0;
+          }
+           
+          // Joga o arquivo na pasta do ERP selecionado
+          $File = $request->file('file');
+          $filePath = $File->store($UrlFiles);
+   
+          $KnowledgeBaseData = new KnowledgeBase();
+          $KnowledgeBaseData->user_id = Auth::id();
+          if(isset($request->totvs_erp)){
+            $KnowledgeBaseData->bundle_id = $request->totvs_erp;
+          }
+          $KnowledgeBaseData->filename_original = $File->getClientOriginalName();
+          $KnowledgeBaseData->filepath = $File->store($UrlFiles);
+          $KnowledgeBaseData->filename = $File->hashName();
+          $KnowledgeBaseData->file_extension = $File->extension();
+          $KnowledgeBaseData->save();
+
+          $KnowledgeBaseDataid = $KnowledgeBaseData->id;
+
+          try {
+              $import = new KnowledgeBaseImport($KnowledgeBaseDataid,   $TotvsERP);
+
+              // Executa a importação
+              $Excel = Excel::import($import, $filePath);
+              
+               // Acessar a URL gerada dentro da classe de importação
+              $MensagemErro = $import->Erros;
+
+              return response()->json(['success' => true, 'redirectUrl' => '/import/'.$KnowledgeBaseDataid]);
+            
+          } catch (ValidationException $e) {
+              // Captura exceções de validação específicas do Maatwebsite Excel
+              $failures = $e->failures();
+      
+              return response()->json([
+                  'message' => 'Erros durante a validação!',
+                  'failures' => $failures, // Detalhes das linhas com falhas
+              ], 422);
+
+          } catch (\Exception $e) {
+              $CatchError = json_decode($e->getMessage());
+
+              dd($e);
+
+              $InsertError = KnowledgeError::create([
+                  'error_code' => 'ERR003',
+                  'error_message' => $CatchError->error_message,
+                  'error_data' => json_encode(value: $CatchError->error_data),
+                  'user_id' => Auth::id(), // Associar ao usuário logado, se necessário
+              ]);
+
+              $InsertErrorID = $InsertError->id;
+      
+              // Remove a Base Enviada
+              if ($KnowledgeBaseDataid) {
+                  DB::table('knowledge_base')->where('knowledge_base_id', $KnowledgeBaseDataid)->delete();
+              }
+
+              // Captura quaisquer outras exceções
+              return response()->json([
+                  'message' => 'Erro durante a importação!',
+                  'redirectUrl' => '/import/erro/'.$InsertErrorID
+              ], 500);
+          }
+
+
+
     
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, [
-            'file' => $curlFile,
-            'chatbotId' => $hash
-        ]);
-      
-        $response = curl_exec($ch);
-      
-        // if (curl_errno($ch)) {
-        //     echo 'cURL error: ' . curl_error($ch) . "\n";
-        // } else {
-        //     echo 'Response from ' . $url . ': ' . $response . "\n";
-        // }
-      
-        curl_close($ch);
     }
 
     public function upload(Request $request)
     {
-
-        // $request->validate([
-        //     'file' => 'required|file|mimes:xml|max:2048',
-        // ]);
-
         // pega o caminho da pasta do ERP selecionado
         $UrlFiles = 'rfps/'.$request->totvs_erp;    
         // Joga o arquivo na pasta do ERP selecionado

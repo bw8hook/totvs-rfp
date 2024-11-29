@@ -50,13 +50,14 @@
 
     function uploadFiles() {
         fileListGlobal.forEach(file => {
+            $('.loading').fadeIn(500);
             const formData = new FormData();
             formData.append('file', file);
 
             var select = document.getElementById('totvs-erp').value;
             formData.append('totvs_erp', select);
 
-            fetch('/upload', {
+            fetch('/upload-file', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -67,12 +68,22 @@
                 .then(data => {
                     fileListGlobal = [];
                     $('#fileList').empty();
+                    if(data.success){
+                        console.log('sucesso entrou');
+                        window.location.replace(data.redirectUrl);
+                    }else{
+                        console.log('erro entrou');
+                        window.location.replace(data.redirectUrl);
+                    }
+
+
                     console.log('Upload successful:', data);
-                    $("#sucesso_message").show().delay(3200).fadeOut(300);
+                    //$("#sucesso_message").show().delay(3200).fadeOut(300);
                 })
                 .catch(error => {
-                    $("#erro_message").show().delay(3200).fadeOut(300);
+                    //$("#erro_message").show().delay(3200).fadeOut(300);
                     console.log(error);
+                    window.location.replace(data.redirectUrl);
                 });
         });
     }
@@ -160,7 +171,13 @@
 
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-<div class="bg-white rounded-lg shadow-md p-8 w-full" style=" margin-bottom: 100px;">
+<div class="bg-white rounded-lg shadow-md p-8 w-full" style=" margin-bottom: 100px; position:relative;">
+
+    <div class="loading" style="display:none; background: #ffffffcf; position: absolute; width: 100%; height: 100%; top: 0px; left: 0px;">
+        <img src="{{ asset('icons/loading.gif') }}" alt="Upload Icon" style="position: absolute; top: 50%; left: 50%; transform: translate(-75px, -35px);">
+    </div>
+
+
     <div class="flex flex-column items-center justify-center">
         <div style="padding-top: 5%"></div>
         <div class="mb-6" style="width: 37%; height: 86px;">

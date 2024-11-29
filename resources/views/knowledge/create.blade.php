@@ -1,11 +1,9 @@
 <x-app-layout>
-    <div class="flex min-w-full flex-col">
-        <div style="display: flex; padding-top: 10px; align-self: end;">
-            <x-profile-bar>
-            </x-profile-bar>
-        </div>
-    </div>
     <div class="flex flex-col">
+        <div class="profile-bar">
+            <x-profile-bar></x-profile-bar>
+        </div>
+
         <script>
             const userId = @json($userId);
             document.addEventListener('DOMContentLoaded', () => {
@@ -18,6 +16,7 @@
 
                 <div style="padding: 2px;"></div>
                 <x-upload/>
+                
         </div>
     </div>
 </x-app-layout>
