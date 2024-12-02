@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\KnowledgeBase;
+use App\Models\KnowledgeRecord;
 use App\Models\RfpBundle;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -160,6 +161,7 @@ class KnowledgeController extends Controller
         if ($Arquivo['user_id'] == Auth::id() || Auth::user()->account_type == "admin"){
             if (Storage::exists($Arquivo->filepath)){
                 if (Storage::delete($Arquivo->filepath)){
+                    KnowledgeRecord::where('knowledge_base_id', $id)->delete();// 
                     KnowledgeBase::where('knowledge_base_id', $id)->delete();// Exclui o usuário do banco de dados
                     return redirect()->back()->with('success', 'Arquivo excluído com sucesso.');
                 }else{
