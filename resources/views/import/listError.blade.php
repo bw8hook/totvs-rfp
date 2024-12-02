@@ -7,7 +7,7 @@
         <div class="py-12" style=" padding-bottom: 130px;">
 
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <x-title-component :showButton="true" textButton="Enviar Outra Base" urlButton="add-knowledge" > {{ __('Dados Enviados') }} </x-title-component>
+            <x-title-component :showButton="false" textButton="Enviar Outra Base" urlButton="add-knowledge" > {{ __('Dados Enviados') }} </x-title-component>
 
             <div id="BlocoLista" class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
 
