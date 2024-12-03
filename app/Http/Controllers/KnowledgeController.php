@@ -165,6 +165,8 @@ class KnowledgeController extends Controller
                     KnowledgeBase::where('knowledge_base_id', $id)->delete();// Exclui o usuário do banco de dados
                     return redirect()->back()->with('success', 'Arquivo excluído com sucesso.');
                 }else{
+                    KnowledgeRecord::where('knowledge_base_id', $id)->delete();// 
+                    KnowledgeBase::where('knowledge_base_id', $id)->delete();// Exclui o usuário do banco de dados
                     return redirect()->back()->with('error', 'Erro ao excluir arquivo.');
                 }
             }else{
