@@ -193,14 +193,15 @@
 
                     <div class="flex flex-column items-center justify-center">
                         <div style="padding-top: 10px;"></div>
-
+                        
                         <div class="mb-6" style="">
-                            <div class="mb-6" style="align-self: baseline; padding-bottom: 20px; width: 400px; text-align: center;">
+                            <div class="mb-6" style="align-self: baseline; padding-bottom: 20px; width: 550px; text-align: center;">
                                 <p style="color: #9a9aa9; font-size: 14px; margin-bottom: -30px;">Utilize a planilha de modelo para garantir que os dados estejam no formato correto e sejam importados sem erros. Certifique-se de preencher o modelo antes de realizar o envio.</p>
                             </div>
 
                             <div class="mb-6" style="align-self: end; padding-bottom: 20px; display:flex;">
                                 <a href="/storage/Planilha Modelo - Carga de RFP's.xlsx" style="background-color: #9a9aa9; border-radius: 10px; color: white; box-shadow: 0px 19px 34px -20px #43BBED; padding: 15px 25px; text-transform: uppercase; font-size: 14px; font-weight: bolder; letter-spacing: 1px; margin:auto;" download> Baixar Planilha MODELO</a>
+                                <a href="/storage/lista-pacotes.xlsx" style="background-color: #5570f1;border-radius: 10px; color: white;box-shadow: 0px 19px 34px -20px #43BBED; padding: 15px 25px; text-transform: uppercase; font-size: 14px; font-weight: bolder; letter-spacing: 1px; margin: auto; margin-left: 20px;" download> Baixar Lista de Pacotes</a>
                             </div>
                         </div>
 
