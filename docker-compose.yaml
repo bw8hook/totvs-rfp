@@ -1,0 +1,28 @@
+---
+services:
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: migrate_totvs_rfp
+    env_file: ".env"
+    command: php artisan migrate --force
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: totvs_rfp
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file: ".env"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
