@@ -1,13 +1,7 @@
 name: Build and Publish assets
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - production
-      - feature/add-docker
-    tags:
-      - "v*.*.*"
+  workflow_call:
 
 jobs:
   build-and-push-assets:

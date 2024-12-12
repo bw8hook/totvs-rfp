@@ -1,13 +1,7 @@
 name: Build and Publish Docker image to GHCR
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - production
-      - feature/add-docker
-    tags:
-      - "v*.*.*"
+  workflow_call:
 
 env:
   REGISTRY: ghcr.io
