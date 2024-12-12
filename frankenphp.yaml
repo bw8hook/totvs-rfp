@@ -1,3 +1,0 @@
-entrypoint:
-  - path: /
-    script: /var/www/html/public/index.php

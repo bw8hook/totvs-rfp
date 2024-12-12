@@ -1,0 +1,45 @@
+name: Build and publish assets
+
+on:
+  workflow_run:
+    workflows:
+      - Build and Publish Docker image to GHCR
+      - Build and Publish assets
+    types:
+      - completed
+
+jobs:
+  deploy-app:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download assets artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-assets
+          path: ./public/build
+
+      - name: Download icons artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-icons
+          path: ./public/icons
+
+      - name: Deploy assets
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: "totvs.bw8.tech"
+          username: ubuntu
+          key: ${{ secrets.BW8_DEV_SSH_KEY }}
+          source: "./public/build/*"
+          target: "/apps/dev-totvs-rfp/public/build/"
+
+      - name: Deploy icons
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: "totvs.bw8.tech"
+          username: ubuntu
+          key: ${{ secrets.BW8_DEV_SSH_KEY }}
+          source: "./public/icons/*"
+          target: "/apps/dev-totvs-rfp/public/icons/"

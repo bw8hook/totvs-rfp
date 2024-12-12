@@ -1,19 +1,6 @@
-FROM node:18 AS node_builder
+FROM php:8.2-fpm AS base
 
 WORKDIR /app
-
-COPY package.json package-lock.json ./
-RUN npm install
-
-COPY . .
-RUN npm run build
-
-FROM dunglas/frankenphp:1.0-php8.2 AS base
-
-# ignore https (nginx takes care of that)
-ENV SERVER_NAME=:80
-
-WORKDIR /var/www/html
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -21,24 +8,18 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     zlib1g-dev \
     libzip-dev \
+    libonig-dev \
+    && docker-php-ext-install pdo_mysql pdo mbstring exif pcntl bcmath gd zip \
+    && docker-php-ext-enable exif \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-COPY frankenphp.yaml /etc/frankenphp.yaml
-COPY composer.json composer.lock ./
-
-RUN docker-php-ext-install exif gd zip pdo pdo_mysql \
-    && docker-php-ext-enable exif
-
 COPY . .
-
-# Instala as dependências do PHP sem os pacotes de desenvolvimento
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-COPY --from=node_builder /app/public/build /var/www/html/public/build
+RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
-# Ajusta as permissões de diretórios que Laravel precisa acessar
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+EXPOSE 9000
 
-EXPOSE 80
+ENTRYPOINT ["php-fpm"]
