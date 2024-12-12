@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - production
+      - feature/add-docker
     tags:
       - "v*.*.*"
 

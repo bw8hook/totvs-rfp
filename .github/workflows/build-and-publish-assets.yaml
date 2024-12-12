@@ -1,9 +1,11 @@
 name: Build and Publish assets
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - production
+      - feature/add-docker
     tags:
       - "v*.*.*"
 
