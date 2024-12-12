@@ -50,6 +50,8 @@ jobs:
           ssh-add - <<< "${{ secrets.BW8_DEV_SSH_KEY }}"
 
       - name: Deploy assets
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           ssh "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'mkdir -p /apps/dev-totvs-rfp/public/{build,icons}'
           scp ./public/build/* ${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/build/
