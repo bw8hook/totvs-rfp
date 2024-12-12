@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-and-push-assets:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
@@ -25,13 +25,13 @@ jobs:
           npm run build
 
       - name: Save build assets
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-assets
           path: public/build/
 
       - name: Save icons assets
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-icons
           path: public/icons/

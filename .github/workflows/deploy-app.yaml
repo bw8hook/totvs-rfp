@@ -14,44 +14,40 @@ permissions:
   id-token: write
 
 jobs:
-  docker-image:
-    uses: ./.github/workflows/build-and-publish-image.yaml
+  #docker-image:
+  #  uses: ./.github/workflows/build-and-publish-image.yaml
   assets:
     uses: ./.github/workflows/build-and-publish-assets.yaml
 
   deploy-app:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
-      - docker-image
+      #    - docker-image
       - assets
 
     steps:
       - name: Download assets artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-assets
           path: ./public/build
 
       - name: Download icons artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-icons
           path: ./public/icons
 
-      - name: Deploy assets
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: "totvs.bw8.tech"
-          username: root
-          key: ${{ secrets.BW8_DEV_SSH_KEY }}
-          source: "./public/build/*"
-          target: "/apps/dev-totvs-rfp/public/build/"
+      - name: Setup SSH key
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.BW8_DEV_SSH_KEY }}"
 
-      - name: Deploy icons
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: "totvs.bw8.tech"
-          username: root
-          key: ${{ secrets.BW8_DEV_SSH_KEY }}
-          source: "./public/icons/*"
-          target: "/apps/dev-totvs-rfp/public/icons/"
+      - name: Deploy assets
+        run: |
+          mkdir -p /apps/dev-totvs-rfp/public/build
+          mkdir -p /apps/dev-totvs-rfp/public/icons
+          scp ./public/build/* ${{ env.HOST }}:/apps/dev-totvs-rfp/public/build/
+          scp ./public/icons/* ${{ env.HOST }}:/apps/dev-totvs-rfp/public/icons/
