@@ -13,6 +13,10 @@ permissions:
   attestations: write
   id-token: write
 
+env:
+  USERNAME: root
+  HOSTNAME: totvs.bw8.tech
+
 jobs:
   #docker-image:
   #  uses: ./.github/workflows/build-and-publish-image.yaml
@@ -47,7 +51,6 @@ jobs:
 
       - name: Deploy assets
         run: |
-          mkdir -p /apps/dev-totvs-rfp/public/build
-          mkdir -p /apps/dev-totvs-rfp/public/icons
-          scp ./public/build/* ${{ env.HOST }}:/apps/dev-totvs-rfp/public/build/
-          scp ./public/icons/* ${{ env.HOST }}:/apps/dev-totvs-rfp/public/icons/
+          ssh "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'mkdir -p /apps/dev-totvs-rfp/public/{build,icons}'
+          scp ./public/build/* ${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/build/
+          scp ./public/icons/* ${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/icons/
