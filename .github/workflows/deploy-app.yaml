@@ -42,7 +42,7 @@ jobs:
         uses: appleboy/scp-action@v0.1.7
         with:
           host: "totvs.bw8.tech"
-          username: ubuntu
+          username: root
           key: ${{ secrets.BW8_DEV_SSH_KEY }}
           source: "./public/build/*"
           target: "/apps/dev-totvs-rfp/public/build/"
@@ -51,7 +51,7 @@ jobs:
         uses: appleboy/scp-action@v0.1.7
         with:
           host: "totvs.bw8.tech"
-          username: ubuntu
+          username: root
           key: ${{ secrets.BW8_DEV_SSH_KEY }}
           source: "./public/icons/*"
           target: "/apps/dev-totvs-rfp/public/icons/"
