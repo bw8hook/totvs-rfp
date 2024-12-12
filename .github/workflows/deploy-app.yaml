@@ -7,6 +7,12 @@ on:
     tags:
       - "v*.*.*"
 
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
+
 jobs:
   docker-image:
     uses: ./.github/workflows/build-and-publish-image.yaml
