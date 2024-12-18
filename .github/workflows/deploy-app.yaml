@@ -17,17 +17,15 @@ env:
   USERNAME: root
   HOSTNAME: totvs.bw8.tech
   SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+  DOCKER_IMAGE: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
 
 jobs:
-  #docker-image:
-  #  uses: ./.github/workflows/build-and-publish-image.yaml
   assets:
     uses: ./.github/workflows/build-and-publish-assets.yaml
 
   deploy-app:
     runs-on: ubuntu-24.04
     needs:
-      #    - docker-image
       - assets
 
     steps:
@@ -53,3 +51,19 @@ jobs:
           ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'mkdir -p /apps/dev-totvs-rfp/public/{build,icons}'
           scp -o "StrictHostKeyChecking=no" -r ./public/build/* root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/build/
           scp -o "StrictHostKeyChecking=no" -r ./public/icons/* root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/icons/
+
+      - name: Pull Docker image on host
+        run: |
+          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "docker pull $DOCKER_IMAGE"
+
+      - name: Stop Docker Compose
+        run: |
+          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "cd /apps/dev-totvs-rfp && docker-compose down"
+
+      - name: Start Docker Compose
+        run: |
+          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "cd /apps/dev-totvs-rfp && docker-compose up -d"
+
+      - name: Verify deployment
+        run: |
+          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "curl -f http://localhost/ || echo 'Deployment failed'"
