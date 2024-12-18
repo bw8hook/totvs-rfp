@@ -63,11 +63,11 @@ jobs:
 
       - name: Stop Docker Compose
         run: |
-          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "cd /apps/dev-totvs-rfp && docker-compose down"
+          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "cd /apps/dev-totvs-rfp && docker compose down"
 
       - name: Start Docker Compose
         run: |
-          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "cd /apps/dev-totvs-rfp && docker-compose up -d"
+          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "cd /apps/dev-totvs-rfp && docker compose up -d"
 
       - name: Verify deployment
         run: |
