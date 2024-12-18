@@ -3,7 +3,7 @@ name: Deploy app
 on:
   push:
     branches:
-      - feature/add-docker
+      - test-docker
     tags:
       - "v*.*.*"
 
