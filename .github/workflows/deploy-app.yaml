@@ -46,6 +46,9 @@ jobs:
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-add - <<< "${{ secrets.BW8_DEV_SSH_KEY }}"
 
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
       - name: Deploy assets
         run: |
           ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'sudo mkdir -p /apps/dev-totvs-rfp/public/{build,icons}'

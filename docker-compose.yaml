@@ -17,7 +17,7 @@ services:
       dockerfile: Dockerfile
     container_name: totvs_rfp
     ports:
-      - "80:80"
+      - "9000:9000"
       - "443:443"
     env_file: ".env"
     depends_on:
