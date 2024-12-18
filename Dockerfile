@@ -22,4 +22,5 @@ RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
 EXPOSE 9000
 
-ENTRYPOINT ["php-fpm"]
+ENTRYPOINT ["php", "-a"] # Permite passar comandos arbitrários
+CMD ["php-fpm"]
