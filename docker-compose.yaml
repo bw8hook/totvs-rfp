@@ -5,7 +5,7 @@ services:
     container_name: migrate_totvs_rfp
     env_file: ".env"
     working_dir: /app
-    command: php artisan migrate --force
+    command: sh -c "ls -la && php artisan migrate --force"
 
     extra_hosts:
       - "host.docker.internal:host-gateway"
