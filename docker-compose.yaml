@@ -1,17 +1,17 @@
 ---
 services:
   migrate:
-    image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
+    image: ghcr.io/bw8hook/totvs-rfp:test-docker
     container_name: migrate_totvs_rfp
     env_file: ".env"
     working_dir: /app
-    command: sh -c "ls -la && php artisan migrate --force"
+    command: "php artisan migrate --force"
 
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
   app:
-    image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
+    image: ghcr.io/bw8hook/totvs-rfp:test-docker
     container_name: totvs_rfp
     ports:
       - "9000:9000"
