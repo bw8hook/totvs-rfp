@@ -57,7 +57,8 @@ jobs:
 
       - name: Upload docker-compose.yaml and .env to host
         run: |
-          scp -o "StrictHostKeyChecking=no" -r ./docker-compose.yaml ./.env "${{ env.USERNAME }}@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/
+          scp -o "StrictHostKeyChecking=no" -r ./docker-compose.yaml "${{ env.USERNAME }}@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/docker-compose.yaml"
+          scp -o "StrictHostKeyChecking=no" -r ./.env "${{ env.USERNAME }}@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/.env"
 
       - name: Authenticate Docker on host
         run: |
