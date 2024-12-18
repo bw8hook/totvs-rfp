@@ -55,9 +55,9 @@ jobs:
           scp -o "StrictHostKeyChecking=no" -r ./public/build/* root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/build/
           scp -o "StrictHostKeyChecking=no" -r ./public/icons/* root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/icons/
 
-      - name: Upload docker-compose.yaml and .env to host
+      - name: Upload docker-compose.yaml and env to host
         run: |
-          scp -o "StrictHostKeyChecking=no" -r ./docker-compose.yaml ./.env ./Dockerfile "${{ env.USERNAME }}@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/"
+          scp -o "StrictHostKeyChecking=no" -r ./docker-compose.yaml ./.env "${{ env.USERNAME }}@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/"
 
       - name: Authenticate Docker on host
         run: |
