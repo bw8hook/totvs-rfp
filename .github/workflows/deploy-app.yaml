@@ -14,7 +14,7 @@ permissions:
   id-token: write
 
 env:
-  USERNAME: ubuntu
+  USERNAME: root
   HOSTNAME: totvs.bw8.tech
   SSH_AUTH_SOCK: /tmp/ssh_agent.sock
   DOCKER_IMAGE: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
