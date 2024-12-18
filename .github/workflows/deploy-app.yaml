@@ -74,7 +74,7 @@ jobs:
 
       - name: Start Docker Compose
         run: |
-          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "cd /apps/dev-totvs-rfp && docker compose up -d"
+          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "cd /apps/dev-totvs-rfp && docker-compose up --force-recreate --verbose"
 
       - name: Verify deployment
         run: |

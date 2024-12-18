@@ -5,7 +5,8 @@ services:
     container_name: migrate_totvs_rfp
     env_file: ".env"
     working_dir: /app
-    command: "ls -la"
+    command: ["ls", "-la"]
+
 
     extra_hosts:
       - "host.docker.internal:host-gateway"
