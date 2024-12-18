@@ -1,81 +1,81 @@
-name: Deploy app
+# name: Deploy app
 
-on:
-  push:
-    branches:
-      - test-docker
-    tags:
-      - "v*.*.*"
+# on:
+#   push:
+#     branches:
+#       - test-docker
+#     tags:
+#       - "v*.*.*"
 
-permissions:
-  contents: read
-  packages: write
-  attestations: write
-  id-token: write
+# permissions:
+#   contents: read
+#   packages: write
+#   attestations: write
+#   id-token: write
 
-env:
-  USERNAME: root
-  HOSTNAME: totvs.bw8.tech
-  SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-  DOCKER_IMAGE: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
+# env:
+#   USERNAME: root
+#   HOSTNAME: totvs.bw8.tech
+#   SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+#   DOCKER_IMAGE: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
 
-jobs:
-  assets:
-    uses: ./.github/workflows/build-and-publish-assets.yaml
+# jobs:
+#   assets:
+#     uses: ./.github/workflows/build-and-publish-assets.yaml
 
-  deploy-app:
-    runs-on: ubuntu-24.04
-    needs:
-      - assets
+#   deploy-app:
+#     runs-on: ubuntu-24.04
+#     needs:
+#       - assets
 
-    steps:
-      - name: Download assets artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-assets
-          path: ./public/build
+#     steps:
+#       - name: Download assets artifacts
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: build-assets
+#           path: ./public/build
 
-      - name: Download icons artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-icons
-          path: ./public/icons
+#       - name: Download icons artifacts
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: build-icons
+#           path: ./public/icons
 
-      - name: Setup SSH key
-        run: |
-          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-          ssh-add - <<< "${{ secrets.BW8_DEV_SSH_KEY }}"
+#       - name: Setup SSH key
+#         run: |
+#           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+#           ssh-add - <<< "${{ secrets.BW8_DEV_SSH_KEY }}"
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
       
-      - name: Deploy assets
-        run: |
-          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'sudo mkdir -p /apps/dev-totvs-rfp/public/{build,icons}'
-          scp -o "StrictHostKeyChecking=no" -r ./public/build/* root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/build/
-          scp -o "StrictHostKeyChecking=no" -r ./public/icons/* root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/icons/
+#       - name: Deploy assets
+#         run: |
+#           ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'sudo mkdir -p /apps/dev-totvs-rfp/public/{build,icons}'
+#           scp -o "StrictHostKeyChecking=no" -r ./public/build/* root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/build/
+#           scp -o "StrictHostKeyChecking=no" -r ./public/icons/* root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/icons/
 
-      - name: Upload docker-compose.yaml and env to host
-        run: |
-          scp -o "StrictHostKeyChecking=no" -r ./docker-compose.yaml ./.env "${{ env.USERNAME }}@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/"
+#       - name: Upload docker-compose.yaml and env to host
+#         run: |
+#           scp -o "StrictHostKeyChecking=no" -r ./docker-compose.yaml ./.env "${{ env.USERNAME }}@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/"
 
-      - name: Authenticate Docker on host
-        run: |
-          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "
-            echo '${{ secrets.GHCR_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin"
+#       - name: Authenticate Docker on host
+#         run: |
+#           ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "
+#             echo '${{ secrets.GHCR_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin"
 
-      - name: Pull Docker image on host
-        run: |
-          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "docker pull $DOCKER_IMAGE"
+#       - name: Pull Docker image on host
+#         run: |
+#           ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "docker pull $DOCKER_IMAGE"
 
-      - name: Stop Docker Compose
-        run: |
-          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "cd /apps/dev-totvs-rfp && docker compose down"
+#       - name: Stop Docker Compose
+#         run: |
+#           ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "cd /apps/dev-totvs-rfp && docker compose down"
 
-      - name: Start Docker Compose
-        run: |
-          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "cd /apps/dev-totvs-rfp && docker compose up -d"
+#       - name: Start Docker Compose
+#         run: |
+#           ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "cd /apps/dev-totvs-rfp && docker compose up -d"
 
-      - name: Verify deployment
-        run: |
-          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "curl -f http://localhost/ || echo 'Deployment failed'"
+#       - name: Verify deployment
+#         run: |
+#           ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" "curl -f http://localhost/ || echo 'Deployment failed'"

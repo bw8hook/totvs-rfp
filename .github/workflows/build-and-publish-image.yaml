@@ -1,7 +1,11 @@
 name: Build and Publish Docker image to GHCR
 
 on:
-  workflow_call:
+  push:
+    branches:
+      - test-docker
+    tags:
+      - 'v*.*.*'
 
 env:
   REGISTRY: ghcr.io
