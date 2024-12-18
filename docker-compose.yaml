@@ -4,6 +4,7 @@ services:
     image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
     container_name: migrate_totvs_rfp
     env_file: ".env"
+    working_dir: /app
     command: php artisan migrate --force
 
     extra_hosts:
