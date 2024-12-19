@@ -20,7 +20,7 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
-EXPOSE 9001
+EXPOSE 9000
 
 ENTRYPOINT ["php", "-a"] # Permite passar comandos arbitrários
 CMD ["php-fpm"]
