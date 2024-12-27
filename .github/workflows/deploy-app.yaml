@@ -31,6 +31,9 @@ jobs:
       - assets
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Download assets artifacts
         uses: actions/download-artifact@v4
         with:
