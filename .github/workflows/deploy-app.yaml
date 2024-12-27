@@ -19,8 +19,8 @@ env:
   SSH_AUTH_SOCK: /tmp/ssh_agent.sock
 
 jobs:
-  #docker-image:
-  #  uses: ./.github/workflows/build-and-publish-image.yaml
+  docker-image:
+    uses: ./.github/workflows/build-and-publish-image.yaml
   assets:
     uses: ./.github/workflows/build-and-publish-assets.yaml
 
