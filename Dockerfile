@@ -1,8 +1,18 @@
-FROM php:8.2-fpm AS base
+FROM node:18 AS builder
 
 WORKDIR /app
 
+COPY . .
+RUN npm install
+RUN npm run build
+
+FROM php:8.2-fpm AS base
+
+RUN usermod -u 1000 www-data
+WORKDIR /var/www
+
 RUN apt-get update && apt-get install -y \
+    nginx \
     git \
     unzip \
     libpng-dev \
@@ -14,12 +24,15 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY --from=builder /app/public/build /var/www/public/build
 
-COPY . .
+COPY --chown=www-data . .
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
+COPY ./docker/nginx/nginx.conf /etc/nginx/nginx.conf
 
-EXPOSE 9000
+RUN chmod -R 755 /var/www/storage /var/www/bootstrap
 
-ENTRYPOINT ["php-fpm"]
+EXPOSE 8080
+
+ENTRYPOINT ["docker/entrypoint.sh"]

@@ -1,28 +1,22 @@
 ---
 services:
-  migrate:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: migrate_totvs_rfp
-    env_file: ".env"
-    command: php artisan migrate --force
+  # migrate:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: migrate_totvs_rfp
+  #   env_file: ".env"
+  #   command: php artisan migrate --force
 
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: totvs_rfp
+    image: ghcr.io/bw8hook/totvs-rfp:feature/add-docker
+    container_name: totvs-rfp
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:8080"
     env_file: ".env"
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    #depends_on:
+    #migrate:
+    #condition: service_completed_successfully

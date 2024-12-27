@@ -27,7 +27,7 @@ jobs:
   deploy-app:
     runs-on: ubuntu-24.04
     needs:
-      #    - docker-image
+      - docker-image
       - assets
 
     steps:
@@ -47,9 +47,11 @@ jobs:
         run: |
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-add - <<< "${{ secrets.BW8_DEV_SSH_KEY }}"
+          ssh-keyscan ${{ env.HOSTNAME }}
 
       - name: Deploy assets
         run: |
           ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'mkdir -p /apps/dev-totvs-rfp/public/{build,icons}'
           scp -o "StrictHostKeyChecking=no" -r ./public/build/* root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/build/
           scp -o "StrictHostKeyChecking=no" -r ./public/icons/* root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/icons/
+          scp -o "StrictHostKeyChecking=no" ./docker-compose root@${{ env.HOSTNAME }}:/apps/dev-totovs-rfp/
