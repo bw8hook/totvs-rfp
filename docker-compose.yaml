@@ -12,7 +12,7 @@ services:
   #     - "host.docker.internal:host-gateway"
 
   app:
-    image: ghcr.io/bw8hook/totvs-rfp:feature/add-docker
+    image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
     container_name: totvs-rfp
     ports:
       - "8080:8080"
