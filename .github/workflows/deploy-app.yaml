@@ -1,4 +1,5 @@
-name: Deploy app
+---
+name: test 
 
 on:
   workflow_call:
@@ -37,4 +38,25 @@ jobs:
       - name: Deploy assets
         run: |
           ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'sudo mkdir -p /apps/dev-totvs-rfp/'
-          scp -o "StrictHostKeyChecking=no" ./docker-compose.yaml root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/
+          scp -o "StrictHostKeyChecking=no" ./docker-compose.yaml  "${{ env.USERNAME }}@${{ env.HOSTNAME }}":/apps/dev-totvs-rfp/
+          scp -o "StrictHostKeyChecking=no" ./.env  "${{ env.USERNAME }}@${{ env.HOSTNAME }}":/apps/dev-totvs-rfp/
+          
+      - name: Pull latest image
+        run: |
+          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'docker pull ${{ env.DOCKER_IMAGE }}'
+
+      - name: Stop running container
+        run: |
+          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'cd /apps/dev-totvs-rfp/ ; docker compose stop'
+
+      - name: Start new container
+        run: |
+          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'cd /apps/dev-totvs-rfp/ ; docker compose up'
+        
+
+
+
+
+
+
+
