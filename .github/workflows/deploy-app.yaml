@@ -36,17 +36,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download assets artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-assets
-          path: ./public/build
+#      - name: Download assets artifacts
+#      uses: actions/download-artifact@v4
+#       with:
+#          name: build-assets
+#         path: ./public/build
 
-      - name: Download icons artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-icons
-          path: ./public/icons
+#      - name: Download icons artifacts
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: build-icons
+#          path: ./public/icons
 
       - name: Setup SSH key
         run: |
@@ -56,7 +56,7 @@ jobs:
 
       - name: Deploy assets
         run: |
-          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'sudo mkdir -p /apps/dev-totvs-rfp/public/{build,icons}'
-          scp -o "StrictHostKeyChecking=no" -r ./public/build/* root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/build/
-          scp -o "StrictHostKeyChecking=no" -r ./public/icons/* root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/icons/
+          ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'sudo mkdir -p /apps/dev-totvs-rfp/'
+#          scp -o "StrictHostKeyChecking=no" -r ./public/build/* root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/build/
+#          scp -o "StrictHostKeyChecking=no" -r ./public/icons/* root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/public/icons/
           scp -o "StrictHostKeyChecking=no" ./docker-compose.yaml root@${{ env.HOSTNAME }}:/apps/dev-totvs-rfp/
