@@ -1,9 +1,10 @@
 name: Deploy app
 
 on:
+  workflow_call:
   push:
     branches:
-      - test-docker
+      - feature/add-docker
     tags:
       - "v*.*.*"
 
