@@ -4,7 +4,7 @@ services:
     image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
     container_name: migrate_totvs_rfp
     env_file: ".env"
-    command: php artisan migrate --force
+    entrypoint: php artisan migrate --force
 
   app:
     image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
