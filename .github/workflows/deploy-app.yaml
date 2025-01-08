@@ -51,4 +51,4 @@ jobs:
 
     - name: Start new container
       run: |
-        ssh -o "ServerAliveInterval=60" -o "StrictHostKeyChecking=no" -o "ConnectTimeout=10" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'cd /apps/dev-totvs-rfp/ ; docker compose up -d'
+        ssh  -o "StrictHostKeyChecking=no"  "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'cd /apps/dev-totvs-rfp/ ; docker compose up -d  &>/dev/null'
