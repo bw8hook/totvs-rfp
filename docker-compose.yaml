@@ -1,32 +1,12 @@
 ---
-#services:
-#  migrate:
-#    image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
-#    container_name: migrate_totvs_rfp
-#    env_file: ".env"
-#    entrypoint: ["php", "artisan", "migrate", "--force"]
-#
-#    
-#
-#  app:
-#    image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
-#    container_name: totvs-rfp
-#    ports:
-#      - "8080:8080"
-#    env_file: ".env"
-#    depends_on:
-#      migrate:
-#        condition: service_completed_successfully
----
 version: '3.8'
 
 services:
-  migrate: 
+  migrate:
     image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
     container_name: migrate_totvs_rfp
     env_file: ".env"
-    command: php artisan migrate --force
-   
+    entrypoint: php artisan migrate --force
   app:
     image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
     container_name: totvs-rfp
@@ -36,3 +16,22 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+---
+#version: '3.8'
+#
+#services:
+#  migrate: 
+#    image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
+#    container_name: migrate_totvs_rfp
+#    env_file: ".env"
+#    command: php artisan migrate --force
+#   
+#  app:
+#    image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
+#    container_name: totvs-rfp
+#    ports:
+#      - "8080:8080"
+#    env_file: ".env"
+#    depends_on:
+#      migrate:
+#        condition: service_completed_successfully
