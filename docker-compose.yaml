@@ -18,6 +18,8 @@
 #      migrate:
 #        condition: service_completed_successfully
 ---
+version: '3.8'
+
 services:
   migrate: 
     image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
