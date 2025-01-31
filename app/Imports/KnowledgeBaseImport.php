@@ -85,11 +85,15 @@ class KnowledgeBaseImport implements ToCollection, WithChunkReading, WithStartRo
                 // Dados de configuração
                 $KnowledgeRecord->knowledge_base_id = $this->id;
                 $KnowledgeRecord->user_id = Auth::id();
+                $KnowledgeRecord->bundle_old = $row[7];
+                $KnowledgeRecord->spreadsheet_line = $index;
+
                 // Valida o PRODUTO
                 if (!$bundleIDFound) {
-                    $KnowledgeRecord->bundle_id = 0;      
+                    $KnowledgeRecord->bundle_id = null;
                 }else{
                     $KnowledgeRecord->bundle_id = $bundleIDFound;
+                    
                 }
                 // Dados do arquivo
                 $KnowledgeRecord->classificacao = $row[0];
@@ -139,7 +143,7 @@ class KnowledgeBaseImport implements ToCollection, WithChunkReading, WithStartRo
 
     public function chunkSize(): int
     {
-        return 1000; // Processa 100 linhas por vez
+        return 5000; // Processa 100 linhas por vez
     }
 
 }
