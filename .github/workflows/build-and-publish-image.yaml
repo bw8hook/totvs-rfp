@@ -2,7 +2,11 @@ name: Build and Publish Docker image to GHCR
 
 on:
   workflow_call:
-
+  # push:
+  #   branches:
+  #     - test-docker
+  #   tags:
+  #     - 'v*.*.*'
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -15,8 +19,7 @@ permissions:
 
 jobs:
   build-and-push-image:
-    runs-on: ubuntu-24.04
-
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
