@@ -24,13 +24,13 @@
         </div>
 
         <!-- Remember Me -->
-        <!-- <div class="block mt-4">
+        <div class="block mt-4">
             <label for="remember_me" class="inline-flex items-center">
                 <input id="remember_me" type="checkbox"
                     class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
                 <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
             </label>
-        </div> -->
+        </div>
 
         <div class="flex flex-col items-center justify-center mt-2 gap-4" style="display: block;">
             @if (Route::has('password.request'))
@@ -40,11 +40,7 @@
                 </a>
             @endif
 
-            <x-primary-button class="ms-3" style=" background: #5570F1;
-    width: 100%;
-    height: 50px;
-    text-align: center;
-    display: block; margin-left: 0px; margin-top: 20px;">
+            <x-primary-button class="ms-3" style=" background: #5570F1; width: 100%; height: 50px; text-align: center; display: block; margin-left: 0px; margin-top: 20px;">
                 {{ __('Entrar') }}
             </x-primary-button>
         </div>

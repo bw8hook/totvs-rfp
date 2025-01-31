@@ -6,6 +6,7 @@ use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Requests\ProfileUpdateUserRequest;
 use App\Http\Controllers\Users;
 use App\Models\User;
+use App\Models\UsersDepartaments;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,74 +20,91 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
-          // BUSCA A LISTA DE AGENTS
+        $userDepartaments = UsersDepartaments::all();
 
-          $CountAgentsPage = 1;
-          $RetornoAgent = $this->SendCurl("GET", 'https://bw8.hook.app.br/arquivos-base-mentoria/api/agents?page='.$CountAgentsPage, null, 1);
-          $ListaAgents = array();
+            $user = User::findOrFail(Auth::user()->id);
+
+            if ($user) {
+                $data = array(
+                    'user' => $user,
+                    'userDepartaments' => $userDepartaments,
+                );
+
+                return view('profile.edit', ['user' => $request->user(), ])->with($data);
+                //return view('usersProject.edit')->with($user);
+            } else {
+                return redirect()->back()->with('error', 'Usuário não encontrado.');
+            }
+       
+
+
+        //   // BUSCA A LISTA DE AGENTS
+        //   $CountAgentsPage = 1;
+        //   $RetornoAgent = $this->SendCurl("GET", 'https://bw8.hook.app.br/arquivos-base-mentoria/api/agents?page='.$CountAgentsPage, null, 1);
+        //   $ListaAgents = array();
           
-          foreach ($RetornoAgent->Agents as $key => $Agent) {
-              $ListaAgents[] =  $Agent;
-          }
+        //   foreach ($RetornoAgent->Agents as $key => $Agent) {
+        //       $ListaAgents[] =  $Agent;
+        //   }
   
-          if($RetornoAgent->total > count($RetornoAgent->Agents)){
-              $QtdPagesAgents = intval(round($RetornoAgent->total/20));         
-              $CountAgentsPage++;
+        //   if($RetornoAgent->total > count($RetornoAgent->Agents)){
+        //       $QtdPagesAgents = intval(round($RetornoAgent->total/20));         
+        //       $CountAgentsPage++;
 
-              while ($CountAgentsPage <= $QtdPagesAgents) {
-                  $RetornoAgentWhile = $this->SendCurl("GET", 'https://bw8.hook.app.br/arquivos-base-mentoria/api/agents?page='.$CountAgentsPage, null, 1);
-                  foreach ($RetornoAgentWhile->Agents as $key => $Agent) {
-                      $ListaBases[] =  $Agent;
-                  }
-                  $CountAgentsPage++;
-              }
-          }
+        //       while ($CountAgentsPage <= $QtdPagesAgents) {
+        //           $RetornoAgentWhile = $this->SendCurl("GET", 'https://bw8.hook.app.br/arquivos-base-mentoria/api/agents?page='.$CountAgentsPage, null, 1);
+        //           foreach ($RetornoAgentWhile->Agents as $key => $Agent) {
+        //               $ListaBases[] =  $Agent;
+        //           }
+        //           $CountAgentsPage++;
+        //       }
+        //   }
   
-          // BUSCA A LISTA DE BASES
+        //   // BUSCA A LISTA DE BASES
   
-          $CountBasesPage = 1;
-          $RetornoBase = $this->SendCurl("GET", 'https://bw8.hook.app.br/arquivos-base-mentoria/api/bases?page='.$CountBasesPage, null, 1);
-          $ListaBases = array();
+        //   $CountBasesPage = 1;
+        //   $RetornoBase = $this->SendCurl("GET", 'https://bw8.hook.app.br/arquivos-base-mentoria/api/bases?page='.$CountBasesPage, null, 1);
+        //   $ListaBases = array();
           
-          foreach ($RetornoBase->Bases as $key => $Base) {
-              if($Base->status == "succeeded"){
-                 $ListaBases[] =  $Base;
-             }
-          }
+        //   foreach ($RetornoBase->Bases as $key => $Base) {
+        //       if($Base->status == "succeeded"){
+        //          $ListaBases[] =  $Base;
+        //      }
+        //   }
   
-          if($RetornoBase->total > count($RetornoBase->Bases)){
-              $QtdPagesBases = intval(round($RetornoBase->total/20));         
-              $CountBasesPage++;
+        //   if($RetornoBase->total > count($RetornoBase->Bases)){
+        //       $QtdPagesBases = intval(round($RetornoBase->total/20));         
+        //       $CountBasesPage++;
 
-              while ($CountBasesPage <= $QtdPagesBases) {
-                  $RetornoBaseWhile = $this->SendCurl("GET", 'https://bw8.hook.app.br/arquivos-base-mentoria/api/bases?page='.$CountBasesPage, null, 1);
-                  foreach ($RetornoBaseWhile->Bases as $key => $Base) {
-                      if($Base->status == "succeeded"){
-                         $ListaBases[] =  $Base;
-                      }
-                  }
-                  $CountBasesPage++;
-              }
-          }
+        //       while ($CountBasesPage <= $QtdPagesBases) {
+        //           $RetornoBaseWhile = $this->SendCurl("GET", 'https://bw8.hook.app.br/arquivos-base-mentoria/api/bases?page='.$CountBasesPage, null, 1);
+        //           foreach ($RetornoBaseWhile->Bases as $key => $Base) {
+        //               if($Base->status == "succeeded"){
+        //                  $ListaBases[] =  $Base;
+        //               }
+        //           }
+        //           $CountBasesPage++;
+        //       }
+        //   }
   
-          $AgentId = Auth::user()->agent;
-          $BaseId = Auth::user()->base;
-          $userId = Auth::user()->id;
+        //   $AgentId = Auth::user()->agent;
+        //   $BaseId = Auth::user()->base;
+        //   $userId = Auth::user()->id;
 
-          $data = array(
-              'title' => 'Todos Arquivos',
-              'listaAgents' => $ListaAgents,
-              'listaBases' => $ListaBases,
-              'AgentId' => $AgentId,
-              'BaseId' => $BaseId,
-              'userId' => $userId
-          );
+        //   $data = array(
+        //       'title' => 'Todos Arquivos',
+        //       'listaAgents' => $ListaAgents,
+        //       'listaBases' => $ListaBases,
+        //       'AgentId' => $AgentId,
+        //       'BaseId' => $BaseId,
+        //       'userId' => $userId
+        //   );
   
           //return view('auth.register')->with($data);
 
 
 
-        return view('profile.edit', ['user' => $request->user(), ])->with($data);
+       
     }
 
     /**

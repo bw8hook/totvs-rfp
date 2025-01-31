@@ -1,164 +1,198 @@
 <x-app-layout>
     <div class="flex flex-col">
-   
-        <div class="profile-bar">
-            <x-profile-bar></x-profile-bar>
-        </div>
-        <div class="py-12" style=" padding-bottom: 130px;">
+        <div class="py-4" style=" padding-bottom: 130px;">
 
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-
-                <div id="titleComponent" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative" >
-                    <div class="flex items-center space-x-2">
-                        <img src="{{ asset('icons/new-item.svg') }}" alt="Upload Icon" style="height: 33%; padding-right: 18px;">
-                        <span>Bases de Conhecimento Enviadas</span>
+            <div id="titleComponent_KnowledgeBase" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative">
+                <div class="AlignTitleLeft" style="width: 80%;">
+                    <div class="flex" style="width: 100%;">
+                        <img src="{{ asset('icons/base_conhecimento.svg') }}" alt="Upload Icon" style="height: 33%; padding-right: 18px;">
+                        <span>Base de Conhecimento</span>
                     </div>
-                    <div class="relative flex items-center">
-
-                        <button type="button" class="btn flex items-center justify-center w-full py-3 rounded-lg font-semibold transition mb-6 bg-#5570F1" style="box-shadow: 0px 19px 34px -20px #43BBED; background-color: #5570F1; color: white; padding: 0px 24px; height: 45px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-top: 28px;" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                            Enviar nova base
-                        </button>
+                    <div class="relative block items-center" style=" padding-bottom: 12px; margin-left: 8px; width: 90%;">        
+                        <div class="info_details" style="color:#8A94AD;"> Os arquivos exibidos nesta seção foram enviados por você e por outros analistas, e servirão como base de conhecimento. Eles serão utilizados para que a inteligência artificial possa responder de forma mais precisa às novas RFPs recebidas. Sua contribuição ajudará a melhorar as respostas fornecidas.</div>
                     </div>
                 </div>
-
-
-                <!-- Modal -->
-                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">Enviar Nova Base de Conhecimento</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                    <span  style="width: 100%; font-size: 14px; text-align: justify; float: left; margin-bottom: 15px; color: #7a7a7a;"> Para enviar novas bases de conhecimento, existem duas opções disponíveis. A primeira consiste em enviar um ou mais arquivos de um pacote específico. A segunda opção envolve o envio de um único arquivo que deve conter um campo denominado 'LINHA/PRODUTO'.</span>
-
-                                    <a href="add-knowledge" class="flex items-center justify-center w-full py-3 rounded-lg font-semibold transition mb-6 bg-#5570F1" style="box-shadow: 0px 19px 34px -20px #43BBED; background-color: #5570F1; color: white; padding: 0px 24px; height: 45px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-top: 28px;">
-                                        Enviar Nova Base Escolhendo o Pacote
-                                    </a>
-
-                                    <span style="width: 100%; font-size: 14px; text-align: center; float: left; margin-bottom: 15px; color: #7a7a7a;">OU</span>
-
-                                    <a href="add-knowledge-file" class="flex items-center justify-center w-full py-3 rounded-lg font-semibold transition mb-6 bg-#5570F1" style="box-shadow: 0px 19px 34px -20px #43BBED; background-color: #5570F1; color: white; padding: 0px 24px; height: 45px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-top: 28px;">
-                                        Enviar Nova Base contendo vários pacotes
-                                    </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            
-            <div id="BlocoLista" class="p-4 sm:p-8 bg-white shadow sm:rounded-lg" style=" color: #929292; text-transform: uppercase; font-size: 13px; font-weight: bolder; text-align: center;">
-                Os arquivos exibidos nesta seção foram enviados por você e servirão como base de conhecimento. </br> Eles serão utilizados para que a inteligência artificial possa responder de forma mais precisa às novas RFPs recebidas. </br>Sua contribuição ajudará a melhorar as respostas fornecidas.
+               
+                <a href="{{route('knowledge.addFile')}}" type="button" class="btn flex items-center justify-center  py-3 rounded-lg font-semibold transition mb-6 bg-#5570F1" style="box-shadow: 0px 19px 34px -20px #43BBED; background-color: #5570F1; color: white; padding: 0px 24px; height: 45px; font-size: 15px; text-transform: uppercase; letter-spacing: 0px; margin-top: 28px; border-radius: 60px;">
+                    <img src="{{ asset('icons/btn_nova_base.svg') }}" alt="Upload Icon" style="height: 22px; padding-right: 18px;">    
+                    Enviar nova base
+                </a>
             </div>
 
-            @if(!empty($ListFiles))
-                <div class="bloco_importacao_topo">
-                    <div>Total de RFPs</div>
-                    <h6> {{$CountRFPs}} </h6>
-                </div>
-
-                <div class="bloco_importacao_topo">
-                    <div>Total de Requisitos</div>
-                    <h6> {{$CountResultado}} </h6>
-                </div>
-
-                <div class="bloco_importacao_topo">
-                    <div>Qtd Pacotes</div>
-                    <h6> {{$CountPacotes}} </h6>
-                </div>
-            @endif
-
-
-            <div id="BlocoLista" class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-
-            @if(!empty($ListFiles))
-                <div class="tabela">
-                    <div class="header_tabela">
-                        <div style="width:30%;">Nome do Arquivo</div>
-                        <div style="width:30%; text-align:center;">Pacote</div>
-                        <div style="width:100px;  text-align:center;">Data de Envio</div>
-                        <div style="width:100px; text-align:center;">Extensão</div>
-                        <div style="width:10%; text-align:center;">Ações</div>           
-                    </div>
-                    <div>
-                        @foreach($ListFiles as $File)
-                        <div class="listaTabela">
-                            <div style="width:30%;">
-                                @if ($File['filename_original'])
-                                    {{$File['filename_original']}}
-                                @else
-                                    {{$File['filename']}}
-                                @endif
-                            </div>
-
-                            <div style="width:30%; text-align:center; ">
-                                @if (isset($File['bundle']->bundle))
-                                    <div style="background: #9a9aa9; font-size: 11px;  margin:auto; line-height: 30px; display: inline-block; padding: 0px 10px; text-align: center; color: #FFF; border-radius: 6px; letter-spacing: 1px; font-weight: bold; text-transform:uppercase;">{{$File['bundle']->bundle}}</div>
-                                @endif
-                           
-                            </div>
-
-                            <div style="width:100px; text-align:center;">{{$File['created_at']}}</div>
-
-
-                            <div style="width:100px; text-align:center;">
-                                @if ($File['file_extension'] == "xls" || $File['file_extension'] == "xlsx")
-                                    <div style="font-size: 11px;  margin:auto; background: #0e8d13; line-height: 30px; width: 70px; text-align: center; color: #FFF; border-radius: 6px; letter-spacing: 1px; font-weight: bold; text-transform:uppercase;">.{{$File['file_extension']}}</div>
-                                @else
-                                    <div style="font-size: 11px;  margin:auto; background: #607d8b5c; line-height: 30px; width: 70px; text-align: center; color: #FFF; border-radius: 6px; letter-spacing: 1px; font-weight: bold; text-transform:uppercase;">.{{$File['file_extension']}}</div>
-                                @endif
-                            </div>
-                            
-                            
-                            <div style="width:10%; text-align:center; position:relative;">
-
-                                <div class="text-gray-500">
-                                    <form action="{{ route('knowledge.remove', $File['knowledge_base_id']) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este arquivo?');" style="margin: 0px;">
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <button type="submit" style="width: 14px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 6px;">
-                                            <img src="{{ asset('icons/trashbin.svg') }}" alt="Delete Icon">
-                                        </button>
-                                    </form>
+            <div class="w-full">
+                <div class="bloco_info_filter_records">            
+                    <div style="width: 100%; display:flex; justify-content: space-between; margin:20px 0px 40px;">
+                        @if(!empty($ListFiles))
+                            <div>
+                                <div class="bloco_importacao_topo">
+                                    <img src="{{ asset('icons/document.svg') }}" alt="Upload Icon" style="height: 22px; margin-bottom: 12px;">    
+                                    <div>Total de RFPs</div>
+                                    <h6> {{$CountRFPs}} </h6>
+                                </div>
+                                <div class="bloco_importacao_topo">
+                                    <img src="{{ asset('icons/list-check.svg') }}" alt="Upload Icon" style="height: 22px; margin-bottom: 12px;">    
+                                    <div>Total de Requisitos</div>
+                                    <h6> {{$CountRequisitos}} </h6>
                                 </div>
                             </div>
+                        @endif
+
+
+                        <div class="ultimaAtualizacao" style="border: 1px solid #CCC; border-radius: 10px; width: 362px; height:60px; display: flex;">
+                            <img src="{{ asset('icons/calendar-lines.svg') }}" alt="Upload Icon" style="height: 22px; padding-right: 18px; margin-top: 17px; margin-left: 15px;">    
+                            <div style="display: flex;" title="o último arquivo atualizado foi o {{$lastUpdated->name}}.{{$lastUpdated->file_extension}} no dia {{$lastUpdatedDate}} as {{$lastUpdatedTime}} ">
+                                <span style="color: #525B75; font-size:16px;line-height: 55px;">Última Atualização:</span>
+                                <h2 style="color: #141824; font-size:16px; line-height: 55px; margin-left:5px; font-weight:400;">{{$lastUpdatedTime}}</h2>
+                                <div style="color: #525B75; font-size:16px; line-height: 55px; margin-left:5px;">|</div>
+                                <h3 style="color: #141824; font-size:16px; line-height: 55px; margin-left:5px;">{{$lastUpdatedDate}}</h3>
+                            </div>
                         </div>
-                        @endforeach
                     </div>
+
+                    
                 </div>
-                @else
+                
+                <div id="BlocoLista" class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                    <table id="TableExcel" class="tabela">
+                        <thead>
+                            <tr>
+                                <th style="width:28%; text-align:left;">Nome do Arquivo:</th>
+                                <th style="width:10%; text-align: center;">Requisitos:</th>
+                                <th style="width:15%; text-align: center;">Última Atualização:</th>
+                                <th style="width:15%; text-align: center;">Responsável:</th>
+                                <th style="width:15%; text-align: center;">Status:</th>
+                                <th style="width:10%;"></th>
+                            </tr>    
+                        </thead>
+                            <tbody class="body_table">
+                                <!-- CARREGA VIA AJAX -->
+                            </tbody>
+                    </table>
 
-                    <div style=" width: 550px; margin: auto; text-align: center; font-size: 20px; color: #30344d;"> 
-                        <svg style="width:30px; margin:20px auto;" fill="#30344d" width="800px" height="30px" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><path d="M 7.7148 48.0039 L 48.2852 48.0039 C 53.1836 48.0039 55.6446 45.5664 55.6446 40.7383 L 55.6446 27.8008 C 55.6446 25.6914 55.2928 24.7070 54.3088 23.3477 L 46.1992 12.4023 C 43.6446 8.9102 42.2382 7.9961 38.0898 7.9961 L 17.9101 7.9961 C 13.7617 7.9961 12.3554 8.9102 9.8007 12.4023 L 1.6913 23.3477 C .7070 24.7070 .3554 25.6914 .3554 27.8008 L .3554 40.7383 C .3554 45.5898 2.8398 48.0039 7.7148 48.0039 Z M 27.9882 34.4336 C 24.4726 34.4336 22.2226 31.3867 22.2226 28.5039 L 22.2226 28.4336 C 22.2226 27.3789 21.5898 26.3945 20.3007 26.3945 L 5.3476 26.3945 C 4.5741 26.3945 4.4101 25.7383 4.7851 25.2227 L 13.4570 13.3164 C 14.5585 11.8164 15.9413 11.2774 17.6523 11.2774 L 38.3476 11.2774 C 40.0585 11.2774 41.4413 11.8164 42.5430 13.3164 L 51.1912 25.2227 C 51.5665 25.7383 51.4024 26.3945 50.6291 26.3945 L 35.6992 26.3945 C 34.4101 26.3945 33.7773 27.3789 33.7773 28.4336 L 33.7773 28.5039 C 33.7773 31.3867 31.5273 34.4336 27.9882 34.4336 Z"/></svg>
-                        <h3 style="line-height:30px;"> Ainda não há arquivos nesta lista. <br/> Que tal começar agora? <br/> Envie o primeiro arquivo e dê o pontapé inicial!</h3>
-                        
-                        <button type="button" class="btn flex items-center justify-center w-full py-3 rounded-lg font-semibold transition mb-6 bg-#5570F1" style="box-shadow: 0px 19px 34px -20px #43BBED; background-color: #5570F1; color: white; padding: 0px 24px; height: 45px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-top: 28px;" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                            Enviar minha primeira base
-                        </button>
+                    <nav id="paginationLinks"></nav>
+                </div>
 
-
-                    </div>
-
-                @endif
             </div>
         </div>
-    </div>
     </div>
 </x-app-layout>
 
 <script>
-    function toggleMenu() {
-        const dropdownMenu = document.getElementById("dropdownMenu");
-        dropdownMenu.classList.toggle("hidden");
-    }
+    $(document).ready(function () {
+        function fetchUsers(url = "{{route('knowledge.filter')}}") {
+            $.ajax({
+                url: url,
+                method: 'GET',
+                data: $('#filterForm').serialize(),
+                success: function (response) {
+                    // Atualizar tabela
+                    let rows = '';
+                    response.data.forEach(record => {
+                        console.log(record);
+                        // Converter a data para um objeto Date
+                        const date = new Date(record.created_at);
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const year = String(date.getFullYear()).slice(-2);
+                        const formattedDate = `${day}/${month}/${year}`;
 
-    document.addEventListener("click", function (event) {
-        const dropdownMenu = document.getElementById("dropdownMenu");
-        const isClickInside = event.target.closest('.relative');
-        if (!isClickInside && !dropdownMenu.classList.contains("hidden")) {
-            dropdownMenu.classList.add("hidden");
+                        // VALIDA O STATUS DO REQUISITO
+                        if (record.status === 'não enviado') {
+                            status = '<div style="background: #FFEFCA; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #E5780C; width: auto; padding: 5px 20px; position: relative; display: inline-block;">'+record.status+'</div>';
+                            btnEdit = `<a href="knowledge/records/${record.id}" style="margin: 0px; float:left;">
+                                            <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
+                                                <img src="{{ asset('icons/file-edit 1.svg') }}" alt="Edit Icon">
+                                            </button>
+                                        </a>`;
+                        } else   if (record.status === 'processando') {
+                            status = '<div style="background: #FFEFCA; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #E5780C; width: auto; padding: 5px 20px; position: relative; display: inline-block;">'+record.status+'</div>';
+                            btnEdit = `<a href="knowledge/records/${record.id}" style="margin: 0px; float:left;">
+                                            <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
+                                                <img src="{{ asset('icons/file-edit 1.svg') }}" alt="Edit Icon">
+                                            </button>
+                                        </a>`;
+
+                        } else   if (record.status === 'concluído') {
+                            btnEdit = `<a href="knowledge/records/${record.id}" style="margin: 0px; float:left;">
+                                            <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
+                                                <img src="{{ asset('icons/eye.svg') }}" alt="Edit Icon">
+                                            </button>
+                                        </a>
+
+                                        <a href="knowledge/records/${record.id}" style="margin: 0px; float:left;">
+                                            <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
+                                                <svg width="20" height="20" viewBox="0 0 20 20" fill="#8A94AD" xmlns="http://www.w3.org/2000/svg">
+                                                <g clip-path="url(#clip0_485_4256)">
+                                                <path d="M10.7812 17.0091V7.03125H9.21872V17.0091L7.97985 15.7702C7.67476 15.4651 7.1801 15.4651 6.87499 15.7701C6.56987 16.0752 6.56986 16.5699 6.87497 16.875L9.99997 20L13.125 16.875C13.4301 16.5699 13.4301 16.0752 13.125 15.7701C12.8198 15.4651 12.3252 15.4651 12.0201 15.7702L10.7812 17.0091Z" fill="#8A94AD"/>
+                                                <path d="M16.8598 4.90602C16.2368 2.07324 13.7393 0 10.7812 0C8.49715 0 6.43188 1.24695 5.33586 3.21422C3.69297 3.53738 2.41145 4.88215 2.21379 6.57777C0.816094 7.1893 0 8.59406 0 10.1562C0 12.3129 1.59051 14.0625 3.75 14.0625H6.875C7.30647 14.0625 7.65625 13.7127 7.65625 13.2812C7.65625 12.8498 7.30647 12.5 6.875 12.5H3.75C2.50293 12.5 1.5625 11.4924 1.5625 10.1562C1.5625 9.03242 2.19453 8.145 3.17266 7.89543L3.78137 7.74012C3.75828 7.1357 3.76566 7.10984 3.75023 6.99691C3.76734 5.78777 4.6891 4.80762 5.90773 4.71008L6.35922 4.67395L6.55219 4.26418C7.32516 2.62297 8.9852 1.5625 10.7812 1.5625C13.1118 1.5625 15.0991 3.31621 15.4039 5.64176L15.4777 6.20566L16.037 6.30863C17.4729 6.57289 18.4375 7.8052 18.4375 9.375C18.4375 11.1565 17.1612 12.5 15.4688 12.5H13.125C12.6935 12.5 12.3438 12.8498 12.3438 13.2812C12.3438 13.7127 12.6935 14.0625 13.125 14.0625H15.4688C18.0096 14.0625 20 12.0035 20 9.375C20 7.26086 18.734 5.49688 16.8598 4.90602Z" fill="#8A94AD"/>
+                                                </g>
+                                               
+                                                </svg>
+                                            </button>
+                                        </a>`;
+
+                            status = '<div style="background: #25B102; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #FFF; width: auto; padding: 5px 20px; position: relative; display: inline-block;">'+record.status+'</div>';
+                        }
+
+                        // <form action="knowledge/records/${record.id}"" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este arquivo?');" style="margin: 0px; float:left;">
+                        //                     @csrf
+                        //                     @method('DELETE')
+                        //                     <button type="submit" style="width: 20px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 6px;">
+                        //                         <img src="{{ asset('icons/eye.svg') }}" alt="Eye Icon">
+                        //                     </button>
+                        //                 </form>
+                        
+                        // DADOS DE CADA LINHA
+                        rows += `
+                            <tr class="listaTabela" style="min-height:60px; max-height: 100%;">
+                                    <td style="width:30%; text-align:left; line-height: 33px;" title="${record.filename_original}">${record.name}.${record.file_extension}</td>
+                                    <td style="width:10%; line-height: 33px;"> ${record.knowledge_records_count} </td>
+                                    <td style="width:15%; line-height: 33px;">${formattedDate}</td>
+                                    <td style="width:17%;"> 
+                                        <div style="background: #E0E0E0; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #141824; width: auto; padding: 5px 20px; position: relative; display: inline-block;">${record.user.name}</div>
+                                    </td>
+                                    <td style="width:15%;">${status}</td>
+                                    <td style="width:6%; margin-left:2%;"> 
+                                        ${btnEdit}
+                                    </td>
+                                </tr>
+                        `;
+                    });
+
+                    $('#TableExcel .body_table').html(rows);
+
+                    // Atualizar links de paginação
+                    let pagination = '';
+                    if (response.links) {
+                        pagination = response.links
+                            .filter(link => !["&laquo; Anterior", "Próximo &raquo;"].includes(link.label)) // Remove "Anterior" e "Próximo"
+                            .map(link =>
+                                `<a href="${link.url}" class="pagination-link ${link.active ? 'active' : ''}">${link.label}</a>`
+                            ).join('');
+                    }
+                    $('#paginationLinks').html(pagination);
+                }
+            });
         }
+
+        // Submeter filtros
+        $('#filterForm').on('submit', function (e) {
+            e.preventDefault();
+            fetchUsers();
+        });
+
+        // Navegar na paginação
+        $(document).on('click', '#paginationLinks a', function (e) {
+            e.preventDefault();
+            const url = $(this).attr('href');
+            if (url) {
+                fetchUsers(url);
+                const div = document.getElementById("contentBody");
+                div.scrollTop = 0; 
+            }
+        });
+
+        // Carregar lista inicial
+        fetchUsers();
     });
 </script>

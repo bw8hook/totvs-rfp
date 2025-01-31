@@ -57,7 +57,7 @@
             var select = document.getElementById('totvs-erp').value;
             formData.append('totvs_erp', select);
 
-            fetch('/upload-file', {
+            fetch('/knowledge/upload', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')

@@ -16,7 +16,7 @@
 
                 <div style="padding: 2px;"></div>
                 
-                <script>
+        <script>
     let fileListGlobal = [];
 
     function addFileItem(file) {
@@ -75,7 +75,7 @@
             var select = document.getElementById('totvs-erp').value;
             formData.append('totvs_erp', select);
 
-            fetch('/upload-file', {
+            fetch('/upload-file2', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')

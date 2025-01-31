@@ -85,9 +85,10 @@ class UploadController extends Controller
 
           try {
               $import = new KnowledgeBaseImport($KnowledgeBaseDataid,   $TotvsERP);
-
               // Executa a importação
               $Excel = Excel::import($import, $filePath);
+
+              //dd($import);
 
                // Acessar a URL gerada dentro da classe de importação
               $MensagemErro = $import->Erros;
