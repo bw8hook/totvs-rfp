@@ -186,8 +186,13 @@
                                         ${record.resposta == "Não Atende" ? '<option value="Não Atende" selected>Não Atende</option>' : '<option value="Não Atende">Não Atende</option>'}
                                     </select>
                                 </td>
-                                <td style="width:12%;  display: flex; align-items: center;">${record.resposta2 ? record.resposta2 : '-'}</td>
-                                <td style="width:16%;  display: flex; align-items: center;">${record.rfp_bundles ? record.rfp_bundles.bundle : '-'}</td>
+                                <td style="width:12%;  display: flex; align-items: center;  word-wrap: break-word; white-space: normal;overflow: visible;">${record.resposta2 ? record.resposta2 : '-'}</td>
+                                <td style="width:16%;  display: flex; align-items: center;">
+                                    <select name="bundle"  style="border-radius: 8px; width:100%">
+                                        <option value="Atende" selected>ERP Protheus</option>
+                                        <option value="Atende">Winthor</option>
+                                    </select>
+                                </td>
                                 <td style="width:18%;  display: flex; align-items: center;">${record.observacao ? record.observacao : '-'}</td>
                                 <td style="width:5%;  display: flex; align-items: center;">
                                     <div class="btnEditRecord" style="margin: 0px; float:left; cursor:pointer;">
