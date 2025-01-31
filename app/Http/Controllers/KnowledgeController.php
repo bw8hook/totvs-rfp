@@ -447,24 +447,29 @@ class KnowledgeController extends Controller
             $query = KnowledgeRecord::query()->with('rfp_bundles');
             $query->where('knowledge_base_id', $KnowledgeBase->id);
 
+
             // Aplicar filtros
-            if ($request->has('filter')) {
-                foreach ($request->filter as $field => $value) {
-                    if (!empty($value)) {
-                        $query->where($field, 'like', '%' . $value . '%');
-                    }
-                }
+            if ($request->has('keyWord')) {
+                $query->where('classificacao', 'like', '%' . $request->keyWord . '%');
+                $query->orWhere('classificacao2', 'like', '%' . $request->keyWord . '%');
+                $query->orWhere('requisito', 'like', '%' . $request->keyWord . '%');
+                $query->orWhere('resposta', 'like', '%' . $request->keyWord . '%');
+                $query->orWhere('resposta2', 'like', '%' . $request->keyWord . '%');
+                $query->orWhere('observacao', 'like', '%' . $request->keyWord . '%');
             }
+
+
+           
 
             // Aplicar ordenação
-            if ($request->has('sort_by') && $request->has('sort_order')) {
-                $sortBy = $request->sort_by;
-                $sortOrder = $request->sort_order;
+            // if ($request->has('classificacao') && $request->has('product')) {
+            //     $sortBy = $request->sort_by;
+            //     $sortOrder = $request->sort_order;
 
-                if (in_array($sortBy, ['name', 'id', 'gestor','email', 'account_type', 'status', 'created_at']) && in_array($sortOrder, ['asc', 'desc'])) {
-                    $query->orderBy($sortBy, $sortOrder);
-                }
-            }
+            //     if (in_array($sortBy, ['name', 'id', 'gestor','email', 'account_type', 'status', 'created_at']) && in_array($sortOrder, ['asc', 'desc'])) {
+            //         $query->orderBy($sortBy, $sortOrder);
+            //     }
+            // }
 
             // Paginação
             $records = $query->paginate(40);

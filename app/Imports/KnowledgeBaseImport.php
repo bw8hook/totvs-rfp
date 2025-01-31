@@ -27,7 +27,7 @@ use Maatwebsite\Excel\Events\AfterImport;
 
 use Exception;
 
-class KnowledgeBaseImport implements ToCollection, WithChunkReading, WithStartRow, WithEvents, WithMultipleSheets
+class KnowledgeBaseImport implements ToCollection, WithStartRow, WithEvents, WithMultipleSheets
 {
     use RegistersEventListeners;
     use Importable;
@@ -139,11 +139,4 @@ class KnowledgeBaseImport implements ToCollection, WithChunkReading, WithStartRo
     {
 
     }
-
-
-    public function chunkSize(): int
-    {
-        return 5000; // Processa 100 linhas por vez
-    }
-
 }
