@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Arquivos'),
+    'name' => env('APP_NAME', 'TOTVS SMART RFP'),
 
     /*
     |--------------------------------------------------------------------------

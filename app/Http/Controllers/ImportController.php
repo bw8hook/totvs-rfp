@@ -25,6 +25,7 @@ class ImportController extends Controller
             ->select('knowledge_records.bundle_id', 'rfp_bundles.bundle',  DB::raw('COUNT(*) as total'))
             ->where('knowledge_records.knowledge_base_id', $id) // Filtra pelo ID do usuário
             ->groupBy('knowledge_records.bundle_id') // Agrupa pelo ID do bundle
+            ->orderBy('total', 'asc')
             ->get();
         
             $CountResultado = 0;

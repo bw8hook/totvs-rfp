@@ -6,13 +6,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-use App\Models\UsersPosition;
+use App\Models\UsersDepartaments;
 
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, HasApiTokens, HasFactory, Notifiable; // Adicione o HasApiTokens aqui
     
     /**
      * The attributes that are mass assignable.
@@ -20,12 +21,15 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'profile_picture',
         'name',
         'email',
+        'idtotvs',
         'password',
-        'user_position',
+        'departament_id',
         'status',
-        'account_type',
+        'corporate_phone',
+        'user_role_id',
     ];
 
     /**
@@ -51,8 +55,28 @@ class User extends Authenticatable
         ];
     }
 
-    public function userPosition(){
-        return $this->hasOne(UsersPosition::class, 'user_position_id', 'user_position');
+    public function toArray()
+    {
+        $data = parent::toArray();
+    
+        // Incluir o relacionamento 'role'
+        $data['role'] = $this->role ? $this->role->only(['id', 'name']) : null;
+    
+        return $data;
     }
 
+    
+     // Relacionamento com UsersDepartaments
+    public function departament(){
+        return $this->belongsTo(UsersDepartaments::class, 'departament_id');
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(UserRole::class, 'user_role_id', 'id');
+    }
+
+    public function userPosition(){
+        return $this->hasOne(UsersDepartaments::class, 'user_position_id', 'user_position');
+    }
 }

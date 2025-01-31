@@ -4,17 +4,50 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\UsersPosition;
+use App\Models\UsersDepartaments;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
+
 class UserProjectController extends Controller
 {
+
+    public function filter(Request $request)
+    {
+        $query = User::query()->with('departament');
+
+        // Aplicar filtros
+        if ($request->has('filter')) {
+            foreach ($request->filter as $field => $value) {
+                if (!empty($value)) {
+                    $query->where($field, 'like', '%' . $value . '%');
+                }
+            }
+        }
+
+        // Aplicar ordenação
+        if ($request->has('sort_by') && $request->has('sort_order')) {
+            $sortBy = $request->sort_by;
+            $sortOrder = $request->sort_order;
+
+            if (in_array($sortBy, ['name', 'id', 'gestor','email', 'account_type', 'status', 'created_at']) && in_array($sortOrder, ['asc', 'desc'])) {
+                $query->orderBy($sortBy, $sortOrder);
+            }
+        }
+
+        // Paginação
+        $users = $query->paginate(40);
+        
+        // Retornar dados em JSON
+        return response()->json($users);
+    }
+
 
     public function listUsers(Request $request): View
     {
@@ -33,6 +66,7 @@ class UserProjectController extends Controller
                 $ListUser['perfil'] = $User->role;
                 $ListUser['position'] = $position;
                 $ListUser['account_type'] = $User->account_type;
+                $ListUser['updated_at'] = $User->updated_at;
                 $ListUser['created_at'] = date("d/m/Y", strtotime($User->created_at));
                 $ListUsers[] = $ListUser;
           }
@@ -56,7 +90,7 @@ class UserProjectController extends Controller
     public function create(): View
     {
         
-        $UsersPosition = UsersPosition::all();
+        $UsersPosition = UsersDepartaments::all();
         $ListPositions = array();
 
         //$AgentId = Auth::user()->id;
@@ -81,17 +115,23 @@ class UserProjectController extends Controller
     }
 
 
-      /**
+    /**
      * Display the registration view.
      */
     public function edit($id): View
     {
+        $userDepartaments = UsersDepartaments::all();
 
-        if(Auth::user()->account_type == "admin"){
+        if(Auth::user()->role->role_priority >= 90 || Auth::user()->id == $id){
             $user = User::findOrFail($id);
 
             if ($user) {
-                return view('usersProject.edit', compact('user'));
+                $data = array(
+                    'user' => $user,
+                    'userDepartaments' => $userDepartaments,
+                );
+
+                return view('usersProject.edit')->with($data);
                 //return view('usersProject.edit')->with($user);
             } else {
                 return redirect()->back()->with('error', 'Usuário não encontrado.');
@@ -99,8 +139,85 @@ class UserProjectController extends Controller
         }else{
             return redirect()->back()->with('error', 'Usuário sem permissão para editar.');
         }
-
     }
+    
+
+        /**
+     * Handle an incoming registration request.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function update(Request $request): RedirectResponse
+    {
+        $id= $request->id;
+
+        // Encontre o registro existente
+        $user = User::findOrFail($id);
+
+        // Valide os dados do formulário
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('users')->ignore($user->id),
+            ]
+        ]);
+
+        // Validação da imagem
+        $request->validate([
+            'profile_picture' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        // Verifica se o arquivo foi enviado
+        if ($request->hasFile('profile_picture')) {
+            $image = $request->file('profile_picture');
+            $filename = time() . '.' . $image->getClientOriginalExtension();
+            $path = $image->storeAs('public/uploads/profile', $filename);
+            $relativePath = str_replace('public/', '', $path);
+
+            $userUpdate = ([
+                'profile_picture' => $relativePath,
+                'name' => $request->name,
+                'email' => $request->email,
+                'idtotvs' => $request->idtotvs,
+                'departament' => $request->departament[0],
+                //'password' => Hash::make($request->password),
+                'status' => "ativo",
+                'account_type' => $request->account_type[0],
+            ]);
+        }else{
+            $userUpdate = ([
+                'profile_picture' => null,
+                'name' => $request->name,
+                'email' => $request->email,
+                'idtotvs' => $request->idtotvs,
+                'departament' => $request->departament[0],
+                //'password' => Hash::make($request->password),
+                'status' => "ativo",
+                'account_type' => $request->account_type[0],
+            ]);
+        }
+
+
+        
+
+        // Atualize os dados do registro
+        $user->update($userUpdate);
+       
+        // event(new Registered($user));
+        // Auth::login($user);
+
+        if($user){
+            return redirect(route('listUsers', absolute: false))->with('success', 'Usuário Editado com sucesso.');
+        } else {
+            return redirect()->back()->with('error', 'Erro ao criar usuário.');
+        }
+        
+       
+    }
+
 
       /**
      * Display the registration view.
@@ -108,7 +225,7 @@ class UserProjectController extends Controller
     public function remove($id)
     {
 
-        if(Auth::user()->account_type == "admin"){
+        if(Auth::user()->role->role_priority >= 90){
             // Encontrar o usuário pelo ID
             $user = User::find($id);
 
