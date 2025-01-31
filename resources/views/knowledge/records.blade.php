@@ -10,7 +10,7 @@
                     </div>
                     <div class="relative block items-center" style="padding-bottom: 12px; padding-left:7px;">        
                         <div class="info_details" style="color:#3A57E8"> {{$KnowledgeBase->filename_original}} </div>
-                        <div class="info_details"> Requisitos: <span>0</span></div>
+                        <div class="info_details"> Requisitos:<span> {{$CountCountRecordsResultado}}</span></div>
                     </div>
                 </div>
 
@@ -44,15 +44,16 @@
                         <h4>Verifique cada item enviado. Para facilitar a sua escolha de edição de requisitos, escolha os filtros abaixo através de palavras-chave, classificação e linha de produto. Ao finalizar a sua edição, conclua a operação com o botão <b>“Concluir e enviar” ou salve para continuar depois.</b></h4>
                     </div>
                         
-                    <form>
+                    <form id="filterForm">
+                        @csrf    
                         <div class="inputField">
                             <label>Palavra Chave:</label>
-                            <input type="text" id="fname" name="fname">
+                            <input type="text" id="keyWord" name="keyWord">
                         </div>
 
-                        <div class="inputField">
+                        <div class="inputField" style="width: 300px;">
                             <label>Classificação 1:</label>
-                            <select name="sort_by">
+                            <select name="classificacao1">
                                 <option value="null" selected>Selecione</option>
                                 @foreach($ListClassificacao as $Classificacao)
                                     <option value="{{$Classificacao}}">{{$Classificacao}}</option>
@@ -60,7 +61,7 @@
                             </select>
                         </div>
                         
-                        <div class="inputField">
+                        <!-- <div class="inputField" style="width: 300px;">
                             <label>Classificação 2:</label>
                             <select name="sort_by">
                                 <option value="null" selected>Selecione</opt>
@@ -68,11 +69,11 @@
                                     <option value="{{$Classificacao2}}">{{$Classificacao2}}</option>
                                 @endforeach
                             </select>
-                        </div>
+                        </div> -->
 
                         <div class="inputField">
                             <label>Selecione o Produto:</label>
-                            <select name="sort_by">
+                            <select name="product">
                                 <option value="null" selected>Selecione</opt>
                                     @foreach($ListProdutos as $Produtos)
                                     @if ($Produtos->bundle_id == 0)
@@ -85,7 +86,7 @@
                             </select>
                         </div>
 
-                        <button type="submit">Enviar</button>
+                        <button type="submit">FILTRAR</button>
                     </form> 
                 </div>
                
@@ -158,6 +159,8 @@
 
 <script>
     $(document).ready(function () {
+        $(".side_menu_big").addClass("menu_hidden").removeClass("menu_visible");
+        $(".side_menu_small").addClass("menu_visible").removeClass("menu_hidden");
 
         function fetchUsers(url = "{{ route('knowledge.recordsFilter', $idKnowledgeBase) }}", append = false) {
             $.ajax({
@@ -171,7 +174,7 @@
                         console.log(record);
                         rows += `
                             <tr class="listaTabela ${record.rfp_bundles ? '' : 'highlighted_error'}" data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
-                                <td style="width:2%; display: flex; align-items: center;"><input type="checkbox" id="scales" name="scales" /></td>
+                                <td style="width:5%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
                                 <td style="width:10%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.classificacao}</td>
                                 <td style="width:10%; display: flex; align-items: center; word-wrap: break-word; white-space: normal; overflow: visible; text-align: left;">${record.classificacao2}</td>
                                 <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;">${record.requisito}</td>
