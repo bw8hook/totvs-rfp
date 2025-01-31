@@ -410,7 +410,7 @@ table {
                         font-size: 14px;
                         letter-spacing: 1px;
                         background-color: #5570F1;
-                        margin-top: 33px;
+                        margin-top: 41px;
                     }
                    
                 .info_details{
@@ -466,7 +466,7 @@ table {
             }
             
             #filterForm select{
-                padding: 8px;
+                padding: 14px;
                 min-width: 140px;
                 border: 2px solid #CBD0DD;
                 font-size: 14px;

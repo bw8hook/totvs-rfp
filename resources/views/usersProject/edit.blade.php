@@ -23,8 +23,6 @@
                     </div>
                 </div>
                 
-
-
                 <!-- Name -->
                 <div>
                     <x-input-label for="name" :value="__('Nome')" />
