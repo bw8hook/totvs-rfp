@@ -8,8 +8,7 @@
     <div class="flex flex-col">
 
         <div class="w-full max-w-md mx-auto justify-center items-center flex flex-column" style="width: 85vw; min-height: 73vh; max-width: 90%;">
-
-                <x-title-component :showButton="false"> Dados da RFP Respondida </x-title-component>
+                <x-title-component :showButton="false" componentType="edit" titleDescription="Confirme as informações:">Dados da RFP Respondida</x-title-component>
 
                 <div style="padding: 2px;"></div>
 
