@@ -8,6 +8,10 @@ use App\Models\KnowledgeRecord;
 use App\Models\KnowledgeError;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+// IMPORTAÇÕES DO EXCEL
+use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
@@ -17,27 +21,40 @@ use Maatwebsite\Excel\Concerns\WithStartRow;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\RegistersEventListeners;
-use Illuminate\Support\Facades\Cache;
-use Exception;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use Maatwebsite\Excel\Events\BeforeImport;
-use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Events\AfterImport;
 
+use Exception;
 
-class KnowledgeBaseImport implements ToCollection, WithChunkReading, WithStartRow, WithEvents
+class KnowledgeBaseImport implements ToCollection, WithChunkReading, WithStartRow, WithEvents, WithMultipleSheets
 {
     use RegistersEventListeners;
+    use Importable;
 
     protected $id;
     protected $idpacote; // Variável para armazenar o ID
     public $Erros = [];
     private $ListBundles = [];
+    public $updatedRows = [];
+    public $erroRows = [];
+    
 
-    public function __construct($id, $idpacote)
+    public function __construct($id)
     {
-        $this->id = $id;
-        $this->idpacote = $idpacote; // Define o ID recebido no construtor
+         $this->id = $id;
+        // $this->idpacote = $idpacote; // Define o ID recebido no construtor
     }
+
+
+    // Validação apenas da primeira aba
+    public function sheets(): array
+    {
+        return [
+            0 => $this // Apenas a primeira aba será processada
+        ];
+    }
+
 
     /**
      * Executa antes da importação e popula o array.
@@ -59,59 +76,57 @@ class KnowledgeBaseImport implements ToCollection, WithChunkReading, WithStartRo
         $rows = $rows->skip(1);
 
         // Busca em Todas as linhas
-        foreach ($rows as $index => $row) {
-            // Caso tenha o Módulo na planilha busca no BD para ver se está correto.
-            if(isset($row[1])){
-                if(isset($row[7]) && $this->idpacote == 0){
-                    $nome = $row[7]; // Substitua pelo índice correto do nome na linha
-                    $id = $this->ListBundles[$nome] ?? null;
-
-                    if (!$id) {
-                        $DadosErros = array();
-                        $DadosErros['row'] = $row;
-                        if($rows->get($index-1)){
-                            $DadosErros['lastInserted'] = $rows->get($index-1);
-                        }else{
-                            $DadosErros['lastInserted'] = null;
-                        }
-                        
-                        $DadosErrosTotal = array();
-                        $DadosErrosTotal['error_message'] = 'Erro ao processar o arquivo - Não encontramos o "'.$row[7].'" na nossa lista de Pacotes';
-                        $DadosErrosTotal['error_data'] = $DadosErros;
-                        
-                        throw new Exception(json_encode($DadosErrosTotal));
-                    }
-
-                    $KnowledgeRecord = new KnowledgeRecord();
-                    $KnowledgeRecord->bundle_id = $id;
-                    $KnowledgeRecord->knowledge_base_id = $this->id;
-                    $KnowledgeRecord->user_id = Auth::id();
-                    $KnowledgeRecord->classificacao = $row[0];
-                    $KnowledgeRecord->classificacao2 = $row[1];
-                    $KnowledgeRecord->requisito = $row[2];
-                    $KnowledgeRecord->resposta = $row[3];
-                    $KnowledgeRecord->resposta2 = $row[4];
-                    $KnowledgeRecord->importancia = $row[5];
-                    $KnowledgeRecord->save();
-                }else if($this->idpacote > 0){
-                    $KnowledgeRecord = new KnowledgeRecord();
-                    $KnowledgeRecord->bundle_id = $this->idpacote;
-                    $KnowledgeRecord->knowledge_base_id = $this->id;
-                    $KnowledgeRecord->user_id = Auth::id();
-                    $KnowledgeRecord->classificacao = $row[0] ?? null;
-                    $KnowledgeRecord->classificacao2 = $row[1] ?? null;
-                    $KnowledgeRecord->requisito = $row[2] ?? null;
-                    $KnowledgeRecord->resposta = $row[3] ?? null;
-                    $KnowledgeRecord->resposta2 = $row[4] ?? null;
-                    $KnowledgeRecord->importancia = $row[5] ?? null;
-
-                    $KnowledgeRecord->save();
+        foreach ($rows as $index => $row) {  
+            // Busca se o PRODUTO enviado está cadastrado na lista
+            $bundleIDFound = $this->ListBundles[$row[7]] ?? null;
+           
+            // Salva o registro
+            $KnowledgeRecord = new KnowledgeRecord();
+                // Dados de configuração
+                $KnowledgeRecord->knowledge_base_id = $this->id;
+                $KnowledgeRecord->user_id = Auth::id();
+                // Valida o PRODUTO
+                if (!$bundleIDFound) {
+                    $KnowledgeRecord->bundle_id = 0;      
                 }else{
-                    break;
+                    $KnowledgeRecord->bundle_id = $bundleIDFound;
                 }
+                // Dados do arquivo
+                $KnowledgeRecord->classificacao = $row[0];
+                $KnowledgeRecord->classificacao2 = $row[1];
+                $KnowledgeRecord->requisito = $row[2];
+                $KnowledgeRecord->resposta = $row[3];
+                $KnowledgeRecord->resposta2 = $row[4];
+                $KnowledgeRecord->status = "aguardando";
+
+            // Tenta salvar
+            if ($KnowledgeRecord->save()) {
+                //$this->updatedRows[$index]['final'] = $row[2];
             }else{
-                break;
-            }
+                dd($row);        
+            }   
+    
+            // }else{
+            //     $DadosErros = array();
+            //     $DadosErros['row'] = $row;
+            //     if($rows->get($index-1)){
+            //         $DadosErros['lastInserted'] = $rows->get($index-1);
+            //     }else{
+            //         $DadosErros['lastInserted'] = null;
+            //     }
+
+            //     if(empty($row[7])){
+            //         $MsgErro = 'Erro ao processar o arquivo - LINHA/PRODUTO não está preenchida';
+            //     }else{
+            //         $MsgErro = 'Erro ao processar o arquivo - Não encontramos o "'.$row[7].'" na nossa lista de Pacotes';
+            //     }
+                
+            //     $DadosErrosTotal = array();
+            //     $DadosErrosTotal['error_message'] = $MsgErro;
+            //     $DadosErrosTotal['error_data'] = $DadosErros;
+                
+            //     throw new Exception(json_encode($DadosErrosTotal));
+            // }
         }
     }
 
@@ -124,7 +139,7 @@ class KnowledgeBaseImport implements ToCollection, WithChunkReading, WithStartRo
 
     public function chunkSize(): int
     {
-        return 100; // Processa 100 linhas por vez
+        return 1000; // Processa 100 linhas por vez
     }
 
 }

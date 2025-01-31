@@ -8,16 +8,21 @@ use Illuminate\View\Component;
 
 class titleComponent extends Component
 {
-
     public $textButton;
     public $urlButton;
     public $showButton;
+    public $componentType;
+
+    public $titleDescription;
+    
 
     /**
      * Create a new component instance.
      */
-    public function __construct($showButton = false, $textButton = '', $urlButton = "")
-    {
+    public function __construct($componentType = "list", $titleDescription = "", $showButton = false, $textButton = '', $urlButton = "")
+    {    
+        $this->titleDescription = $titleDescription; 
+        $this->componentType = $componentType;
         $this->showButton = $showButton;
         $this->textButton = $textButton;
         $this->urlButton = $urlButton;        
@@ -28,6 +33,8 @@ class titleComponent extends Component
      */
     public function render(): View|Closure|string
     {
+        //dd($this->ComponentType);
+
         return view('components.title-component');
     }
 }

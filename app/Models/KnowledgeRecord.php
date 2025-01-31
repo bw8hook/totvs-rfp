@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class KnowledgeRecord extends Model
 {
     protected $fillable = [
+        'user_id',
         'bundle_id',
         'classificacao',
         'classificacao2',
@@ -14,6 +15,11 @@ class KnowledgeRecord extends Model
         'requisito',
         'resposta',
         'resposta2',
-        'importancia',
+        'status',
     ];
+
+    public function rfp_bundles()
+    {
+        return $this->belongsTo(RfpBundle::class, 'bundle_id', 'bundle_id'); // Relacionamento com a tabela RfpBundle
+    }
 }
