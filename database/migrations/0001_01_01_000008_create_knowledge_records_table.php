@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id('id_record');
             $table->bigInteger('bundle_id')->unsigned();
             $table->bigInteger('user_id')->unsigned();
-            $table->bigInteger('knowledge_bas')->unsigned();
-            $table->string('spreadsheet_li', 255);
+            $table->bigInteger('knowledge_base_id')->unsigned();
+            $table->string('spreadsheet_line', 255);
             $table->string('classificacao', 255);
             $table->string('classificacao2', 255);
             $table->longText('requisito');
