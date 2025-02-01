@@ -1,5 +1,5 @@
 ---
-name: test
+name: deploy app
 
 on:
   workflow_call:
@@ -20,55 +20,63 @@ env:
   HOSTNAME: totvs.bw8.tech
   SSH_AUTH_SOCK: /tmp/ssh_agent.sock
   DOCKER_IMAGE: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
+  APP_PATH: /apps/totvs-rfp
 
 jobs:
-  #docker-image:
-  #uses: ./.github/workflows/build-and-publish-image.yaml
-  #assets:
-  #  uses: ./.github/workflows/build-and-publish-assets.yaml
+  docker-image:
+    uses: ./.github/workflows/build-and-publish-image.yaml
 
   deploy-app:
     runs-on: ubuntu-latest
-    #needs:
-    #  - docker-image
-    #  - assets
+    needs:
+      - docker-image
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: code checkout
+        uses: actions/checkout@v4
 
-      # - name: Download assets artifacts
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: build-assets
-      #     path: ./public/build
-      #
-      # - name: Download icons artifacts
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: build-icons
-      #     path: ./public/icons
-      #
       - name: Setup SSH key
         run: |
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-add - <<< "${{ secrets.BW8_DEV_SSH_KEY }}"
           ssh-keyscan ${{ env.HOSTNAME }}
 
-    - name: Deploy assets
-      run: |
-        ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'sudo mkdir -p /apps/dev-totvs-rfp/'
-        scp -o "StrictHostKeyChecking=no" ./docker-compose.yaml  "${{ env.USERNAME }}@${{ env.HOSTNAME }}":/apps/dev-totvs-rfp/
-        scp -o "StrictHostKeyChecking=no" ./.env  "${{ env.USERNAME }}@${{ env.HOSTNAME }}":/apps/dev-totvs-rfp/
+      - name: Prepare .env file
+        run: |
+          cp .env.pre-production .env
+          echo "APP_ENV=production" >> .env
+          echo "APP_URL=https://${{ env.HOSTNAME }}" >> .env
+          echo "APP_KEY=${{ secrets.DEV_APP_KEY }}" >> .env
+          echo "DB_HOST=${{ secrets.DEV_DB_HOST }}" >> .env
+          echo "DB_DATABASE=${{ secrets.DEV_DB_DATABASE }}" >> .env
+          echo "DB_USERNAME=${{ secrets.DEV_DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DEV_DB_PASSWORD }}" >> .env
+          echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.TOTVS_RFP_AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.TOTVS_RFP_AWS_SECRET_ACCESS_KEY }}" >> .env
 
-    - name: Pull latest image
-      run: |
-        ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'docker pull ${{ env.DOCKER_IMAGE }}'
+      - name: Deploy assets
+        env:
+          SSH_CONN: "${{ env.USERNAME }}@${{ env.HOSTNAME }}"
+        run: |
+          ssh "${{ env.SSH_CONN }}" 'sudo mkdir -p ${{ env.APP_PATH }}'
+          scp ./docker-compose.yaml  "${{ SSH_CONN }}":${{ env.APP_PATH }}
+          scp ./.env  "${{ env.SSH_CONN }}":${{ env.APP_PATH }}
 
-    - name: Stop running container
-      run: |
-        ssh -o "StrictHostKeyChecking=no" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'cd /apps/dev-totvs-rfp/ ; docker compose stop'
+      - name: Pull latest image
+        env:
+          SSH_CONN: "${{ env.USERNAME }}@${{ env.HOSTNAME }}"
+        run: |
+          ssh "${{ SSH_CONN }}" 'docker pull ${{ env.DOCKER_IMAGE }}'
 
-    - name: Start new container
-      run: |
-        ssh  -o "StrictHostKeyChecking=no" -o "ServerAliveInterval=60" "${{ env.USERNAME }}@${{ env.HOSTNAME }}" 'cd /apps/dev-totvs-rfp/ ; docker compose up -d  &>/dev/null  & disown'
+      - name: Stop running container
+        env:
+          SSH_CONN: "${{ env.USERNAME }}@${{ env.HOSTNAME }}"
+        run: |
+          ssh "${{ SSH_CONN }}" 'cd ${{ env.APP_PATH }} ; docker compose stop'
+
+      - name: Start new container
+        env:
+          SSH_CONN: "${{ env.USERNAME }}@${{ env.HOSTNAME }}"
+        run: |
+          ssh  -o "ServerAliveInterval=60" "${{ env.SSH_CONN }}" 'cd ${{ env.APP_PATH }} ; docker compose up -d  &>/dev/null  & disown'

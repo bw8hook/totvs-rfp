@@ -1,13 +1,15 @@
 ---
 services:
   migrate:
-    image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
-    container_name: migrate_totvs_rfp
+    #image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
+    image: dev/totvs-rfp:latest
+    container_name: migrate-totvs-rfp
     env_file: ".env"
     entrypoint: php artisan migrate --force
 
   app:
-    image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
+    #image: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
+    image: dev/totvs-rfp
     container_name: totvs-rfp
     ports:
       - "8080:8080"
