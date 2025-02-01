@@ -60,20 +60,20 @@ jobs:
           SSH_CONN: "${{ env.USERNAME }}@${{ env.HOSTNAME }}"
         run: |
           ssh "${{ env.SSH_CONN }}" 'sudo mkdir -p ${{ env.APP_PATH }}'
-          scp ./docker-compose.yaml  "${{ SSH_CONN }}":${{ env.APP_PATH }}
+          scp ./docker-compose.yaml  "${{ env.SSH_CONN }}":${{ env.APP_PATH }}
           scp ./.env  "${{ env.SSH_CONN }}":${{ env.APP_PATH }}
 
       - name: Pull latest image
         env:
           SSH_CONN: "${{ env.USERNAME }}@${{ env.HOSTNAME }}"
         run: |
-          ssh "${{ SSH_CONN }}" 'docker pull ${{ env.DOCKER_IMAGE }}'
+          ssh "${{ env.SSH_CONN }}" 'docker pull ${{ env.DOCKER_IMAGE }}'
 
       - name: Stop running container
         env:
           SSH_CONN: "${{ env.USERNAME }}@${{ env.HOSTNAME }}"
         run: |
-          ssh "${{ SSH_CONN }}" 'cd ${{ env.APP_PATH }} ; docker compose stop'
+          ssh "${{ env.SSH_CONN }}" 'cd ${{ env.APP_PATH }} ; docker compose stop'
 
       - name: Start new container
         env:
