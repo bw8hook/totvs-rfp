@@ -1,5 +1,5 @@
 ---
-name: deploy app
+name: Deploy Totvs Application
 
 on:
   workflow_call:
@@ -16,8 +16,8 @@ permissions:
   id-token: write
 
 env:
-  USERNAME: root
-  HOSTNAME: totvs.bw8.tech
+  SSH_CONN: "root@totvs.bw8.tech"
+  SSH_OPTS: "-o StrictHostKeyChecking=no"
   SSH_AUTH_SOCK: /tmp/ssh_agent.sock
   DOCKER_IMAGE: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
   APP_PATH: /apps/totvs-rfp
@@ -39,7 +39,8 @@ jobs:
         run: |
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-add - <<< "${{ secrets.BW8_DEV_SSH_KEY }}"
-          ssh-keyscan ${{ env.HOSTNAME }}
+          HOST=$(echo "${{ env.SSH_CONN }}" | cut -d'@' -f2)
+          ssh-keyscan $HOST
 
       - name: Prepare .env file
         run: |
@@ -56,27 +57,19 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.TOTVS_RFP_AWS_SECRET_ACCESS_KEY }}" >> .env
 
       - name: Deploy assets
-        env:
-          SSH_CONN: "${{ env.USERNAME }}@${{ env.HOSTNAME }}"
         run: |
-          ssh -o "StrictHostKeyChecking=no" "${{ env.SSH_CONN }}" 'mkdir -p ${{ env.APP_PATH }}'
-          scp -o "StrictHostKeyChecking=no" ./docker-compose.yaml  "${{ env.SSH_CONN }}":${{ env.APP_PATH }}
-          scp -o "StrictHostKeyChecking=no" ./.env  "${{ env.SSH_CONN }}":${{ env.APP_PATH }}
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_CONN }} 'mkdir -p ${{ env.APP_PATH }}'
+          scp ${{ env.SSH_OPTS }} ./docker-compose.yaml  ${{ env.SSH_CONN }}:${{ env.APP_PATH }}
+          scp ${{ env.SSH_OPTS }} ./.env  ${{ env.SSH_CONN }}:${{ env.APP_PATH }}
 
       - name: Pull latest image
-        env:
-          SSH_CONN: "${{ env.USERNAME }}@${{ env.HOSTNAME }}"
         run: |
-          ssh -o "StrictHostKeyChecking=no" "${{ env.SSH_CONN }}" 'docker pull ${{ env.DOCKER_IMAGE }}'
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_CONN }} 'docker pull ${{ env.DOCKER_IMAGE }}'
 
       - name: Stop running container
-        env:
-          SSH_CONN: "${{ env.USERNAME }}@${{ env.HOSTNAME }}"
         run: |
-          ssh -o "StrictHostKeyChecking=no" "${{ env.SSH_CONN }}" 'cd ${{ env.APP_PATH }} ; docker compose stop'
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_CONN }} 'cd ${{ env.APP_PATH }} ; docker compose stop'
 
       - name: Start new container
-        env:
-          SSH_CONN: "${{ env.USERNAME }}@${{ env.HOSTNAME }}"
         run: |
-          ssh -o "StrictHostKeyChecking=no" -o "ServerAliveInterval=60" "${{ env.SSH_CONN }}" 'cd ${{ env.APP_PATH }} ; docker compose up -d  &>/dev/null  & disown'
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_CONN }} 'cd ${{ env.APP_PATH }} ; docker compose up -d &>/dev/null & disown'
