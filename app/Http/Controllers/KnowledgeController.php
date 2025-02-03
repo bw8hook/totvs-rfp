@@ -230,15 +230,40 @@ class KnowledgeController extends Controller
                 return response()->json([
                     'message' => 'Data Inválida!',
                 ], 422);
-            }
-
-
-    
-            
-
-                
+            }                
         }
     }
+
+
+    public function updateRecordDetails(Request $request, string $id)
+    { 
+        // Valida a Permissão do usuário
+        if(Auth::user()->role->role_priority >= 90){     
+            $KnowledgeRecords = KnowledgeRecord::findOrFail($id);
+            if($request->resposta){
+                $KnowledgeRecords->resposta = $request->resposta;
+            }
+
+            if($request->bundle){
+                $KnowledgeRecords->bundle_id = $request->bundle;
+            }
+            
+               
+            try{
+                $KnowledgeRecords->save();
+                // Retornar dados em JSON
+                return response()->json("success");    
+            } catch (\Exception $e) {
+                $CatchError = json_decode($e->getMessage());
+
+                return response()->json([
+                     'message' => 'Erro ao salva!',
+                ], 422);
+            }              
+        }
+    }
+
+
 
 
 
@@ -408,8 +433,10 @@ class KnowledgeController extends Controller
         if($KnowledgeBase->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){     
             
             $ListClassificacao = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('classificacao')->pluck('classificacao');
-            
             $ListClassificacao2 = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('classificacao2')->pluck('classificacao2');
+            
+            $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
+
             $ListProdutos = DB::table('knowledge_records')
             ->leftJoin('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id')
             ->where('knowledge_records.knowledge_base_id', $KnowledgeBase->id)
@@ -424,7 +451,6 @@ class KnowledgeController extends Controller
                 $CountRecords++;
             }
 
-        
             $data = array(
                 'title' => 'Todos Arquivos',
                 'idKnowledgeBase' => $id,
@@ -432,6 +458,7 @@ class KnowledgeController extends Controller
                 'ListClassificacao' => $ListClassificacao,
                 'ListClassificacao2' => $ListClassificacao2,
                 'ListProdutos' => $ListProdutos,
+                'AllBundles' => $AllBundles,
                 'CountCountRecordsResultado' => $CountRecords,
             );
         
@@ -475,6 +502,75 @@ class KnowledgeController extends Controller
             //return response()->json($records);
         }
     }
+
+
+
+
+    /**
+    * Valida as Informações Gerais de um REGISTRO ESPECIFICO
+    */
+    public function recordsErrors(string $id)
+    {
+        $KnowledgeBase = KnowledgeBase::findOrFail($id);
+        if($KnowledgeBase->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){     
+            
+            $ListClassificacao = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('classificacao')->pluck('classificacao');
+            
+            $ListClassificacao2 = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('classificacao2')->pluck('classificacao2');
+            $ListProdutos = DB::table('knowledge_records')
+            ->leftJoin('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id')
+            ->where('knowledge_records.knowledge_base_id', $KnowledgeBase->id)
+            ->groupBy('knowledge_records.bundle_id')
+            ->select('knowledge_records.bundle_id', 'rfp_bundles.bundle')
+            ->get();
+
+            $Records = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->get();
+            $CountRecords = 0;
+
+            foreach ($Records as $key => $Record) {
+                $CountRecords++;
+            }
+
+            $data = array(
+                'title' => 'Todos Arquivos',
+                'idKnowledgeBase' => $id,
+                'KnowledgeBase' => $KnowledgeBase,
+                'ListClassificacao' => $ListClassificacao,
+                'ListClassificacao2' => $ListClassificacao2,
+                'ListProdutos' => $ListProdutos,
+                'CountCountRecordsResultado' => $CountRecords,
+            );
+        
+            return view('knowledge.recordsErrors')->with($data);
+        }
+    }
+
+
+
+    public function recordsFilterError(Request $request, string $id)
+    { 
+        if(Auth::user()->role->role_priority >= 90){       
+            $KnowledgeBase = KnowledgeBase::findOrFail($id);
+            $query = KnowledgeRecord::query()->with('rfp_bundles');
+
+            // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
+            $query->where('knowledge_base_id', '=', $KnowledgeBase->id);
+
+            $query->whereNull('bundle_id')->orWhere('bundle_id', ''); // Para strings vazias
+                        
+            // Paginação
+            $records = $query->paginate(40);
+
+            // Retornar dados em JSON
+            return response()->json([
+                'data' => $records->items(),
+                'next_page_url' => $records->nextPageUrl(),
+            ]);
+
+            //return response()->json($records);
+        }
+    }
+
 
 
 

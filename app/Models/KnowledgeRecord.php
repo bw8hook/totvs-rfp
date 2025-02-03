@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class KnowledgeRecord extends Model
 {
+    protected $primaryKey = 'id_record'; // Define a chave primária
     protected $fillable = [
         'user_id',
         'bundle_id',

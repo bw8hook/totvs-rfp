@@ -38,55 +38,23 @@
 
             <div id="BlocoLista">
 
-                <div class="bloco_info_filter_records">
+                <div class="bloco_info_filter_records" style="background:#D2E4FF;">
                     <div>
-                        <h2>Edição e Envio de Requisitos</h2>
-                        <h4>Verifique cada item enviado. Para facilitar a sua escolha de edição de requisitos, escolha os filtros abaixo através de palavras-chave, classificação e linha de produto. Ao finalizar a sua edição, conclua a operação com o botão <b>“Concluir e enviar” ou salve para continuar depois.</b></h4>
+                        <h2 style="color:#3A57E8;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style=" float: left; margin-right: 9px;">
+                            <g clip-path="url(#clip0_332_2687)">
+                                <path d="M24 15.8V22.2C24 22.642 23.642 23 23.2 23C22.758 23 22.4 22.642 22.4 22.2V21H21C19.895 21 19 20.105 19 19V15.8C19 15.358 19.358 15 19.8 15C20.242 15 20.6 15.358 20.6 15.8V19.2C20.6 19.311 20.69 19.4 20.8 19.4H22.401V15.799C22.401 15.357 22.759 14.999 23.201 14.999C23.643 14.999 24.001 15.357 24.001 15.799L24 15.8ZM11.2 15C10.758 15 10.4 15.358 10.4 15.8V19.401H8.799C8.688 19.401 8.599 19.311 8.599 19.201V15.801C8.599 15.359 8.241 15.001 7.799 15.001C7.357 15.001 6.999 15.359 6.999 15.801V19.001C6.999 20.106 7.894 21.001 8.999 21.001H10.399V22.201C10.399 22.643 10.757 23.001 11.199 23.001C11.641 23.001 11.999 22.643 11.999 22.201V15.801C11.999 15.359 11.641 15.001 11.199 15.001L11.2 15ZM18 17.5V20.5C18 21.878 16.878 23 15.5 23C14.122 23 13 21.878 13 20.5V17.5C13 16.122 14.122 15 15.5 15C16.878 15 18 16.122 18 17.5ZM16.4 17.5C16.4 17.004 15.996 16.6 15.5 16.6C15.004 16.6 14.6 17.004 14.6 17.5V20.5C14.6 20.996 15.004 21.4 15.5 21.4C15.996 21.4 16.4 20.996 16.4 20.5V17.5ZM4.5 4C3.672 4 3 4.672 3 5.5C3 6.328 3.672 7 4.5 7C5.328 7 6 6.328 6 5.5C6 4.672 5.328 4 4.5 4ZM8.5 4C7.672 4 7 4.672 7 5.5C7 6.328 7.672 7 8.5 7C9.328 7 10 6.328 10 5.5C10 4.672 9.328 4 8.5 4ZM24 6V12C24 12.552 23.552 13 23 13C22.448 13 22 12.552 22 12V10H2V18C2 19.654 3.346 21 5 21C5.552 21 6 21.448 6 22C6 22.552 5.552 23 5 23C2.243 23 0 20.757 0 18V6C0 3.243 2.243 1 5 1H19C21.757 1 24 3.243 24 6ZM22 8V6C22 4.346 20.654 3 19 3H5C3.346 3 2 4.346 2 6V8H22Z" fill="#3A57E8"/>
+                            </g>
+                            <defs>
+                                <clipPath id="clip0_332_2687"><rect width="24" height="24" fill="white"/></clipPath>
+                            </defs>
+                        </svg>
+
+
+                        Atenção
+                        </h2>
+                        <h4>Existem requisitos com valores inválidos em campos obrigatórios. Verifique os requisitos antes de enviá-los à base de dados.</h4>
                     </div>
-                        
-                    <form id="filterForm">
-                        @csrf    
-                        <div class="inputField">
-                            <label>Palavra Chave:</label>
-                            <input type="text" id="keyWord" name="keyWord">
-                        </div>
-
-                        <div class="inputField" style="width: 300px;">
-                            <label>Classificação 1:</label>
-                            <select name="classificacao1">
-                                <option value="null" selected>Selecione</option>
-                                @foreach($ListClassificacao as $Classificacao)
-                                    <option value="{{$Classificacao}}">{{$Classificacao}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        
-                        <!-- <div class="inputField" style="width: 300px;">
-                            <label>Classificação 2:</label>
-                            <select name="sort_by">
-                                <option value="null" selected>Selecione</opt>
-                                @foreach($ListClassificacao2 as $Classificacao2)
-                                    <option value="{{$Classificacao2}}">{{$Classificacao2}}</option>
-                                @endforeach
-                            </select>
-                        </div> -->
-
-                        <div class="inputField">
-                            <label>Selecione o Produto:</label>
-                            <select name="product">
-                                <option value="null" selected>Selecione</opt>
-                                    @foreach($ListProdutos as $Produtos)
-                                        @if ($Produtos->bundle_id == 0)
-                                            <option value="{{$Produtos->bundle_id}}"> ?</option>
-                                        @else
-                                            <option value="{{$Produtos->bundle_id}}">{{$Produtos->bundle}}</option>
-                                        @endif
-                                    @endforeach
-                            </select>
-                        </div>
-
-                        <button type="submit">FILTRAR</button>
-                    </form> 
                 </div>
             
                 <table id="TableExcel" class="tabela">
@@ -125,7 +93,7 @@
 
                 <div class="btns_bottom">
                     <div class="AlignBtns">
-                        <div class="btn_finishSend" data-href="{{ route('knowledge.recordsErrors', $KnowledgeBase->id) }}">
+                        <div class="btn_finishSend">
                             <div class="alignCenter">
                                 <span>Concluir e enviar</span>
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -155,15 +123,11 @@
 </x-app-layout>
 
 <script>
-    const ListProdutos = @json($AllBundles);
-</script>
-
-<script>
     $(document).ready(function () {
         $(".side_menu_big").addClass("menu_hidden").removeClass("menu_visible");
         $(".side_menu_small").addClass("menu_visible").removeClass("menu_hidden");
 
-        function fetchUsers(url = "{{ route('knowledge.recordsFilter', $idKnowledgeBase) }}", append = false) {
+        function fetchUsers(url = "{{ route('knowledge.recordsFilterErrors', $idKnowledgeBase) }}", append = false) {
             $.ajax({
                 url: url,
                 method: 'GET',
@@ -172,19 +136,6 @@
                     // Atualizar tabela
                     let rows = '';
                     response.data.forEach(record => {
-
-
-                        let bundleOptions = '<option selected disabled>?</option>'; // Opção padrão para quando bundle_id == 0
-
-                        ListProdutos.forEach(produto => {
-                            if (produto.bundle_id <= 0) {
-                                bundleOptions += `<option disabled selected>?</option>`;
-                            } else {
-                                bundleOptions += `<option value="${produto.bundle_id}">${produto.bundle}</option>`;
-                            }
-                        });
-
-
                         // <td style="width:10%; display: flex; align-items: center; word-wrap: break-word; white-space: normal; overflow: visible; text-align: left;">${record.classificacao2}</td>
                         //console.log(record);
                         rows += `
@@ -202,8 +153,9 @@
                                 </td>
                                 <td style="width:11%;  display: flex; align-items: center;  word-wrap: break-word; white-space: normal;overflow: visible; text-align: left;">${record.resposta2 ? record.resposta2 : '-'}</td>
                                 <td style="width:13%;  display: flex; align-items: center;">
-                                     <select name="bundle" style="border-radius: 8px; width:100%">
-                                        ${bundleOptions}
+                                    <select name="bundle"  style="border-radius: 8px; width:100%">
+                                        <option value="ERP Protheu" selected>ERP Protheus</option>
+                                        <option value="Winthor">Winthor</option>
                                     </select>
                                 </td>
 
@@ -436,12 +388,9 @@
 
         // BTN Concluir e Enviar
         $(document).on('click', '.btn_finishSend', function () {
-            const url = $(this).data('href'); // Obtém o valor do atributo data-href
-            if (url) {
-                window.location.href = url; // Redireciona para a URL
-            }
+            //alert('BTN Concluir e Enviar');
+            
         });
-
 
 
 
