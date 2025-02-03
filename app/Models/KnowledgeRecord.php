@@ -13,6 +13,7 @@ class KnowledgeRecord extends Model
         'classificacao2',
         'knowledge_base_id',
         'requisito',
+        'observacao',
         'resposta',
         'resposta2',
         'status',
