@@ -445,7 +445,9 @@ class KnowledgeController extends Controller
         if(Auth::user()->role->role_priority >= 90){       
             $KnowledgeBase = KnowledgeBase::findOrFail($id);
             $query = KnowledgeRecord::query()->with('rfp_bundles');
-            $query->where('knowledge_base_id', $KnowledgeBase->id);
+
+            // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
+            $query->where('knowledge_base_id', '=', $KnowledgeBase->id);
 
             // Aplicar filtros
             if ($request->has('keyWord') && !empty($request->keyWord)) {
