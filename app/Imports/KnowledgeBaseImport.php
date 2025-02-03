@@ -101,6 +101,7 @@ class KnowledgeBaseImport implements ToCollection, WithStartRow, WithEvents, Wit
                 $KnowledgeRecord->requisito = $row[2];
                 $KnowledgeRecord->resposta = $row[3];
                 $KnowledgeRecord->resposta2 = $row[4];
+                $KnowledgeRecord->observacao = $row[6];
                 $KnowledgeRecord->status = "aguardando";
 
             // Tenta salvar

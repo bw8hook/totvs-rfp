@@ -486,7 +486,7 @@ table {
     width: 100%;
 }
 
-.highlighted_error select{
+.highlighted_error select[name="bundle"] {
     background-color: #ffe1df;
     border-color: #f7b5b0;
     color: red;

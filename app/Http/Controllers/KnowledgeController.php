@@ -447,33 +447,23 @@ class KnowledgeController extends Controller
             $query = KnowledgeRecord::query()->with('rfp_bundles');
             $query->where('knowledge_base_id', $KnowledgeBase->id);
 
-
             // Aplicar filtros
-            if ($request->has('keyWord')) {
-                $query->where('classificacao', 'like', '%' . $request->keyWord . '%');
-                $query->orWhere('classificacao2', 'like', '%' . $request->keyWord . '%');
-                $query->orWhere('requisito', 'like', '%' . $request->keyWord . '%');
-                $query->orWhere('resposta', 'like', '%' . $request->keyWord . '%');
-                $query->orWhere('resposta2', 'like', '%' . $request->keyWord . '%');
-                $query->orWhere('observacao', 'like', '%' . $request->keyWord . '%');
+            if ($request->has('keyWord') && !empty($request->keyWord)) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('requisito', 'like', '%' . $request->keyWord . '%')
+                      ->orWhere('observacao', 'like', '%' . $request->keyWord . '%');
+                });
             }
-
-
-           
-
-            // Aplicar ordenação
-            // if ($request->has('classificacao') && $request->has('product')) {
-            //     $sortBy = $request->sort_by;
-            //     $sortOrder = $request->sort_order;
-
-            //     if (in_array($sortBy, ['name', 'id', 'gestor','email', 'account_type', 'status', 'created_at']) && in_array($sortOrder, ['asc', 'desc'])) {
-            //         $query->orderBy($sortBy, $sortOrder);
-            //     }
-            // }
-
+            
+            $classificacao1 = $request->classificacao1 === "null" ? null : $request->classificacao1;
+            if (filled($classificacao1)) {
+                dd($request->classificacao1);
+                $query->where('classificacao', 'like', '%' . $request->classificacao1 . '%');
+            }
+                        
             // Paginação
             $records = $query->paginate(40);
-            
+
             // Retornar dados em JSON
             return response()->json([
                 'data' => $records->items(),

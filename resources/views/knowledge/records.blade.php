@@ -29,7 +29,7 @@
                         </div>
                         <div class="form-group" style="width:30%;">
                             <label for="data">*Data da RFP</label>
-                            <input type="text" id="data" name="rfp_date" value="{{date('d/m/Y', strtotime($KnowledgeBase->rfp_date)) }}" placeholder="**/**/****" maxlength="10"  onblur="handleInput('data')" >
+                            <input type="text" id="data" name="rfp_date" value="{{$KnowledgeBase->rfp_date ? date('d/m/Y', strtotime($KnowledgeBase->rfp_date)) : date('d/m/Y', strtotime($KnowledgeBase->created_at)) }}" placeholder="**/**/****" maxlength="10"  onblur="handleInput('data')" >
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="white"/><path d="M21.0885 3.83905C20.5504 3.30177 19.821 3 19.0606 3C18.3002 3 17.5709 3.30177 17.0328 3.83905L4.15958 16.7122C3.79093 17.0788 3.49864 17.5148 3.2996 17.9951C3.10056 18.4754 2.99874 18.9904 3.00001 19.5102V21.1352C3.00001 21.3451 3.0834 21.5465 3.23184 21.6949C3.38028 21.8433 3.5816 21.9267 3.79153 21.9267H5.4165C5.93634 21.9282 6.4513 21.8265 6.93158 21.6276C7.41186 21.4287 7.84792 21.1365 8.2145 20.7679L21.0885 7.89398C21.6255 7.3559 21.9271 6.62674 21.9271 5.86652C21.9271 5.10629 21.6255 4.37713 21.0885 3.83905ZM7.0953 19.6487C6.64889 20.0922 6.04573 20.3419 5.4165 20.3437H4.58304V19.5102C4.58224 19.1983 4.64332 18.8893 4.76274 18.6011C4.88217 18.313 5.05756 18.0514 5.27878 17.8314L15.0484 8.06178L16.8689 9.88226L7.0953 19.6487ZM19.9685 6.77478L17.9849 8.7591L16.1645 6.94258L18.1488 4.95825C18.2683 4.83898 18.4102 4.74442 18.5663 4.67997C18.7223 4.61551 18.8896 4.58244 19.0584 4.58262C19.2273 4.5828 19.3945 4.61625 19.5504 4.68104C19.7064 4.74583 19.848 4.8407 19.9673 4.96023C20.0866 5.07977 20.1811 5.22162 20.2456 5.3777C20.31 5.53378 20.3431 5.70103 20.3429 5.86989C20.3427 6.03876 20.3093 6.20593 20.2445 6.36187C20.1797 6.51781 20.0848 6.65946 19.9653 6.77874L19.9685 6.77478Z" fill="#8A94AD"/></svg>
                         </div>
                     </form>
@@ -94,14 +94,14 @@
                 <table id="TableExcel" class="tabela">
                     <thead>
                         <tr>
-                            <th style="width:2%;"></th>
-                            <th style="width:10%;">Classificação 1</th>
-                            <th style="width:10%;">Classificação 2</th>
-                            <th style="width:19%;">Descrição do Requisito</th>
-                            <th style="width:12.5%;">Resposta 1</th>
-                            <th style="width:12.5%;">Resposta 2</th>
+                            <th style="width:3%;"></th>
+                            <th style="width:15%;">Classificação 1</th>
+                            <!-- <th style="width:9%;">Classificação 2</th> -->
+                            <th style="width:25%;">Descrição do Requisito</th>
+                            <th style="width:11.5%;">Resposta 1</th>
+                            <th style="width:14.5%;">Resposta 2</th>
                             <th>Produto/Linha</th>
-                            <th style="width:12.5%;">Observações</th>
+                            <th style="width:11.5%;">Observações</th>
                             <th style="width:5%;"></th>
                         </tr>    
                     </thead>
@@ -171,13 +171,13 @@
                     // Atualizar tabela
                     let rows = '';
                     response.data.forEach(record => {
+                        // <td style="width:10%; display: flex; align-items: center; word-wrap: break-word; white-space: normal; overflow: visible; text-align: left;">${record.classificacao2}</td>
                         console.log(record);
                         rows += `
                             <tr class="listaTabela ${record.rfp_bundles ? '' : 'highlighted_error'}" data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
-                                <td style="width:5%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
-                                <td style="width:10%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.classificacao}</td>
-                                <td style="width:10%; display: flex; align-items: center; word-wrap: break-word; white-space: normal; overflow: visible; text-align: left;">${record.classificacao2}</td>
-                                <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;">${record.requisito}</td>
+                                <td style="width:3%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
+                                <td style="width:14%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.classificacao}</td>
+                                <td style="width:25%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;">${record.requisito}</td>
                                 <td style="width:12%; display: flex; align-items: center;">
                                     <select name="classificacao1"  style="border-radius: 8px; width:100%">
                                         ${record.resposta == "Atende" ? '<option value="Atende" selected>Atende</option>' : '<option value="Atende">Atende</option>'}
@@ -186,14 +186,15 @@
                                         ${record.resposta == "Não Atende" ? '<option value="Não Atende" selected>Não Atende</option>' : '<option value="Não Atende">Não Atende</option>'}
                                     </select>
                                 </td>
-                                <td style="width:12%;  display: flex; align-items: center;  word-wrap: break-word; white-space: normal;overflow: visible;">${record.resposta2 ? record.resposta2 : '-'}</td>
-                                <td style="width:16%;  display: flex; align-items: center;">
+                                <td style="width:14%;  display: flex; align-items: center;  word-wrap: break-word; white-space: normal;overflow: visible; text-align: left;">${record.resposta2 ? record.resposta2 : '-'}</td>
+                                <td style="width:13%;  display: flex; align-items: center;">
                                     <select name="bundle"  style="border-radius: 8px; width:100%">
                                         <option value="Atende" selected>ERP Protheus</option>
                                         <option value="Atende">Winthor</option>
                                     </select>
                                 </td>
-                                <td style="width:18%;  display: flex; align-items: center;">${record.observacao ? record.observacao : '-'}</td>
+                               ${record.observacao ? `<td style="width:11%; display: flex; align-items: center;">${record.observacao}</td>`  : `<td style="width:11%; display: flex; align-items: center; justify-content: center; text-align: center;">-</td>`}
+
                                 <td style="width:5%;  display: flex; align-items: center;">
                                     <div class="btnEditRecord" style="margin: 0px; float:left; cursor:pointer;">
                                         <button type="submit" class="records_edit">
@@ -298,7 +299,7 @@
 
         // BTN Concluir e Enviar
         $(document).on('click', '.btn_finishSend', function () {
-            alert('BTN Concluir e Enviar');
+            //alert('BTN Concluir e Enviar');
             
         });
 
@@ -317,7 +318,11 @@
 
     function handleInput(fieldId) {
         const input = document.getElementById(fieldId);
-        saveToDatabase(fieldId, input.value);
+        console.log(input.value);
+        if(input.value != ""){
+            saveToDatabase(fieldId, input.value);
+        }
+        
     }
 
     let alertTimeout;
