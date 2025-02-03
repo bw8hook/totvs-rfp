@@ -93,8 +93,8 @@ class KnowledgeBaseImport implements ToCollection, WithStartRow, WithEvents, Wit
                     $KnowledgeRecord->bundle_id = null;
                 }else{
                     $KnowledgeRecord->bundle_id = $bundleIDFound;
-                    
                 }
+                
                 // Dados do arquivo
                 $KnowledgeRecord->classificacao = $row[0];
                 $KnowledgeRecord->classificacao2 = $row[1];
