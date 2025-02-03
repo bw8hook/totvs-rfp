@@ -19,7 +19,7 @@ env:
   SSH_CONN: "root@totvs.bw8.tech"
   SSH_OPTS: "-o StrictHostKeyChecking=no"
   SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-  DOCKER_IMAGE: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
+  DOCKER_IMAGE: ghcr.io/bw8hook/totvs-rfp:main
   APP_PATH: /apps/totvs-rfp
 
 jobs:
