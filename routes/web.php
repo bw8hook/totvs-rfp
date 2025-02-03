@@ -33,6 +33,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/knowledge/records/filter/{id}', [KnowledgeController::class,'recordsFilter'])->name('knowledge.recordsFilter');
     Route::delete('/knowledge/records/{id}', [KnowledgeController::class,'recordsFilterRemove'])->name('knowledge.recordsFilterRemove');
     Route::post('/knowledge/update-infos/{id}', [KnowledgeController::class,'updateInfos'])->name('knowledge.updateInfos');
+    
+    
+    Route::post('/knowledge/update-record/{id}', [KnowledgeController::class,'updateRecordDetails'])->name('knowledge.records.update');
+    Route::get('/knowledge/records-errors/filter/{id}', [KnowledgeController::class,'recordsFilterError'])->name('knowledge.recordsFilterErrors');
     //Route::get('/knowledge/add', [KnowledgeController::class,'create'])->middleware(['auth', 'verified'])->name('knowledge.add');
     //Route::get('/knowledge/base-all', [KnowledgeController::class,'listall'])->name('knowledge.listall');
 });
