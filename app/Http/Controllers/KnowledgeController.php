@@ -446,6 +446,9 @@ class KnowledgeController extends Controller
             $KnowledgeBase = KnowledgeBase::findOrFail($id);
             $query = KnowledgeRecord::query()->with('rfp_bundles');
 
+            print_r($id);
+            dd($KnowledgeBase);
+
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
             $query->where('knowledge_base_id', '=', $KnowledgeBase->id);
 
