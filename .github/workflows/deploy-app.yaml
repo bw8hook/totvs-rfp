@@ -1,0 +1,76 @@
+---
+name: Deploy Totvs Application
+
+on:
+  workflow_call:
+  push:
+    branches:
+    - feature/add-docker
+    tags:
+    - "v*.*.*"
+
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
+
+env:
+  SSH_CONN: "root@totvs.bw8.tech"
+  SSH_OPTS: "-o StrictHostKeyChecking=no"
+  SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+  DOCKER_IMAGE: ghcr.io/bw8hook/totvs-rfp:feature-add-docker
+  APP_PATH: /apps/totvs-rfp
+
+jobs:
+  docker-image:
+    uses: ./.github/workflows/build-and-publish-image.yaml
+
+  deploy-app:
+    runs-on: ubuntu-latest
+    needs:
+      - docker-image
+
+    steps:
+      - name: code checkout
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        run: |
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.BW8_DEV_SSH_KEY }}"
+          HOST=$(echo "${{ env.SSH_CONN }}" | cut -d'@' -f2)
+          ssh-keyscan $HOST
+
+      - name: Prepare .env file
+        run: |
+          cp .env.pre-production .env
+          HOST=$(echo "${{ env.SSH_CONN }}" | cut -d'@' -f2)
+          echo "APP_ENV=production" >> .env
+          echo "APP_URL=https://$HOST" >> .env
+          echo "APP_KEY=${{ secrets.DEV_APP_KEY }}" >> .env
+          echo "DB_HOST=${{ secrets.DEV_DB_HOST }}" >> .env
+          echo "DB_DATABASE=${{ secrets.DEV_DB_DATABASE }}" >> .env
+          echo "DB_USERNAME=${{ secrets.DEV_DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DEV_DB_PASSWORD }}" >> .env
+          echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.TOTVS_RFP_AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.TOTVS_RFP_AWS_SECRET_ACCESS_KEY }}" >> .env
+
+      - name: Deploy assets
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_CONN }} 'mkdir -p ${{ env.APP_PATH }}'
+          scp ${{ env.SSH_OPTS }} ./docker-compose.yaml  ${{ env.SSH_CONN }}:${{ env.APP_PATH }}
+          scp ${{ env.SSH_OPTS }} ./.env  ${{ env.SSH_CONN }}:${{ env.APP_PATH }}
+
+      - name: Pull latest image
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_CONN }} 'docker pull ${{ env.DOCKER_IMAGE }}'
+
+      - name: Stop running container
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_CONN }} 'cd ${{ env.APP_PATH }} ; docker compose stop'
+
+      - name: Start new container
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_CONN }} 'cd ${{ env.APP_PATH }} ; docker compose up -d &>/dev/null & disown'
