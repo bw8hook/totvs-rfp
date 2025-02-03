@@ -5,9 +5,9 @@ on:
   workflow_call:
   push:
     branches:
-    - feature/add-docker
+      - main
     tags:
-    - "v*.*.*"
+      - "v*.*.*"
 
 permissions:
   contents: read
