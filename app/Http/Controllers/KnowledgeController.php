@@ -486,7 +486,6 @@ class KnowledgeController extends Controller
             
             $classificacao1 = $request->classificacao1 === "null" ? null : $request->classificacao1;
             if (filled($classificacao1)) {
-                dd($request->classificacao1);
                 $query->where('classificacao', 'like', '%' . $request->classificacao1 . '%');
             }
                         
