@@ -89,25 +89,23 @@
                         <button type="submit">FILTRAR</button>
                     </form> 
                 </div>
-               
-
+            
                 <table id="TableExcel" class="tabela">
                     <thead>
                         <tr>
                             <th style="width:3%;"></th>
-                            <th style="width:15%;">Classificação 1</th>
+                            <th style="width:9%;">Classificação 1</th>
                             <!-- <th style="width:9%;">Classificação 2</th> -->
-                            <th style="width:25%;">Descrição do Requisito</th>
+                            <th style="width:19%;">Descrição do Requisito</th>
                             <th style="width:11.5%;">Resposta 1</th>
                             <th style="width:14.5%;">Resposta 2</th>
                             <th>Produto/Linha</th>
-                            <th style="width:11.5%;">Observações</th>
+                            <th style="width:25.5%;">Observações</th>
                             <th style="width:5%;"></th>
                         </tr>    
                     </thead>
                         <tbody class="body_table">
-                            
-                            
+                          
                         </tbody>
                 </table>
 
@@ -172,13 +170,13 @@
                     let rows = '';
                     response.data.forEach(record => {
                         // <td style="width:10%; display: flex; align-items: center; word-wrap: break-word; white-space: normal; overflow: visible; text-align: left;">${record.classificacao2}</td>
-                        console.log(record);
+                        //console.log(record);
                         rows += `
                             <tr class="listaTabela ${record.rfp_bundles ? '' : 'highlighted_error'}" data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
                                 <td style="width:3%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
-                                <td style="width:14%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.classificacao}</td>
-                                <td style="width:25%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;">${record.requisito}</td>
-                                <td style="width:12%; display: flex; align-items: center;">
+                                <td style="width:9%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.classificacao}</td>
+                                <td style="width:21%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;">${record.requisito}</td>
+                                <td style="width:10%; display: flex; align-items: center;">
                                     <select name="classificacao1"  style="border-radius: 8px; width:100%">
                                         ${record.resposta == "Atende" ? '<option value="Atende" selected>Atende</option>' : '<option value="Atende">Atende</option>'}
                                         ${record.resposta == "Atende Parcialmente" ? '<option value="Atende Parcialmente" selected>Atende Parcialmente</option>' : '<option value="Atende Parcialmente">Atende Parcialmente</option>'}
@@ -186,14 +184,15 @@
                                         ${record.resposta == "Não Atende" ? '<option value="Não Atende" selected>Não Atende</option>' : '<option value="Não Atende">Não Atende</option>'}
                                     </select>
                                 </td>
-                                <td style="width:14%;  display: flex; align-items: center;  word-wrap: break-word; white-space: normal;overflow: visible; text-align: left;">${record.resposta2 ? record.resposta2 : '-'}</td>
+                                <td style="width:11%;  display: flex; align-items: center;  word-wrap: break-word; white-space: normal;overflow: visible; text-align: left;">${record.resposta2 ? record.resposta2 : '-'}</td>
                                 <td style="width:13%;  display: flex; align-items: center;">
                                     <select name="bundle"  style="border-radius: 8px; width:100%">
                                         <option value="Atende" selected>ERP Protheus</option>
                                         <option value="Atende">Winthor</option>
                                     </select>
                                 </td>
-                               ${record.observacao ? `<td style="width:11%; display: flex; align-items: center;">${record.observacao}</td>`  : `<td style="width:11%; display: flex; align-items: center; justify-content: center; text-align: center;">-</td>`}
+
+                                <td style="width:23%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px; font-size:14px;">${record.observacao ? record.observacao : '-'}</td>
 
                                 <td style="width:5%;  display: flex; align-items: center;">
                                     <div class="btnEditRecord" style="margin: 0px; float:left; cursor:pointer;">
