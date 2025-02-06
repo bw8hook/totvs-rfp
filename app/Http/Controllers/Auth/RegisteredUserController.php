@@ -45,6 +45,7 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'user_position' => $request->user_position,
+            'idtotvs' => $request->idtotvs,
             'status' => "ativo",
             'account_type' => "default",
         ]);

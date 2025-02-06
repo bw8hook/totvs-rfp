@@ -1,19 +1,33 @@
 <x-app-layout>
-    <div class="py-4" style=" padding-bottom: 130px;">
-        <div class="max-w-full mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="flex flex-col">
+        <div class="py-4" style=" padding-bottom: 130px;">
 
-        <x-title-component :showButton="true" textButton="Adicionar Usuário" urlButton="new-user" > {{ __('Usuários Cadastrados') }} </x-title-component>
+        <div id="titleComponent_KnowledgeBase" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative" style="height:100px;">
+                <div class="AlignTitleLeft" style="width: 80%;">
+                    <div class="flex" style="width: 100%;">
+                        <svg width="39" height="22" viewBox="0 0 29 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14.6235 11.2867C15.314 10.6889 15.8679 9.94969 16.2475 9.11904C16.6271 8.2884 16.8235 7.38581 16.8235 6.47254C16.8235 4.75643 16.1418 3.11062 14.9283 1.89714C13.7149 0.683674 12.069 0.00195336 10.3529 0.00195336C8.63683 0.00195336 6.99101 0.683674 5.77754 1.89714C4.56407 3.11062 3.88235 4.75643 3.88235 6.47254C3.88234 7.38581 4.0788 8.2884 4.4584 9.11904C4.83799 9.94969 5.39184 10.6889 6.08235 11.2867C4.27077 12.107 2.73378 13.4317 1.65515 15.1024C0.576523 16.7731 0.00190475 18.7192 0 20.7078C0 21.0511 0.136344 21.3802 0.379038 21.6229C0.621732 21.8656 0.950896 22.002 1.29412 22.002C1.63734 22.002 1.9665 21.8656 2.2092 21.6229C2.45189 21.3802 2.58824 21.0511 2.58824 20.7078C2.58824 18.6485 3.4063 16.6735 4.86246 15.2174C6.31863 13.7612 8.29361 12.9431 10.3529 12.9431C12.4123 12.9431 14.3873 13.7612 15.8434 15.2174C17.2996 16.6735 18.1176 18.6485 18.1176 20.7078C18.1176 21.0511 18.254 21.3802 18.4967 21.6229C18.7394 21.8656 19.0685 22.002 19.4118 22.002C19.755 22.002 20.0842 21.8656 20.3268 21.6229C20.5695 21.3802 20.7059 21.0511 20.7059 20.7078C20.704 18.7192 20.1294 16.7731 19.0507 15.1024C17.9721 13.4317 16.4351 12.107 14.6235 11.2867ZM10.3529 10.3549C9.58508 10.3549 8.83447 10.1272 8.19602 9.7006C7.55757 9.274 7.05996 8.66766 6.76611 7.95825C6.47227 7.24885 6.39538 6.46824 6.54519 5.71513C6.69499 4.96203 7.06475 4.27026 7.6077 3.7273C8.15066 3.18435 8.84243 2.81459 9.59553 2.66479C10.3486 2.51499 11.1292 2.59187 11.8387 2.88572C12.5481 3.17956 13.1544 3.67717 13.581 4.31562C14.0076 4.95407 14.2353 5.70468 14.2353 6.47254C14.2353 7.50221 13.8263 8.4897 13.0982 9.21778C12.3701 9.94586 11.3826 10.3549 10.3529 10.3549ZM22.9576 10.769C23.7858 9.83638 24.3268 8.68426 24.5155 7.45133C24.7042 6.21841 24.5325 4.95723 24.0211 3.8196C23.5097 2.68198 22.6804 1.71639 21.6331 1.03909C20.5857 0.361783 19.3649 0.00161976 18.1176 0.00195336C17.7744 0.00195336 17.4453 0.138297 17.2026 0.380992C16.9599 0.623686 16.8235 0.95285 16.8235 1.29607C16.8235 1.63929 16.9599 1.96846 17.2026 2.21115C17.4453 2.45384 17.7744 2.59019 18.1176 2.59019C19.1473 2.59019 20.1348 2.99922 20.8629 3.7273C21.591 4.45539 22 5.44288 22 6.47254C21.9982 7.15226 21.8179 7.81959 21.4773 8.40779C21.1366 8.99599 20.6475 9.48445 20.0588 9.82431C19.867 9.93498 19.7067 10.093 19.5934 10.2834C19.4801 10.4737 19.4176 10.6899 19.4118 10.9114C19.4063 11.1311 19.457 11.3485 19.5589 11.5432C19.6607 11.7379 19.8105 11.9035 19.9941 12.0243L20.4988 12.3608L20.6671 12.4514C22.227 13.1912 23.543 14.3615 24.4601 15.8242C25.3772 17.287 25.8572 18.9814 25.8435 20.7078C25.8435 21.0511 25.9799 21.3802 26.2226 21.6229C26.4653 21.8656 26.7944 22.002 27.1376 22.002C27.4809 22.002 27.81 21.8656 28.0527 21.6229C28.2954 21.3802 28.4318 21.0511 28.4318 20.7078C28.4423 18.7219 27.9449 16.7663 26.9868 15.0267C26.0287 13.2872 24.6417 11.8215 22.9576 10.769Z" fill="#5570F1"/>
+                        </svg>
+                        <span style=" margin-left: 6px;margin-top: 1px;">Usuários Cadastrados</span>
+                    </div>
+                </div>
+               
+                <a href="{{route('userproject.register')}}" type="button" class="btn flex items-center justify-center  py-3 rounded-lg font-semibold transition mb-6 bg-#5570F1" style="box-shadow: 0px 19px 34px -20px #43BBED; background-color: #5570F1; color: white; padding: 0px 24px; height: 45px; font-size: 15px; text-transform: uppercase; letter-spacing: 0px; margin-top: 28px; border-radius: 60px;">
+                    <img src="{{ asset('icons/btn_nova_base.svg') }}" alt="Upload Icon" style="height: 22px; padding-right: 18px;">    
+                    Criar Novo Usuário
+                </a>
+            </div>
 
             <div id="BlocoLista" class="p-4 sm:p-8">
                 <div class="bloco_info_details_header">
                     <form id="filterForm">
                         <span>Filtragem rápida:</span>
-                        <select name="sort_by">
+                        <select name="sort_by" style="height: 40px; padding: 0px 14px;">
                             <option value="bundle">Pacote</option>
                             <option value="bundle_id">Id do Pacote</option>
                             <option value="created_at">Data de Cadastro</option>
                         </select>
-                        <select name="sort_order">
+                        <select name="sort_order" style="height: 40px; padding: 0px 14px;">
                             <option value="asc">Ascendente</option>
                             <option value="desc">Descendente</option>
                         </select>
@@ -35,6 +49,7 @@
                             <th style="width:12%" >ID TOTVS:</th>
                             <th style="width:13%">Cargo</th>
                             <th style="width:12%">Setor</th>
+                            <th style="width:12%">Produtos/Skills</th>
                             <th style="width:15%">Contato</th>
                             <th>Data do Cadastro</th>
                             <th>Tipo de Cadastro</th>
@@ -73,13 +88,13 @@
                         const formattedDate = `${day}/${month}/${year}`;
                         rows += `
                             <tr class="listaTabela">
-                                <td style="width: 15%;">${user.name}</td>
-                                <td style="width: 13%;">${user.idtotvs ? user.idtotvs : '-'}</td>
-                                <td style="width: 13%;">${user.account_type}</td>
-                                <td style="width: 12%;">${user.departament.departament}</td>
-                                <td style="width: 15%;">${user.email}</td>
-                                <td style="width: 12%;">${formattedDate}</td>
-                                <td style="width: 14%;"> <div class="tipo_cadastro">${user.account_type}</div></td>
+                                <td style="width: 15%; text-align: left;">${user.name}</td>
+                                <td style="width: 13%; text-align: left;">${user.idtotvs ? user.idtotvs : '-'}</td>
+                                <td style="width: 13%; text-align: left;">${user.account_type}</td>
+                                <td style="width: 12%; text-align: left;">${user.departament.departament}</td>
+                                <td style="width: 15%; text-align: left;">${user.email}</td>
+                                <td style="width: 12% text-align: left;;">${formattedDate}</td>
+                                <td style="width: 14%; text-align: left;"> <div class="tipo_cadastro">${user.account_type}</div></td>
                                 <td style="width:70px; text-align:center; position:relative;">
                                     <a href="/users/edit/${user.id}" class="btn_edit_row">
                                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

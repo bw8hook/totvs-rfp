@@ -5,14 +5,18 @@ use Carbon\Carbon;
 use App\Models\KnowledgeBase;
 use App\Models\KnowledgeRecord;
 use App\Models\RfpBundle;
+use App\Models\RfpAnswer;
+use App\Models\UsersDepartaments;
 use App\Imports\KnowledgeBaseImport;
 use App\Imports\KnowledgeBaseInfoImport;
+use App\Exports\KnowledgeBaseExport;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Illuminate\Support\Str;
 use DateTime;
 
 
@@ -127,7 +131,6 @@ class KnowledgeController extends Controller
 
 
 
-
     /**
      * Display a listing of the resource.
      */
@@ -235,39 +238,6 @@ class KnowledgeController extends Controller
     }
 
 
-    public function updateRecordDetails(Request $request, string $id)
-    { 
-        // Valida a Permissão do usuário
-        if(Auth::user()->role->role_priority >= 90){     
-            $KnowledgeRecords = KnowledgeRecord::findOrFail($id);
-            if($request->resposta){
-                $KnowledgeRecords->resposta = $request->resposta;
-            }
-
-            if($request->bundle){
-                $KnowledgeRecords->bundle_id = $request->bundle;
-            }
-            
-               
-            try{
-                $KnowledgeRecords->save();
-                // Retornar dados em JSON
-                return response()->json("success");    
-            } catch (\Exception $e) {
-                $CatchError = json_decode($e->getMessage());
-
-                return response()->json([
-                     'message' => 'Erro ao salva!',
-                ], 422);
-            }              
-        }
-    }
-
-
-
-
-
-
     /**
      * Show the form for creating a new resource.
      */
@@ -319,7 +289,7 @@ class KnowledgeController extends Controller
     /**
      * UPLOAD - Do arquivo da base de conhecimento
      */
-    public function uploadFile(Request $request) {
+    public function upload(Request $request) {
         $TotvsERP = 0;
     
         // Faz o upload para o S3 (Para BACKUP)
@@ -422,216 +392,8 @@ class KnowledgeController extends Controller
         }
   }
 
-
-
-    /**
-    * Valida as Informações Gerais de um REGISTRO ESPECIFICO
-    */
-    public function records(string $id)
-    {
-        $KnowledgeBase = KnowledgeBase::findOrFail($id);
-        if($KnowledgeBase->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){     
-            
-            $ListClassificacao = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('classificacao')->pluck('classificacao');
-            $ListClassificacao2 = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('classificacao2')->pluck('classificacao2');
-            
-            $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
-
-            $ListProdutos = DB::table('knowledge_records')
-            ->leftJoin('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id')
-            ->where('knowledge_records.knowledge_base_id', $KnowledgeBase->id)
-            ->groupBy('knowledge_records.bundle_id')
-            ->select('knowledge_records.bundle_id', 'rfp_bundles.bundle')
-            ->get();
-
-            $Records = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->get();
-            $CountRecords = 0;
-
-            foreach ($Records as $key => $Record) {
-                $CountRecords++;
-            }
-
-            $data = array(
-                'title' => 'Todos Arquivos',
-                'idKnowledgeBase' => $id,
-                'KnowledgeBase' => $KnowledgeBase,
-                'ListClassificacao' => $ListClassificacao,
-                'ListClassificacao2' => $ListClassificacao2,
-                'ListProdutos' => $ListProdutos,
-                'AllBundles' => $AllBundles,
-                'CountCountRecordsResultado' => $CountRecords,
-            );
-        
-            return view('knowledge.records')->with($data);
-        }
-    }
-
-
-    public function recordsFilter(Request $request, string $id)
-    { 
-        if(Auth::user()->role->role_priority >= 90){       
-            $KnowledgeBase = KnowledgeBase::findOrFail($id);
-            $query = KnowledgeRecord::query()->with('rfp_bundles');
-
-            // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
-            $query->where('knowledge_base_id', '=', $KnowledgeBase->id);
-
-            // Aplicar filtros
-            if ($request->has('keyWord') && !empty($request->keyWord)) {
-                $query->where(function ($q) use ($request) {
-                    $q->where('requisito', 'like', '%' . $request->keyWord . '%')
-                      ->orWhere('observacao', 'like', '%' . $request->keyWord . '%');
-                });
-            }
-            
-            $classificacao1 = $request->classificacao1 === "null" ? null : $request->classificacao1;
-            if (filled($classificacao1)) {
-                $query->where('classificacao', 'like', '%' . $request->classificacao1 . '%');
-            }
-                        
-            // Paginação
-            $records = $query->paginate(40);
-
-            // Retornar dados em JSON
-            return response()->json([
-                'data' => $records->items(),
-                'next_page_url' => $records->nextPageUrl(),
-            ]);
-
-            //return response()->json($records);
-        }
-    }
-
-
-
-
-    /**
-    * Valida as Informações Gerais de um REGISTRO ESPECIFICO
-    */
-    public function recordsErrors(string $id)
-    {
-        $KnowledgeBase = KnowledgeBase::findOrFail($id);
-        if($KnowledgeBase->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){     
-            
-            $ListClassificacao = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('classificacao')->pluck('classificacao');
-            
-            $ListClassificacao2 = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('classificacao2')->pluck('classificacao2');
-            $ListProdutos = DB::table('knowledge_records')
-            ->leftJoin('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id')
-            ->where('knowledge_records.knowledge_base_id', $KnowledgeBase->id)
-            ->groupBy('knowledge_records.bundle_id')
-            ->select('knowledge_records.bundle_id', 'rfp_bundles.bundle')
-            ->get();
-
-            $Records = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->get();
-            $CountRecords = 0;
-
-            foreach ($Records as $key => $Record) {
-                $CountRecords++;
-            }
-
-            $data = array(
-                'title' => 'Todos Arquivos',
-                'idKnowledgeBase' => $id,
-                'KnowledgeBase' => $KnowledgeBase,
-                'ListClassificacao' => $ListClassificacao,
-                'ListClassificacao2' => $ListClassificacao2,
-                'ListProdutos' => $ListProdutos,
-                'CountCountRecordsResultado' => $CountRecords,
-            );
-        
-            return view('knowledge.recordsErrors')->with($data);
-        }
-    }
-
-
-
-    public function recordsFilterError(Request $request, string $id)
-    { 
-        if(Auth::user()->role->role_priority >= 90){       
-            $KnowledgeBase = KnowledgeBase::findOrFail($id);
-            $query = KnowledgeRecord::query()->with('rfp_bundles');
-
-            // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
-            $query->where('knowledge_base_id', '=', $KnowledgeBase->id);
-
-            $query->whereNull('bundle_id')->orWhere('bundle_id', ''); // Para strings vazias
-                        
-            // Paginação
-            $records = $query->paginate(40);
-
-            // Retornar dados em JSON
-            return response()->json([
-                'data' => $records->items(),
-                'next_page_url' => $records->nextPageUrl(),
-            ]);
-
-            //return response()->json($records);
-        }
-    }
-
-
-
-
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
     
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function recordsFilterRemove(string $id)
-    {
-        // Encontrar o usuário pelo ID
-        $Record = KnowledgeRecord::where('id_record', $id)->first();
-        if (Auth::user()->role->role_priority >= 90){
-            try {
-                $RecordRemove = KnowledgeRecord::where('id_record', $id)->delete();
-
-                if($RecordRemove){
-                    return response()->json([ 'status' => "success" ,'message' => "Excluído com sucesso!" ]);
-                }else{
-                    return response()->json([ 'status' => "error" ,'message' => "Não foi possível excluir!" ]);
-                }
-               
-            } catch (\Throwable $th) {
-                //throw $th;
-                dd($th);
-            }
-        } else {
-            return response()->json(['status' => "error" , 'message' => "Usuário sem permissão para exclusão!" ]);
-        }
-    }
+   
 
 
     /**
@@ -678,4 +440,67 @@ class KnowledgeController extends Controller
         // Retorna false se a data for inválida
         return false;
     }
+
+
+
+
+
+
+
+     /**
+     * UPLOAD - Do arquivo da base de conhecimento
+     */
+    public function cron(Request $request) {
+        $KnowledgeBase = KnowledgeBase::where('status', "processando")->get();
+
+        if ($KnowledgeBase->count() > 0) {
+            foreach ($KnowledgeBase as $item) {
+                try {
+
+                    $Bundles = RfpBundle::all();
+
+                    foreach ($Bundles as $bundle) {
+                        $Records = KnowledgeRecord::whereNotNull('knowledge_records.bundle_id') // Garante que bundle_id está preenchido
+                        ->where('knowledge_base_id', $item->id) // Filtra apenas os registros da base específica
+                        ->where('knowledge_records.bundle_id', $bundle->bundle_id) // Aplica o filtro com os bundle_ids selecionados
+                        ->join('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id') // Faz o JOIN corretamente
+                        ->select(
+                            'knowledge_records.classificacao',
+                            'knowledge_records.classificacao2',
+                            'knowledge_records.requisito',
+                            'knowledge_records.resposta',
+                            'knowledge_records.resposta2',
+                            'knowledge_records.observacao',
+                            'rfp_bundles.bundle'
+                        )
+                        ->get();
+                            
+                        if (!$Records->isEmpty()) {
+                            $filenamePrev = $item->id.'_'.$item->name.'_'.uniqid();
+                            $fileName = preg_replace('/[^\w\-_\.]/', '', $filenamePrev); // Substitui caracteres não permitidos por "_"
+                            $fileName = trim($fileName, '_');
+                            $fileName = Str::slug($fileName).'.csv';
+                            $filePath = 'cdn/knowledge/base_exported/'.$bundle->bundle.'/'.$fileName;
+    
+                            // Chama a exportação do EXCEL
+                            $export = new KnowledgeBaseExport($item->id, $Records);
+                            Excel::store($export, $filePath, 's3');
+                        }
+                    }
+
+
+                    
+            
+                    // Excel::store(new NewProjectExport($updatedData), $filePath, 'local');        
+                } catch (\Exception $e) {
+                    dd($e);
+                }
+            }
+        } 
+
+       
+  }
+
+
+
 }

@@ -122,14 +122,10 @@
                                             </button>
                                         </a>`;
                         } else   if (record.status === 'processando') {
-                            status = '<div style="background: #FFEFCA; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #E5780C; width: auto; padding: 5px 20px; position: relative; display: inline-block;">'+record.status+'</div>';
-                            btnEdit = `<a href="knowledge/records/${record.id}" style="margin: 0px; float:left;">
-                                            <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
-                                                <img src="{{ asset('icons/file-edit 1.svg') }}" alt="Edit Icon">
-                                            </button>
-                                        </a>`;
+                            status = '<div style="background: #d5edff; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #2196F3; width: auto; padding: 5px 20px; position: relative; display: inline-block;">'+record.status+'</div>';
+                            btnEdit = ``;
 
-                        } else   if (record.status === 'concluído') {
+                        } else if (record.status === 'concluído') {
                             btnEdit = `<a href="knowledge/records/${record.id}" style="margin: 0px; float:left;">
                                             <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
                                                 <img src="{{ asset('icons/eye.svg') }}" alt="Edit Icon">

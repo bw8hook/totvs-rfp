@@ -24,12 +24,22 @@
                         </div>
                         <div class="form-group"  style="width:50%;">
                             <label for="time">*Time Responsável</label>
-                            <input type="text" id="time" name="project_team" value="{{$KnowledgeBase->project_team}}" placeholder="Digite o time responsável"  onblur="handleInput('time')">
+                            <select id="time" name="project_team" value="{{$KnowledgeBase->project_team}}" placeholder="Selecione o time responsável"  onblur="handleInput('time')" style="  width: 107%; border: none; font-size: 14px; font-weight: 100; color: #6f778c;">
+                                <option value="null" selected disabled>Selecione</opt>
+                                    @foreach($UsersDepartaments as $Departament)
+                                        @if ($KnowledgeBase->project_team == $Departament->id)
+                                            <option value="{{$Departament->id}}" selected>{{$Departament->departament}}</option>
+                                        @else
+                                            <option value="{{$Departament->id}}">{{$Departament->departament}}</option>
+                                        @endif
+                                       
+                                    @endforeach
+                            </select>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="white"/><path d="M21.0885 3.83905C20.5504 3.30177 19.821 3 19.0606 3C18.3002 3 17.5709 3.30177 17.0328 3.83905L4.15958 16.7122C3.79093 17.0788 3.49864 17.5148 3.2996 17.9951C3.10056 18.4754 2.99874 18.9904 3.00001 19.5102V21.1352C3.00001 21.3451 3.0834 21.5465 3.23184 21.6949C3.38028 21.8433 3.5816 21.9267 3.79153 21.9267H5.4165C5.93634 21.9282 6.4513 21.8265 6.93158 21.6276C7.41186 21.4287 7.84792 21.1365 8.2145 20.7679L21.0885 7.89398C21.6255 7.3559 21.9271 6.62674 21.9271 5.86652C21.9271 5.10629 21.6255 4.37713 21.0885 3.83905ZM7.0953 19.6487C6.64889 20.0922 6.04573 20.3419 5.4165 20.3437H4.58304V19.5102C4.58224 19.1983 4.64332 18.8893 4.76274 18.6011C4.88217 18.313 5.05756 18.0514 5.27878 17.8314L15.0484 8.06178L16.8689 9.88226L7.0953 19.6487ZM19.9685 6.77478L17.9849 8.7591L16.1645 6.94258L18.1488 4.95825C18.2683 4.83898 18.4102 4.74442 18.5663 4.67997C18.7223 4.61551 18.8896 4.58244 19.0584 4.58262C19.2273 4.5828 19.3945 4.61625 19.5504 4.68104C19.7064 4.74583 19.848 4.8407 19.9673 4.96023C20.0866 5.07977 20.1811 5.22162 20.2456 5.3777C20.31 5.53378 20.3431 5.70103 20.3429 5.86989C20.3427 6.03876 20.3093 6.20593 20.2445 6.36187C20.1797 6.51781 20.0848 6.65946 19.9653 6.77874L19.9685 6.77478Z" fill="#8A94AD"/></svg>
                         </div>
                         <div class="form-group" style="width:30%;">
                             <label for="data">*Data da RFP</label>
-                            <input type="text" id="data" name="rfp_date" value="{{$KnowledgeBase->rfp_date ? date('d/m/Y', strtotime($KnowledgeBase->rfp_date)) : date('d/m/Y', strtotime($KnowledgeBase->created_at)) }}" placeholder="**/**/****" maxlength="10"  onblur="handleInput('data')" >
+                            <input type="text" id="data" name="rfp_date" class="form-control" placeholder="Selecione uma data" value="@if($KnowledgeBase->rfp_date) {{ date('d/m/Y', strtotime($KnowledgeBase->rfp_date)) }} @endif" onblur="handleInput('data')">           
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="white"/><path d="M21.0885 3.83905C20.5504 3.30177 19.821 3 19.0606 3C18.3002 3 17.5709 3.30177 17.0328 3.83905L4.15958 16.7122C3.79093 17.0788 3.49864 17.5148 3.2996 17.9951C3.10056 18.4754 2.99874 18.9904 3.00001 19.5102V21.1352C3.00001 21.3451 3.0834 21.5465 3.23184 21.6949C3.38028 21.8433 3.5816 21.9267 3.79153 21.9267H5.4165C5.93634 21.9282 6.4513 21.8265 6.93158 21.6276C7.41186 21.4287 7.84792 21.1365 8.2145 20.7679L21.0885 7.89398C21.6255 7.3559 21.9271 6.62674 21.9271 5.86652C21.9271 5.10629 21.6255 4.37713 21.0885 3.83905ZM7.0953 19.6487C6.64889 20.0922 6.04573 20.3419 5.4165 20.3437H4.58304V19.5102C4.58224 19.1983 4.64332 18.8893 4.76274 18.6011C4.88217 18.313 5.05756 18.0514 5.27878 17.8314L15.0484 8.06178L16.8689 9.88226L7.0953 19.6487ZM19.9685 6.77478L17.9849 8.7591L16.1645 6.94258L18.1488 4.95825C18.2683 4.83898 18.4102 4.74442 18.5663 4.67997C18.7223 4.61551 18.8896 4.58244 19.0584 4.58262C19.2273 4.5828 19.3945 4.61625 19.5504 4.68104C19.7064 4.74583 19.848 4.8407 19.9673 4.96023C20.0866 5.07977 20.1811 5.22162 20.2456 5.3777C20.31 5.53378 20.3431 5.70103 20.3429 5.86989C20.3427 6.03876 20.3093 6.20593 20.2445 6.36187C20.1797 6.51781 20.0848 6.65946 19.9653 6.77874L19.9685 6.77478Z" fill="#8A94AD"/></svg>
                         </div>
                     </form>
@@ -61,32 +71,31 @@
                             </select>
                         </div>
                         
-                        <!-- <div class="inputField" style="width: 300px;">
-                            <label>Classificação 2:</label>
-                            <select name="sort_by">
-                                <option value="null" selected>Selecione</opt>
-                                @foreach($ListClassificacao2 as $Classificacao2)
-                                    <option value="{{$Classificacao2}}">{{$Classificacao2}}</option>
+
+                        <div class="inputField" style="width: 300px;">
+                            <label>Resposta 1:</label>
+                            <select name="resposta">
+                                <option value="null" selected>Selecione</option>
+                                @foreach($ListResposta as $Resposta)
+                                    <option value="{{$Resposta}}">{{$Resposta}}</option>
                                 @endforeach
                             </select>
-                        </div> -->
-
+                        </div>
                         <div class="inputField">
                             <label>Selecione o Produto:</label>
                             <select name="product">
                                 <option value="null" selected>Selecione</opt>
-                                    @foreach($ListProdutos as $Produtos)
-                                        @if ($Produtos->bundle_id == 0)
-                                            <option value="{{$Produtos->bundle_id}}"> ?</option>
-                                        @else
-                                            <option value="{{$Produtos->bundle_id}}">{{$Produtos->bundle}}</option>
-                                        @endif
+                                    @foreach($ListProdutosRecebidas as $Produtos)
+                                        <option value="{{$Produtos}}">{{$Produtos}}</option>
                                     @endforeach
                             </select>
                         </div>
 
                         <button type="submit">FILTRAR</button>
+                        <button id="btnLimpar" style=" border: 2px solid #CBD0DD; background: #FFF; color: #5E6470;" type="button">LIMPAR</button>
                     </form> 
+
+                    <span style="font-size: 13px; color: #818181;">*Os filtros são combinados, e o campo de palavra-chave aplica-se aos campos (Classificação 1, Descrição, Resposta 1, Resposta 2, Produto/Linha e Observações).</span>
                 </div>
             
                 <table id="TableExcel" class="tabela">
@@ -108,6 +117,8 @@
                         </tbody>
                 </table>
 
+                <nav id="paginationLinks"></nav>
+
                 <div id="loadMore" style="display: none;" data-next-page="">
                     <div class="alignCenter">
                         <span style="margin-right: 6px;">Carregar</span>
@@ -119,13 +130,12 @@
                                 <clipPath id="clip0_443_3072"><rect width="20" height="20" fill="white"/></clipPath>
                             </defs>
                         </svg>
-
                     </div>
                 </div>
 
                 <div class="btns_bottom">
                     <div class="AlignBtns">
-                        <div class="btn_finishSend" data-href="{{ route('knowledge.recordsErrors', $KnowledgeBase->id) }}">
+                        <div class="btn_finishSend" data-id="{{$KnowledgeBase->id}}" data-href="{{ route('knowledge.recordsErrors', $KnowledgeBase->id) }}">
                             <div class="alignCenter">
                                 <span>Concluir e enviar</span>
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -156,6 +166,7 @@
 
 <script>
     const ListProdutos = @json($AllBundles);
+    const ListRespostas = @json($AllAnswers);
 </script>
 
 <script>
@@ -172,21 +183,30 @@
                     // Atualizar tabela
                     let rows = '';
                     response.data.forEach(record => {
+                        //console.log(record);
 
+                        // Verifica se record.bundle_id está presente em ListProdutos
+                        let existsInListProducts = ListProdutos.some(produto => produto.bundle_id === record.bundle_id);
 
-                        let bundleOptions = '<option selected disabled>?</option>'; // Opção padrão para quando bundle_id == 0
-
+                        // Se o bundle_id não existir na lista, ele aparece como desabilitado e selecionado
+                        let bundleOptions = !existsInListProducts 
+                            ? `<option disabled selected>${record.bundle_old || '?'}</option>` 
+                            : '<option disabled selected>?</option>';
                         ListProdutos.forEach(produto => {
-                            if (produto.bundle_id <= 0) {
-                                bundleOptions += `<option disabled selected>?</option>`;
-                            } else {
-                                bundleOptions += `<option value="${produto.bundle_id}">${produto.bundle}</option>`;
-                            }
+                        
+                            bundleOptions += `<option value="${produto.bundle_id}" ${produto.bundle_id === record.bundle_id ? 'selected' : ''}>${produto.bundle}</option>`;
                         });
 
 
-                        // <td style="width:10%; display: flex; align-items: center; word-wrap: break-word; white-space: normal; overflow: visible; text-align: left;">${record.classificacao2}</td>
-                        //console.log(record);
+
+                        // Verifica se record.resposta está presente em ListRespostas
+                        let existsInList = ListRespostas.some(resposta => resposta.anwser === record.resposta);
+                        let AnwserOptions = !existsInList  ? `<option disabled selected>${record.resposta}</option>` : '';
+                        ListRespostas.forEach(resposta => {
+                            AnwserOptions += `<option value="${resposta.anwser}" ${resposta.anwser === record.resposta ? 'selected' : ''}>${resposta.anwser}</option>`;
+                        });
+
+
                         rows += `
                             <tr class="listaTabela ${record.rfp_bundles ? '' : 'highlighted_error'}" data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
                                 <td style="width:3%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
@@ -194,10 +214,7 @@
                                 <td style="width:21%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;">${record.requisito}</td>
                                 <td style="width:10%; display: flex; align-items: center;">
                                     <select name="resposta"  style="border-radius: 8px; width:100%">
-                                        ${record.resposta == "Atende" ? '<option value="Atende" selected>Atende</option>' : '<option value="Atende">Atende</option>'}
-                                        ${record.resposta == "Atende Parcialmente" ? '<option value="Atende Parcialmente" selected>Atende Parcialmente</option>' : '<option value="Atende Parcialmente">Atende Parcialmente</option>'}
-                                        ${record.resposta == "Customizado" ? '<option value="Customizado" selected>Customizado</option>' : '<option value="Customizado">Customizado</option>'}
-                                        ${record.resposta == "Não Atende" ? '<option value="Não Atende" selected>Não Atende</option>' : '<option value="Não Atende">Não Atende</option>'}
+                                        ${AnwserOptions}
                                     </select>
                                 </td>
                                 <td style="width:11%;  display: flex; align-items: center;  word-wrap: break-word; white-space: normal;overflow: visible; text-align: left;">${record.resposta2 ? record.resposta2 : '-'}</td>
@@ -238,15 +255,34 @@
                         $('#TableExcel .body_table').html(rows);
                     }
 
-                    // Atualiza o botão "Carregar Mais"
-                    if (response.next_page_url) {
-                        $('#loadMore').data('next-page', response.next_page_url).show();
-                    } else {
-                        $('#loadMore').hide();
+                   
+                    // Atualizar links de paginação
+                    let pagination = '';
+                    if (response.links) {
+                        pagination = response.links
+                            .filter(link => !["&laquo; Anterior", "Próximo &raquo;"].includes(link.label)) // Remove "Anterior" e "Próximo"
+                            .map(link =>
+                                `<a href="${link.url}" class="pagination-link ${link.active ? 'active' : ''}">${link.label}</a>`
+                            ).join('');
                     }
+                    $('#paginationLinks').html(pagination);
                 }
             });
         }
+
+
+         // Navegar na paginação
+         $(document).on('click', '#paginationLinks a', function (e) {
+            e.preventDefault();
+            const url = $(this).attr('href');
+            if (url) {
+                fetchUsers(url);
+                const div = document.getElementById("contentBody");
+                div.scrollTop = 0; 
+            }
+        });
+
+        
 
         $(document).on('click', '#loadMore', function () {
             const nextPage = $(this).data('next-page');
@@ -305,6 +341,7 @@
 
 
         $(document).on('change', 'select[name="bundle"]', function () {
+            const Record = $(this);
             const IdRecord = $(this).closest('tr').data('id'); // Obtém o ID do registro da linha da tabela
             if (IdRecord) {
                 let url = `{{ route('knowledge.records.update', ':id') }}`.replace(':id', IdRecord);
@@ -319,6 +356,9 @@
                         _token: $('meta[name="csrf-token"]').attr('content') // Se necessário para Laravel
                     },
                     success: function(response) {
+
+                        Record.parent().parent().removeClass("highlighted_error");
+
                         // Verifica se já existe um alerta visível e fecha ele
                         if ($('#success-alert').length) {
                             $('#success-alert').remove();
@@ -376,8 +416,6 @@
             }
         });
 
-
-        
 
         $(document).on('click', '.btnDeleteRecord', function () {
             const IdRecord = $(this).parent().parent().data('id');
@@ -437,8 +475,65 @@
         // BTN Concluir e Enviar
         $(document).on('click', '.btn_finishSend', function () {
             const url = $(this).data('href'); // Obtém o valor do atributo data-href
+            const IdRecord = $(this).data('id');
             if (url) {
-                window.location.href = url; // Redireciona para a URL
+                let escopo = $("#escopo");
+                let time = $("#time");
+                let data = $("#data");
+                let isValid = true;
+                let firstError = null;
+                let alertContainer = $("#alert-container");
+
+                $(".border-red").removeClass("border-red"); // Remove bordas vermelhas anteriores
+
+                if (escopo.val().trim() === "") {
+                    escopo.addClass("border-red");
+                    showAlertBootstrap("error", "o campo 'ESCOPO' é um requisito obrigatório, preencha para continuar.");
+                    if (!firstError) firstError = escopo;
+                    isValid = false;
+                }
+
+                if (time.val().trim() === "") {
+                    time.addClass("border-red");
+                    showAlertBootstrap("error", "o campo 'TIME' é um requisito obrigatório, preencha para continuar.");
+                    if (!firstError) firstError = time;
+                    isValid = false;
+                }
+
+                if (data.val().trim() === "") {
+                    data.addClass("border-red");
+                    showAlertBootstrap("error", "o campo 'DATA' é um requisito obrigatório, preencha para continuar.");
+                    if (!firstError) firstError = data;
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    event.preventDefault(); // Impede o envio do formulário
+                    $("#contentBody").animate({
+                        scrollTop: firstError.offset().top - 50 // Ajuste para posicionar melhor o campo na tela
+                    }, 500);
+                }else{
+                    
+                    let urlFiltro = `{{ route('knowledge.recordsFilterErrors', ':id') }}`.replace(':id', IdRecord);
+            
+                    // Envia ajax para validar se todos os campos estão preenchidos, caso contrario, direciona para a página de "error"
+                    $.ajax({
+                        url: urlFiltro,
+                        method: 'GET',
+                        success: function(response) {
+                            console.log(response);
+                            if (response.data.length === 0 && response.next_page_url === null) {
+                                let urlSuccess = `{{ route('knowledge.records.processing', ':id') }}`.replace(':id', IdRecord);
+                                window.location.href = urlSuccess;
+                            } else {
+                                window.location.href = url;
+                            }
+                        },
+                        error: function(error) {
+                            console.error('Erro ao atualizar:', error);
+                        }
+                    });
+                }
             }
         });
 
@@ -508,35 +603,20 @@
 
 
 <script>
-        $(document).ready(function() {
-            // Aplica a máscara de entrada
-            $('#data').mask('00/00/0000', {placeholder: "__/__/____"});
-
-            // Função para validar a data
-            function validarData(data) {
-                if (!data) return false;
-                const partes = data.split('/');
-                if (partes.length !== 3) return false;
-
-                const dia = parseInt(partes[0], 10);
-                const mes = parseInt(partes[1], 10) - 1;
-                const ano = parseInt(partes[2], 10);
-
-                const dataObj = new Date(ano, mes, dia);
-                return (
-                    dataObj.getDate() === dia &&
-                    dataObj.getMonth() === mes &&
-                    dataObj.getFullYear() === ano
-                );
-            }
-
-            // Valida ao sair do input
-            $('#data').on('blur', function() {
-                const valor = $(this).val();
-                if (!validarData(valor)) {
-                    alert('A data inserida é inválida. Por favor, corrija!');
-                    $(this).val('');
-                }
-            });
+    document.addEventListener("DOMContentLoaded", function() {
+        flatpickr("#data", {
+            dateFormat: "d/m/Y", // Formato da data (dia/mês/ano)
+            enableTime: false,    // Desativa a seleção de horário
+            locale: "pt"         // Define para português
         });
-    </script>
+    });
+
+
+    document.getElementById('btnLimpar').addEventListener('click', function () {
+        document.getElementById('filterForm').reset();
+    });
+
+
+
+</script>
+

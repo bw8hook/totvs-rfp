@@ -1,13 +1,59 @@
 import './bootstrap';
-
 import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
-
 Alpine.start();
 
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.min.css";
+import { Portuguese } from "flatpickr/dist/l10n/pt.js";
+
+
+import lottie from "lottie-web";
+
+// Inicializa a animação quando o DOM estiver carregado
+document.addEventListener("DOMContentLoaded", function () {
+    lottie.loadAnimation({
+        container: document.getElementById("lottie-container"),
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+        path: "/storage/lottie/loading.json", // Caminho gerado pelo Storage
+    });
+
+    window.showAlertBootstrap = function (type, message) {
+        let alertContainer = $("#alert-global");
+    
+        let alertClass = "";
+        switch (type) {
+            case "success": alertClass = "alert-success"; break;
+            case "error": alertClass = "alert-danger"; break;
+            case "info": alertClass = "alert-info"; break;
+            case "warning": alertClass = "alert-warning"; break;
+            default: alertClass = "alert-primary";
+        }
+    
+        alertContainer.html(`
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `).fadeIn();
+    
+        $("#contentBody").animate({ scrollTop: 0 }, 500);
+    
+        setTimeout(() => {
+            alertContainer.fadeOut();
+        }, 5000);
+    };
+    
+
+});
 
 $( document ).ready(function() {
+
+    
+    
 
     $("#rowAdder").on('click', function(){
 

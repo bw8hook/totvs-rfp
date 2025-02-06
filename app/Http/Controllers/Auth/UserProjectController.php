@@ -89,7 +89,6 @@ class UserProjectController extends Controller
      */
     public function create(): View
     {
-        
         $UsersPosition = UsersDepartaments::all();
         $ListPositions = array();
 
