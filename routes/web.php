@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KnowledgeController;
+use App\Http\Controllers\KnowledgeRecordsController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -22,23 +23,26 @@ Route::get('/', function () {
 
 // ROTAS BASE DE CONHECIMENTO
 Route::middleware('auth')->group(function () {
+    // BASE DE CONHECIMENTO
     Route::get('/knowledge', [KnowledgeController::class,'index'])->name('knowledge.list');
-    Route::get('/knowledge/records/{id}', [KnowledgeController::class,'records'])->name('knowledge.records');
-    Route::get('/knowledge/records-errors/{id}', [KnowledgeController::class,'recordsErrors'])->name('knowledge.recordsErrors');
     Route::get('/knowledge/add', [KnowledgeController::class,'createFile'])->name('knowledge.addFile');
+    Route::post('/knowledge/add', [KnowledgeController::class, 'upload'])->name('knowledge.upload_file');
     Route::delete('/knowledge/remove/{id}', [KnowledgeController::class, 'destroy'])->name('knowledge.remove');
-    Route::post('/knowledge/upload', [KnowledgeController::class, 'uploadFile'])->name('knowledge.upload_file');
-    // FILTER AJAX
-    Route::get('/knowledge/filter', [KnowledgeController::class,'filter'])->name('knowledge.filter');
-    Route::get('/knowledge/records/filter/{id}', [KnowledgeController::class,'recordsFilter'])->name('knowledge.recordsFilter');
-    Route::delete('/knowledge/records/{id}', [KnowledgeController::class,'recordsFilterRemove'])->name('knowledge.recordsFilterRemove');
-    Route::post('/knowledge/update-infos/{id}', [KnowledgeController::class,'updateInfos'])->name('knowledge.updateInfos');
-    
-    
-    Route::post('/knowledge/update-record/{id}', [KnowledgeController::class,'updateRecordDetails'])->name('knowledge.records.update');
-    Route::get('/knowledge/records-errors/filter/{id}', [KnowledgeController::class,'recordsFilterError'])->name('knowledge.recordsFilterErrors');
-    //Route::get('/knowledge/add', [KnowledgeController::class,'create'])->middleware(['auth', 'verified'])->name('knowledge.add');
-    //Route::get('/knowledge/base-all', [KnowledgeController::class,'listall'])->name('knowledge.listall');
+        //AJAX
+        Route::get('/knowledge/filter', [KnowledgeController::class,'filter'])->name('knowledge.filter');
+        Route::post('/knowledge/update-infos/{id}', [KnowledgeController::class,'updateInfos'])->name('knowledge.updateInfos');
+    //CRON PARA AUTOMATIZAR  SUBIDA PARA IA
+    Route::get('/knowledge/cron', [KnowledgeController::class,'cron'])->name('knowledge.cron');
+
+    // REGISTROS DA BASE DE CONHECIMENTO
+    Route::get('/knowledge/records/{id}', [KnowledgeRecordsController::class,'index'])->name('knowledge.records');
+    Route::get('/knowledge/records-errors/{id}', [KnowledgeRecordsController::class,'errors'])->name('knowledge.recordsErrors');
+    Route::get('/knowledge/records/processing/{id}', [KnowledgeRecordsController::class,'processing'])->name('knowledge.records.processing');
+        //AJAX
+        Route::get('/knowledge/records/filter/{id}', [KnowledgeRecordsController::class,'filter'])->name('knowledge.recordsFilter');
+        Route::delete('/knowledge/records/{id}', [KnowledgeRecordsController::class,'filterRemove'])->name('knowledge.recordsFilterRemove');
+        Route::post('/knowledge/update-record/{id}', [KnowledgeRecordsController::class,'updateDetails'])->name('knowledge.records.update');
+        Route::get('/knowledge/records-errors/filter/{id}', [KnowledgeRecordsController::class,'filterError'])->name('knowledge.recordsFilterErrors');
 });
 
 
@@ -55,7 +59,7 @@ Route::get('/base/{bundle}/{userid}/{filename?}', [FileController::class, 'getFi
 
 // USUÁRIO
 Route::get('/users/filter', [UserProjectController::class, 'filter'])->middleware(['auth', 'verified'])->name('users.filter');
-Route::get('/users/list', [UserProjectController::class,'listUsers'])->middleware(['auth', 'verified'])->name('listUsers');
+Route::get('/users', [UserProjectController::class,'listUsers'])->middleware(['auth', 'verified'])->name('userproject.list');
 Route::get('/users/new', [UserProjectController::class, 'create'])->middleware(['auth', 'verified'])->name('userproject.register');
 Route::post('/users/edit', [UserProjectController::class, 'update'])->middleware(['auth', 'verified'])->name('user.edit');
 Route::get('/users/edit/{id}', [UserProjectController::class, 'edit'])->middleware(['auth', 'verified'])->name('userproject.edit');
@@ -76,10 +80,10 @@ Route::post('/bundles/register', [BundlesController::class, 'register'])->middle
 Route::post('/bundles/edit', [BundlesController::class, 'edit_user'])->middleware(['auth', 'verified'])->name('bundles.edit_user');
 
 // CONTROLE DE PERFIS
-Route::get('/users-role', [UserRoleController::class,'list'])->middleware(['auth', 'verified'])->name('listUsers');
-Route::post('/users-role', [UserRoleController::class, 'update'])->middleware(['auth', 'verified'])->name('user.edit');
-Route::put('/users-role/{id}', [UserRoleController::class, 'edit'])->middleware(['auth', 'verified'])->name('userproject.edit');
-Route::delete('/users-role/{id}', [UserRoleController::class, 'remove'])->middleware(['auth', 'verified'])->name('userproject.remove');
+Route::get('/users-role', [UserRoleController::class,'index'])->middleware(['auth', 'verified'])->name('roles.list');
+Route::post('/users-role', [UserRoleController::class, 'update'])->middleware(['auth', 'verified'])->name('roles.update');
+Route::put('/users-role/{id}', [UserRoleController::class, 'edit'])->middleware(['auth', 'verified'])->name('roles.edit');
+Route::delete('/users-role/{id}', [UserRoleController::class, 'remove'])->middleware(['auth', 'verified'])->name('roles.remove');
 
 
 Route::get('/csrf-token', function () {
@@ -97,8 +101,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/profileUser', [ProfileController::class, 'updateUser'])->name('profile.updateUser');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::get('/users', [ProfileController::class, 'listUsers'])->name('users.list');
-    Route::get('/user/{id}', [ProfileController::class, 'editUser'])->name('users.edit');
+    // Route::get('/users', [ProfileController::class, 'listUsers'])->name('users.list');
+    // Route::get('/user/{id}', [ProfileController::class, 'editUser'])->name('users.edit');
 });
 
 

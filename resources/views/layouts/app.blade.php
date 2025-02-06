@@ -48,6 +48,9 @@
         </div>
     @endif
 
+    <!-- ALERTA BOOTSTRAP GLOBAL -->
+    <div id="alert-global" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1050; display: none;"></div>
+
     @include('layouts.navigation')
 
     <div id="contentBody" class="h-screen w-full">    

@@ -27,6 +27,14 @@
                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                 </div>
 
+                 <!-- Name -->
+                 <div>
+                    <x-input-label for="idtotvs" :value="__('ID Totvs')" />
+                    <x-text-input id="idtotvs" class="block mt-1 w-full" type="text" name="idtotvs" :value="old('idtotvs')" required autofocus autocomplete="idtotvs" />
+                    <x-input-error :messages="$errors->get('idtotvs')" class="mt-2" />
+                </div>
+
+
                 <!-- USER POSITION -->
                 <div class="mt-4" style="height: 86px;">
                     <label for="user_position" class="block text-sm font-medium text-gray-700 mb-2">Selecione o tipo da conta</label>
