@@ -77,7 +77,9 @@
                             <select name="resposta">
                                 <option value="null" selected>Selecione</option>
                                 @foreach($ListResposta as $Resposta)
-                                    <option value="{{$Resposta}}">{{$Resposta}}</option>
+                                    @if ($Resposta)
+                                        <option value="{{$Resposta}}">{{$Resposta}}</option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>
@@ -157,8 +159,6 @@
                         </div>
                     </form>
                 </div>
-              
-
             </div>
         </div>
     </div>
@@ -193,15 +193,13 @@
                             ? `<option disabled selected>${record.bundle_old || '?'}</option>` 
                             : '<option disabled selected>?</option>';
                         ListProdutos.forEach(produto => {
-                        
                             bundleOptions += `<option value="${produto.bundle_id}" ${produto.bundle_id === record.bundle_id ? 'selected' : ''}>${produto.bundle}</option>`;
                         });
-
-
 
                         // Verifica se record.resposta está presente em ListRespostas
                         let existsInList = ListRespostas.some(resposta => resposta.anwser === record.resposta);
                         let AnwserOptions = !existsInList  ? `<option disabled selected>${record.resposta}</option>` : '';
+                        console.log(ListRespostas);
                         ListRespostas.forEach(resposta => {
                             AnwserOptions += `<option value="${resposta.anwser}" ${resposta.anwser === record.resposta ? 'selected' : ''}>${resposta.anwser}</option>`;
                         });
