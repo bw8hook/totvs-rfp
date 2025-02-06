@@ -448,21 +448,21 @@
 
                 $(".border-red").removeClass("border-red"); // Remove bordas vermelhas anteriores
 
-                if (escopo.val().trim() === "") {
+                if (escopo.val() && escopo.val().trim() === "") {
                     escopo.addClass("border-red");
                     showAlertBootstrap("error", "o campo 'ESCOPO' é um requisito obrigatório, preencha para continuar.");
                     if (!firstError) firstError = escopo;
                     isValid = false;
                 }
 
-                if (time.val().trim() === "") {
+                if (time.val() && time.val().trim() === "") {
                     time.addClass("border-red");
                     showAlertBootstrap("error", "o campo 'TIME' é um requisito obrigatório, preencha para continuar.");
                     if (!firstError) firstError = time;
                     isValid = false;
                 }
 
-                if (data.val().trim() === "") {
+                if (data.val() && data.val().trim() === "") {
                     data.addClass("border-red");
                     showAlertBootstrap("error", "o campo 'DATA' é um requisito obrigatório, preencha para continuar.");
                     if (!firstError) firstError = data;
