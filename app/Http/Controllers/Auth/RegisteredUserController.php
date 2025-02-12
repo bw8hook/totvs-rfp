@@ -44,7 +44,8 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'user_position' => $request->user_position,
+            'user_role_id' => $request->user_role_id,
+            'departament_id' => $request->departament_id,
             'idtotvs' => $request->idtotvs,
             'status' => "ativo",
             'account_type' => "default",
@@ -54,7 +55,7 @@ class RegisteredUserController extends Controller
         // Auth::login($user);
 
         if($user){
-            return redirect(route('listUsers', absolute: false))->with('success', 'Usuário criado com sucesso.');
+            return redirect(route('users.list', absolute: false))->with('success', 'Usuário criado com sucesso.');
         } else {
             return redirect()->back()->with('error', 'Erro ao criar usuário.');
         }

@@ -63,7 +63,7 @@
                
 
                 <!-- SKILLS -->
-                <div class="mt-4">
+                <!-- <div class="mt-4">
                     <x-input-label for="idtotvs" :value="__('Skills')" />
                     <div class="dropdown">
                         <label class="dropdown-label">Selecione as skills</label>
@@ -85,7 +85,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
   
                <!-- TIPO DE CONTA -->
                <div class="mt-4">

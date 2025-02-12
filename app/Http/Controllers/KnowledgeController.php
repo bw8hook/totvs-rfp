@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
+use App\Exceptions\RDStationMentoria\RDStationMentoria;
 use Illuminate\Support\Str;
 use DateTime;
 
@@ -23,6 +24,8 @@ use DateTime;
 
 class KnowledgeController extends Controller
 {
+    protected $RDStationMentoria = [];
+
     /**
      * Display a listing of the resource.
      */
@@ -62,12 +65,12 @@ class KnowledgeController extends Controller
                     $ListFiles[] = $ListFile;
             }
 
-
             $resultados = DB::table(table: 'knowledge_records')
             ->leftJoin('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id') // INNER JOIN
             ->select('knowledge_records.bundle_id', 'rfp_bundles.bundle',  DB::raw('COUNT(*) as total'))
             ->where('knowledge_records.user_id',  Auth::id()) // Filtra pelo ID do usuário
             ->groupBy('knowledge_records.bundle_id') // Agrupa pelo ID do bundle
+            ->groupBy('rfp_bundles.bundle') // Agrupa pelo ID do bundle
             ->get();
         
             $CountResultado = 0;
@@ -130,83 +133,6 @@ class KnowledgeController extends Controller
     }
 
 
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function listall()
-    {
-        if(Auth::user()->role->role_priority >= 90){
-            $AllFiles = DB::table('knowledge_base')
-                    ->join('users', 'knowledge_base.user_id', '=', 'users.id') // Faz o join
-                    ->select('knowledge_base.*', 'users.name as role_name') // Seleciona os campos desejados
-                    ->get();
-            $ListFiles = array();
-            $CountRFPs = 0;
-            $CountRequisitos = 0;
-
-            foreach ($AllFiles as $key => $File) {
-                    $CountRFPs++;
-                    $ListFile = array();
-                    $ListFile['knowledge_base_id'] = $File->knowledge_base_id;
-                    $ListFile['bundle'] = RfpBundle::firstWhere('bundle_id', $File->bundle_id);
-                    $ListFile['filepath'] = $File->filepath;
-                    $ListFile['filename_original'] = $File->filename_original;
-                    $ListFile['filename'] = $File->filename;
-                    $ListFile['username'] = $File->role_name;
-                    $ListFile['file_extension'] = $File->file_extension;
-
-                    $QtdRecordsBase = DB::table(table: 'knowledge_records')
-                    ->select( DB::raw('COUNT(*) as total'))
-                    ->where('knowledge_records.knowledge_base_id',  $File->knowledge_base_id) // Filtra pelo ID do usuário
-                    ->get();
-            
-                    $CountRequisitos = $CountRequisitos + $QtdRecordsBase[0]->total;
-                    $ListFile['QtdRecordsBase'] = $QtdRecordsBase[0]->total;
-                    $ListFile['status'] = $File->status;
-                    $ListFile['created_at'] = date("d/m/Y", strtotime($File->created_at));;
-                    $ListFiles[$File->knowledge_base_id] = $ListFile;
-            }
-
-            $resultados = DB::table(table: 'knowledge_records')
-            ->leftJoin('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id') // INNER JOIN
-            ->select('knowledge_records.bundle_id', 'rfp_bundles.bundle',  DB::raw('COUNT(*) as total'))
-            ->groupBy('knowledge_records.bundle_id') // Agrupa pelo ID do bundle
-            ->get();
-        
-            $CountResultado = 0;
-            $CountPacotes = 0;
-            $ListBundles = [];
-            $ListBundlesQtds = [];
-
-            //Exibindo o resultado
-            foreach ($resultados as $resultado) {
-                    $ListBundles[]= $resultado->bundle;
-                    $ListBundlesQtds[]= $resultado->total;
-                    $CountPacotes++;
-                    $CountResultado = $CountResultado + $resultado->total;
-            }
-        
-            $data = array(
-                'title' => 'Todos Arquivos',
-                'ListFiles' => $ListFiles,
-                'CountResultado' => $CountRequisitos,
-                'CountPacotes' => $CountPacotes,
-                'CountRFPs' => $CountRFPs,
-                'ResultadosRFPs' => $resultados,
-                'ListBundles' => $ListBundles,
-                'ListBundlesQtds' => $ListBundlesQtds
-            );
-
-
-            return view('knowledge.list_all')->with($data);
-        } else {
-            return redirect()->back()->with('error', 'Usuário sem permissão para acessar.');
-        }
-    }
-
-
-
     public function updateInfos(Request $request, string $id)
     { 
         // Valida a Permissão do usuário
@@ -266,23 +192,6 @@ class KnowledgeController extends Controller
         ];
     
         return view('knowledge.create')->with($data);
-    
-    }
-
-
-
-     /**
-     * Show the form for creating a new resource.
-     */
-    public function createFile()
-    {
-       
-        $userId = auth()->user()->id;
-        $data = [
-            'userId' => $userId
-        ];
-    
-        return view('knowledge.createFile')->with($data);
     
     }
 
@@ -457,14 +366,16 @@ class KnowledgeController extends Controller
             foreach ($KnowledgeBase as $item) {
                 try {
 
-                    $Bundles = RfpBundle::all();
+                    $Bundles = RfpBundle::with('agent')->get();
 
                     foreach ($Bundles as $bundle) {
                         $Records = KnowledgeRecord::whereNotNull('knowledge_records.bundle_id') // Garante que bundle_id está preenchido
                         ->where('knowledge_base_id', $item->id) // Filtra apenas os registros da base específica
                         ->where('knowledge_records.bundle_id', $bundle->bundle_id) // Aplica o filtro com os bundle_ids selecionados
+                        ->where('knowledge_records.status', 'aguardando') // Aplica o filtro com os bundle_ids selecionados
                         ->join('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id') // Faz o JOIN corretamente
                         ->select(
+                            'knowledge_records.id_record',
                             'knowledge_records.classificacao',
                             'knowledge_records.classificacao2',
                             'knowledge_records.requisito',
@@ -476,15 +387,58 @@ class KnowledgeController extends Controller
                         ->get();
                             
                         if (!$Records->isEmpty()) {
+                            //Ajusta o nome do Arquivo
                             $filenamePrev = $item->id.'_'.$item->name.'_'.uniqid();
                             $fileName = preg_replace('/[^\w\-_\.]/', '', $filenamePrev); // Substitui caracteres não permitidos por "_"
                             $fileName = trim($fileName, '_');
                             $fileName = Str::slug($fileName).'.csv';
-                            $filePath = 'cdn/knowledge/base_exported/'.$bundle->bundle.'/'.$fileName;
-    
+
+                            // Ajusta o nome do Produto
+                            $BundleName = preg_replace('/[^\w\-_\.]/', '', $bundle->bundle); // Substitui caracteres não permitidos por "_"
+                            $BundleName = trim($BundleName, '_');
+                            $BundleName = Str::slug($BundleName);
+
+                            // Ajusta o Path do S3
+                            $filePath = 'cdn/knowledge/base_exported/'.$BundleName.'/'.$fileName;
+
                             // Chama a exportação do EXCEL
                             $export = new KnowledgeBaseExport($item->id, $Records);
                             Excel::store($export, $filePath, 's3');
+
+                            //$UploadedFile = Storage::disk('s3')->put($filePath, file_get_contents($File));
+                            $TempFile = Storage::disk('s3')->temporaryUrl($filePath,now()->addMinutes(60));                      
+                          
+                            $Data = array();
+                            $Data['agent_id'] = $bundle->agent->agent_id;
+                            $Data['base_id'] = $bundle->agent->knowledge_id;
+                
+                            $RDStationMentoria = new RDStationMentoria();
+                            $RDStationMentoria->classBases();
+                            
+                            $gBaseById = $RDStationMentoria->Bases->getBaseById( $Data['base_id']);
+
+                            if (!empty($gBaseById['id'])) {
+                                $antes = $gBaseById['sources'];
+                                //$gBaseById['sources'] = [];
+
+                                    $Arquivo = array();
+                                    $Arquivo['url'] = $TempFile;
+                                    $Arquivo['title'] = $fileName;
+                                    $Arquivo['img'] = null;
+                                    $Arquivo['description'] = $fileName;
+                                    $Arquivo['key'] = $fileName;
+                                    $Arquivo['ext'] = "text/csv";
+                               
+                                    $gBaseById['sources'][] = ["type" => "file", "file" => $Arquivo];                               
+
+                                    $updateBase = $RDStationMentoria->Bases->updateBase($gBaseById['id'], $gBaseById);
+                                    if (!empty($updateBase['id'])) {
+                                        $item->status = 'processado';
+                                        $item->save();
+                                    }
+                            } else {
+                                dd("erro");
+                            }
                         }
                     }
 
