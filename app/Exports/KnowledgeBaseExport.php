@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Exports;
+
+use App\Http\Controllers\ProjectRecordsController;
 use App\Models\KnowledgeBase;
 use App\Models\KnowledgeRecord;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -21,6 +23,12 @@ class KnowledgeBaseExport implements FromCollection, WithHeadings
     */
     public function collection()
     {
+        foreach ($this->Records as $key => $value) {
+            $ProjectRecord = KnowledgeRecord::where('id_record', $value->id_record)->first();
+            $ProjectRecord->status = 'processado';
+            $ProjectRecord->save();
+        }
+
         return $this->Records;
         //return KnowledgeRecord::select('classificacao', 'classificacao2', 'requisito', 'resposta', 'resposta2', 'observacao', 'bundle_old')->get();
     }

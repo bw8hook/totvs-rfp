@@ -21,7 +21,11 @@ use App\Exceptions\RDStationMentoria\User;
 class RDStationMentoria
 {
     private $apiUrl = 'https://api.meuassistente.rdstationmentoria.com.br/rest';
-    private $apiKey = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYXBpIiwicHJvcGVydGllcyI6eyJrZXlJZCI6ImtleV8wMUpGMEhQWEc1SkRSNTlBUzU2OFgwVjk3WSIsIndvcmtzcGFjZUlkIjoid3BjXzAxSjVCSFdCNTRFSldDRE42QVFZMlg2NUo3IiwidXNlcklkIjoidXNlcl9hcGkifSwiaWF0IjoxNzM0MTExNjIyfQ.cLjsIB85bybra-rQOTAI-GLuIQKeQP95HLdXu-JG1yxMbrdzHwjqLGl8xzo3aVwz94uD3mWaOhajdqync0CCusVM_VF3dEsg2bRd9OM02HMD-rxil360HClB--5zYKOW7NZUPKmj0Q8rl-1v-aE4lFes6U7-_zB1gJWiGTLR9HLuZd3E5EsSqxu_mS49ss5tAFHQYrVotns6Ug5OGmxSgJ-IqlluVMPRbI8dtSb0ZsiYHe_xYtaERhTInevjaqgHbhZwLzyHg50R7MMoJLsGlw8CD3KRfcitxj8NZmilKK4vCkjm4dN5QYTuRxSqpgnGRtCCk-3fR0q8N3GwYF4oWQ";
+    private $apiKey = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYXBpIiwicHJvcGVydGllcyI6eyJrZXlJZCI6ImtleV8wMUpLVjlSSlI4WEJDOTBIWjZNVE45SEpDWCIsIndvcmtzcGFjZUlkIjoid3BjXzAxSjVCSFdCNTRFSldDRE42QVFZMlg2NUo3IiwidXNlcklkIjoidXNlcl9hcGkifSwiaWF0IjoxNzM5MzA0MjI1fQ.s561ZWPCKNm_2UfTP8_urIfdTe1HXakvWBgLW_4avj04b6IsbMrPlO5RzrNIyycfLI28DrwiPBsYtP8hGHDobBUVxv43V4_MpNbsr0rm9p-eCsCaWkt2NZvUz8GwTXrFYdDJVOxVfsCILZDzMpJUwAeIyp_t-KMOCfVAUfKy5YtmMw_Qmqdg8wYtvZHyqCNV5Ezo2o4JSc6-eRY_Fj_WWzH4QtFvONh1z3xy0tdJ31yw-mJ0uYplEcS3RlrJHyb_9CYT4OngA8JH_iFenaIvNYKo2EvKV7ehAv_DdL3i7LYYpSypzKbOcKF54RdSpgB3fmZBB2_jXR98fp9EkJBwWA";
+    public $Bases;
+    public $Agents;
+    public $Accounts;
+    public $User;
 
     public $caminho;
     public $arqJson=['contas'=>[],'conteudo'=>[],'bases'=>[],'meuassistente'=>[]];

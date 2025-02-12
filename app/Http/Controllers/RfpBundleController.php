@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Agent;
 use App\Models\RfpBundle;
 use Illuminate\Http\Request;
 
@@ -27,5 +28,5 @@ class RfpBundleController extends Controller
         return redirect()->route('rfp_bundles.index');
     }
 
-    // Outros métodos como edit, update, destroy podem ser adicionados conforme necessário
+
 }

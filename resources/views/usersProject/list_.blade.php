@@ -53,7 +53,7 @@
                                     <a href="/edit-user/{{$User['id']}}" style="width: 100%; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 6px;">Editar</a>
                                     <!-- <a href="/remove-user/{{$User['id']}}" style="width: 100%; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 6px;">Excluir</a> -->
 
-                                    <form action="{{ route('userproject.remove', $User['id']) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');" style="margin: 0px;">
+                                    <form action="{{ route('users.remove', $User['id']) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');" style="margin: 0px;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" style="width: 100%; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 6px;">Excluir</button>

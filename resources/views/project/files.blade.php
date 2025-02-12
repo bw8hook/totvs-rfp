@@ -2,12 +2,18 @@
     <div class="py-4" style=" padding-bottom: 130px;">
         <div class="max-w-full mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            <div id="titleComponent_KnowledgeBase" style=" display: inherit; padding-top: 30px; display: inherit; min-height: 97px; height: auto; margin-bottom: -16px !important;" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative" >
-                <div class="flex" style="width: 80%; float:left;">
-                    <img src="{{ asset('icons/base_conhecimento.svg') }}" alt="Upload Icon" style="height: 33%; padding-right: 18px;">
-                    <span style="margin-top:3px;">Nova Base de Conhecimento</span>
+            <div id="titleComponent_KnowledgeBase" style=" padding-top: 30px; display: flex; min-height: 97px; height: auto; margin-bottom: -16px !important;" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative" >
+                <div class="AlignTitleLeft" style="width: 80%;">
+                    <div class="flex" style="width: 100%;">
+                        <img src="{{ asset('icons/file-ai.svg') }}" alt="Upload Icon" style="height: 33%; width:52px; padding-right: 18px;">
+                        <span>Novo Arquivo</span>
+                    </div>
+                    <div class="relative block items-center" style=" padding-bottom: 12px; margin-left: 8px; width: 90%;">        
+                        <div class="info_details" style="color:#8A94AD;"> Preencha os dados abaixo e envie um novo arquivo para a IA responder seus requisitos de acordo com o projeto selecionado anteriormente.
+                        Se tiver alguma dúvida referente às informações a serem inseridas no seu arquivo, baixe o arquivo modelo. </div>
+                    </div>
                 </div>
-                
+
                 <a href="/storage/Planilha Modelo - Carga de RFP's.xlsx" style="background-color: #5570F1; border-radius: 50px; color: white; padding: 8px 21px; font-size: 14px; font-weight: 600; margin: auto; float: right; margin-top: -4px;" download> 
                     <div style="">
                         <img src="{{ asset('icons/download_2.svg') }}" alt="Upload Icon" style="height: 18px; padding-right: 12px; float: left; margin-top: 5px;">
@@ -15,7 +21,12 @@
                     </div>
                 </a>
 
+
             </div>
+
+
+
+
             
             <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -34,23 +45,33 @@
                         <!-- Name -->
                         <div style="width: 35%; margin-bottom: 25px;">
                             <x-input-label for="name" :value="__('Nome:')" />
-                            <x-text-input id="name" class="formAddKnowledge" type="text" name="name" required autofocus autocomplete="name" />
+                            <x-text-input id="name" class="formAddKnowledge" type="text" name="name" value="{{$Project->name}}" required autofocus autocomplete="name" disabled/>
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
-                        <!-- Name -->
-                        <div style="width: 35%; margin-bottom: 25px;">
-                            <x-input-label for="data" :value="__('Data:')" />
-                            <x-text-input id="data" class="formAddKnowledge" type="text" name="data" value="{{ now()->format('d/m/Y') }}" required autofocus autocomplete="name" disabled/>
-                        </div>
-
-                        <!-- Name -->
+                        <!-- User -->
                         <div style="width: 35%; margin-bottom: 40px;">
                             <x-input-label for="responsavel" :value="__('Responsável:')" />
-                            <x-text-input id="responsavel" class="formAddKnowledge" type="text" name="responsavel" value="{{Auth::user()->name}}" required autofocus autocomplete="name" disabled/>
+                            <x-text-input id="responsavel" class="formAddKnowledge" type="text" name="responsavel" value="{{$Project->user->name}}" required autofocus autocomplete="name" disabled/>
                             <x-input-error :messages="$errors->get('responsavel')" class="mt-2" />
                         </div>
 
+                        <!-- DATA -->
+                        <div style="width: 35%; margin-bottom: 25px;">
+                            <x-input-label for="data" :value="__('Data:')" />
+                            <x-text-input id="data" class="formAddKnowledge" type="text" name="data" value="{{ date('d/m/Y', strtotime($Project->project_date)) }}" required disabled/>
+                        </div>
+
+
+                        <div style="width: 35%; margin-bottom: 25px;">
+                            <label for="bundle">Produto/Linha</label>
+                            <select id="bundle" class="formAddKnowledge" name="bundle" placeholder="Selecione o Produto/Linha" style="  width: 100%; border: none; font-size: 14px; font-weight: 100; color: #6f778c;">
+                                <option value="null" selected disabled>Selecione</opt>
+                                    @foreach($bundles as $bundle)
+                                        <option value="{{$bundle->bundle_id}}">{{$bundle->bundle}}</option>
+                                    @endforeach
+                            </select>
+                        </div>
 
 
                         <div id="dropZone" class="border-2 border-gray-300 rounded-lg p-8 text-center mb-6 cursor-pointer" style="border-style: dashed; width: 48%; box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25); padding: 30px 0px;">
@@ -59,8 +80,9 @@
                             <p class="text-gray-500 font-medium">Drop it like a pro!</p>
                             <p class="text-gray-400 text-sm">Carregue seu arquivo .xls ou .xlxs soltando-os nesta janela</p>
                         </div>
+
                         <ul id="fileList" style="width: 100%;" class="flex flex-column text-sm text-gray-600 mb-4 items-center justify-center"></ul>
-                        <button id="uploadButton" class="px-4 py-2" style="background-color: #5570F1; width: 406px; height: 58px; border-radius: 10px; color: white; box-shadow: 0px 19px 34px -20px #43BBED;">Upload</button>
+                        <button id="uploadButton" class="px-4 py-2" style="background-color: #5570F1; width: 406px; height: 58px; border-radius: 10px; color: white; box-shadow: 0px 19px 34px -20px #43BBED;">Confirmar e Enviar</button>
                         <input type="file" id="fileInput" style="display: none;"/>
                     </div>
                 </div>
@@ -72,11 +94,9 @@
 
 
 <script>
-            const userId = @json($userId);
-            document.addEventListener('DOMContentLoaded', () => {
-                console.log(userId);
-            });
-        </script>
+    const Id = @json($Project->id);
+    const userId = @json($userId);
+</script>
 
 
         <script>
@@ -134,11 +154,12 @@
 
             function uploadFiles() {
                 fileListGlobal.forEach(file => {
-                    $('.loading').fadeIn(500);
+                    //$('.loading').fadeIn(500);
                     const formData = new FormData();
                     formData.append('name', document.getElementById('name').value);
+                    formData.append('bundle', document.getElementById('bundle').value);
                     formData.append('file', file);
-                    fetch('/knowledge/upload', {
+                    fetch('/project/'+Id+'/files', {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')

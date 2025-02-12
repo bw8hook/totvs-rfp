@@ -6,68 +6,45 @@
                 <div class="block" style="width: 50%;">    
                     <div class="flex" style="width: 100%;">
                     <img src="{{ asset('icons/base_conhecimento.svg') }}" alt="Upload Icon" style="height: 33%; padding-right: 18px;">
-                        <span>{{$KnowledgeBase->name}}</span>
+                        <span>{{$Project->name}}</span>
                     </div>
                     <div class="relative block items-center" style="padding-bottom: 12px; padding-left:7px;">        
-                        <div class="info_details" style="color:#3A57E8"> {{$KnowledgeBase->filename_original}} </div>
+                        <div class="info_details" style="color:#3A57E8"> {{$ProjectFile->filename_original}} </div>
                         <div class="info_details"> Requisitos:<span> {{$CountCountRecordsResultado}}</span></div>
                     </div>
-                </div>
-
-                <div class="flex" style="width: 40%;">    
-                    <form id="InfosKnoledgeBase">
-                        @csrf    
-                        <div class="form-group" style="width:100%;">
-                            <label for="escopo">*Escopo da RFP</label>
-                            <input type="text" id="escopo" name="project" value="{{$KnowledgeBase->project}}" placeholder="Digite o escopo aqui" onblur="handleInput('escopo')">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="white"/><path d="M21.0885 3.83905C20.5504 3.30177 19.821 3 19.0606 3C18.3002 3 17.5709 3.30177 17.0328 3.83905L4.15958 16.7122C3.79093 17.0788 3.49864 17.5148 3.2996 17.9951C3.10056 18.4754 2.99874 18.9904 3.00001 19.5102V21.1352C3.00001 21.3451 3.0834 21.5465 3.23184 21.6949C3.38028 21.8433 3.5816 21.9267 3.79153 21.9267H5.4165C5.93634 21.9282 6.4513 21.8265 6.93158 21.6276C7.41186 21.4287 7.84792 21.1365 8.2145 20.7679L21.0885 7.89398C21.6255 7.3559 21.9271 6.62674 21.9271 5.86652C21.9271 5.10629 21.6255 4.37713 21.0885 3.83905ZM7.0953 19.6487C6.64889 20.0922 6.04573 20.3419 5.4165 20.3437H4.58304V19.5102C4.58224 19.1983 4.64332 18.8893 4.76274 18.6011C4.88217 18.313 5.05756 18.0514 5.27878 17.8314L15.0484 8.06178L16.8689 9.88226L7.0953 19.6487ZM19.9685 6.77478L17.9849 8.7591L16.1645 6.94258L18.1488 4.95825C18.2683 4.83898 18.4102 4.74442 18.5663 4.67997C18.7223 4.61551 18.8896 4.58244 19.0584 4.58262C19.2273 4.5828 19.3945 4.61625 19.5504 4.68104C19.7064 4.74583 19.848 4.8407 19.9673 4.96023C20.0866 5.07977 20.1811 5.22162 20.2456 5.3777C20.31 5.53378 20.3431 5.70103 20.3429 5.86989C20.3427 6.03876 20.3093 6.20593 20.2445 6.36187C20.1797 6.51781 20.0848 6.65946 19.9653 6.77874L19.9685 6.77478Z" fill="#8A94AD"/></svg>
-                        </div>
-                        <div class="form-group"  style="width:50%;">
-                            <label for="time">*Time Responsável</label>
-                            <input type="text" id="time" name="project_team" value="{{$KnowledgeBase->project_team}}" placeholder="Digite o time responsável"  onblur="handleInput('time')">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="white"/><path d="M21.0885 3.83905C20.5504 3.30177 19.821 3 19.0606 3C18.3002 3 17.5709 3.30177 17.0328 3.83905L4.15958 16.7122C3.79093 17.0788 3.49864 17.5148 3.2996 17.9951C3.10056 18.4754 2.99874 18.9904 3.00001 19.5102V21.1352C3.00001 21.3451 3.0834 21.5465 3.23184 21.6949C3.38028 21.8433 3.5816 21.9267 3.79153 21.9267H5.4165C5.93634 21.9282 6.4513 21.8265 6.93158 21.6276C7.41186 21.4287 7.84792 21.1365 8.2145 20.7679L21.0885 7.89398C21.6255 7.3559 21.9271 6.62674 21.9271 5.86652C21.9271 5.10629 21.6255 4.37713 21.0885 3.83905ZM7.0953 19.6487C6.64889 20.0922 6.04573 20.3419 5.4165 20.3437H4.58304V19.5102C4.58224 19.1983 4.64332 18.8893 4.76274 18.6011C4.88217 18.313 5.05756 18.0514 5.27878 17.8314L15.0484 8.06178L16.8689 9.88226L7.0953 19.6487ZM19.9685 6.77478L17.9849 8.7591L16.1645 6.94258L18.1488 4.95825C18.2683 4.83898 18.4102 4.74442 18.5663 4.67997C18.7223 4.61551 18.8896 4.58244 19.0584 4.58262C19.2273 4.5828 19.3945 4.61625 19.5504 4.68104C19.7064 4.74583 19.848 4.8407 19.9673 4.96023C20.0866 5.07977 20.1811 5.22162 20.2456 5.3777C20.31 5.53378 20.3431 5.70103 20.3429 5.86989C20.3427 6.03876 20.3093 6.20593 20.2445 6.36187C20.1797 6.51781 20.0848 6.65946 19.9653 6.77874L19.9685 6.77478Z" fill="#8A94AD"/></svg>
-                        </div>
-                        <div class="form-group" style="width:30%;">
-                            <label for="data">*Data da RFP</label>
-                            <input type="text" id="data" name="rfp_date" value="{{$KnowledgeBase->rfp_date ? date('d/m/Y', strtotime($KnowledgeBase->rfp_date)) : date('d/m/Y', strtotime($KnowledgeBase->created_at)) }}" placeholder="**/**/****" maxlength="10"  onblur="handleInput('data')" >
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="white"/><path d="M21.0885 3.83905C20.5504 3.30177 19.821 3 19.0606 3C18.3002 3 17.5709 3.30177 17.0328 3.83905L4.15958 16.7122C3.79093 17.0788 3.49864 17.5148 3.2996 17.9951C3.10056 18.4754 2.99874 18.9904 3.00001 19.5102V21.1352C3.00001 21.3451 3.0834 21.5465 3.23184 21.6949C3.38028 21.8433 3.5816 21.9267 3.79153 21.9267H5.4165C5.93634 21.9282 6.4513 21.8265 6.93158 21.6276C7.41186 21.4287 7.84792 21.1365 8.2145 20.7679L21.0885 7.89398C21.6255 7.3559 21.9271 6.62674 21.9271 5.86652C21.9271 5.10629 21.6255 4.37713 21.0885 3.83905ZM7.0953 19.6487C6.64889 20.0922 6.04573 20.3419 5.4165 20.3437H4.58304V19.5102C4.58224 19.1983 4.64332 18.8893 4.76274 18.6011C4.88217 18.313 5.05756 18.0514 5.27878 17.8314L15.0484 8.06178L16.8689 9.88226L7.0953 19.6487ZM19.9685 6.77478L17.9849 8.7591L16.1645 6.94258L18.1488 4.95825C18.2683 4.83898 18.4102 4.74442 18.5663 4.67997C18.7223 4.61551 18.8896 4.58244 19.0584 4.58262C19.2273 4.5828 19.3945 4.61625 19.5504 4.68104C19.7064 4.74583 19.848 4.8407 19.9673 4.96023C20.0866 5.07977 20.1811 5.22162 20.2456 5.3777C20.31 5.53378 20.3431 5.70103 20.3429 5.86989C20.3427 6.03876 20.3093 6.20593 20.2445 6.36187C20.1797 6.51781 20.0848 6.65946 19.9653 6.77874L19.9685 6.77478Z" fill="#8A94AD"/></svg>
-                        </div>
-                    </form>
                 </div>
             </div>
 
             <div id="BlocoLista">
 
-                <div class="bloco_info_filter_records" style="background:#D2E4FF;">
+            <div class="bloco_info_filter_records" style="background:#D2E4FF;">
                     <div>
                         <h2 style="color:#3A57E8;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style=" float: left; margin-right: 9px;">
-                            <g clip-path="url(#clip0_332_2687)">
-                                <path d="M24 15.8V22.2C24 22.642 23.642 23 23.2 23C22.758 23 22.4 22.642 22.4 22.2V21H21C19.895 21 19 20.105 19 19V15.8C19 15.358 19.358 15 19.8 15C20.242 15 20.6 15.358 20.6 15.8V19.2C20.6 19.311 20.69 19.4 20.8 19.4H22.401V15.799C22.401 15.357 22.759 14.999 23.201 14.999C23.643 14.999 24.001 15.357 24.001 15.799L24 15.8ZM11.2 15C10.758 15 10.4 15.358 10.4 15.8V19.401H8.799C8.688 19.401 8.599 19.311 8.599 19.201V15.801C8.599 15.359 8.241 15.001 7.799 15.001C7.357 15.001 6.999 15.359 6.999 15.801V19.001C6.999 20.106 7.894 21.001 8.999 21.001H10.399V22.201C10.399 22.643 10.757 23.001 11.199 23.001C11.641 23.001 11.999 22.643 11.999 22.201V15.801C11.999 15.359 11.641 15.001 11.199 15.001L11.2 15ZM18 17.5V20.5C18 21.878 16.878 23 15.5 23C14.122 23 13 21.878 13 20.5V17.5C13 16.122 14.122 15 15.5 15C16.878 15 18 16.122 18 17.5ZM16.4 17.5C16.4 17.004 15.996 16.6 15.5 16.6C15.004 16.6 14.6 17.004 14.6 17.5V20.5C14.6 20.996 15.004 21.4 15.5 21.4C15.996 21.4 16.4 20.996 16.4 20.5V17.5ZM4.5 4C3.672 4 3 4.672 3 5.5C3 6.328 3.672 7 4.5 7C5.328 7 6 6.328 6 5.5C6 4.672 5.328 4 4.5 4ZM8.5 4C7.672 4 7 4.672 7 5.5C7 6.328 7.672 7 8.5 7C9.328 7 10 6.328 10 5.5C10 4.672 9.328 4 8.5 4ZM24 6V12C24 12.552 23.552 13 23 13C22.448 13 22 12.552 22 12V10H2V18C2 19.654 3.346 21 5 21C5.552 21 6 21.448 6 22C6 22.552 5.552 23 5 23C2.243 23 0 20.757 0 18V6C0 3.243 2.243 1 5 1H19C21.757 1 24 3.243 24 6ZM22 8V6C22 4.346 20.654 3 19 3H5C3.346 3 2 4.346 2 6V8H22Z" fill="#3A57E8"/>
-                            </g>
-                            <defs>
-                                <clipPath id="clip0_332_2687"><rect width="24" height="24" fill="white"/></clipPath>
-                            </defs>
-                        </svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style=" float: left; margin-right: 9px;">
+                                <g clip-path="url(#clip0_332_2687)">
+                                    <path d="M24 15.8V22.2C24 22.642 23.642 23 23.2 23C22.758 23 22.4 22.642 22.4 22.2V21H21C19.895 21 19 20.105 19 19V15.8C19 15.358 19.358 15 19.8 15C20.242 15 20.6 15.358 20.6 15.8V19.2C20.6 19.311 20.69 19.4 20.8 19.4H22.401V15.799C22.401 15.357 22.759 14.999 23.201 14.999C23.643 14.999 24.001 15.357 24.001 15.799L24 15.8ZM11.2 15C10.758 15 10.4 15.358 10.4 15.8V19.401H8.799C8.688 19.401 8.599 19.311 8.599 19.201V15.801C8.599 15.359 8.241 15.001 7.799 15.001C7.357 15.001 6.999 15.359 6.999 15.801V19.001C6.999 20.106 7.894 21.001 8.999 21.001H10.399V22.201C10.399 22.643 10.757 23.001 11.199 23.001C11.641 23.001 11.999 22.643 11.999 22.201V15.801C11.999 15.359 11.641 15.001 11.199 15.001L11.2 15ZM18 17.5V20.5C18 21.878 16.878 23 15.5 23C14.122 23 13 21.878 13 20.5V17.5C13 16.122 14.122 15 15.5 15C16.878 15 18 16.122 18 17.5ZM16.4 17.5C16.4 17.004 15.996 16.6 15.5 16.6C15.004 16.6 14.6 17.004 14.6 17.5V20.5C14.6 20.996 15.004 21.4 15.5 21.4C15.996 21.4 16.4 20.996 16.4 20.5V17.5ZM4.5 4C3.672 4 3 4.672 3 5.5C3 6.328 3.672 7 4.5 7C5.328 7 6 6.328 6 5.5C6 4.672 5.328 4 4.5 4ZM8.5 4C7.672 4 7 4.672 7 5.5C7 6.328 7.672 7 8.5 7C9.328 7 10 6.328 10 5.5C10 4.672 9.328 4 8.5 4ZM24 6V12C24 12.552 23.552 13 23 13C22.448 13 22 12.552 22 12V10H2V18C2 19.654 3.346 21 5 21C5.552 21 6 21.448 6 22C6 22.552 5.552 23 5 23C2.243 23 0 20.757 0 18V6C0 3.243 2.243 1 5 1H19C21.757 1 24 3.243 24 6ZM22 8V6C22 4.346 20.654 3 19 3H5C3.346 3 2 4.346 2 6V8H22Z" fill="#3A57E8"/>
+                                </g>
+                                <defs>
+                                    <clipPath id="clip0_332_2687"><rect width="24" height="24" fill="white"/></clipPath>
+                                </defs>
+                            </svg>
 
 
                         Atenção
                         </h2>
-                        <h4>Existem requisitos com valores inválidos em campos obrigatórios. Verifique os requisitos antes de enviá-los à base de dados.</h4>
+                        <div style="display:flex; justify-content: space-between;">
+                            <h4>Existem requisitos com valores inválidos em campos obrigatórios. Verifique os requisitos antes de enviá-los à base de dados.</h4>
+                            <div style=" color: #5c6681; text-transform: uppercase; font-size: 13px;">Total Com Erros:<span> {{$CountCountRecordsEmpty}}</span></div>
+                        </div>
                     </div>
                 </div>
             
                 <table id="TableExcel" class="tabela">
                     <thead>
                         <tr>
-                            <th style="width:3%;"></th>
-                            <th style="width:9%;">Classificação 1</th>
-                            <!-- <th style="width:9%;">Classificação 2</th> -->
+                            <th style="width:3%;">#ID</th>
+                            <th style="width:3%;">Classificação 1</th>
                             <th style="width:22%;">Descrição do Requisito</th>
-                            <th style="width:10.5%;">Resposta 1</th>
-                            <th style="width:14.5%;">Resposta 2</th>
-                            <th>Produto/Linha</th>
-                            <th style="width:25.5%;">Observações</th>
                             <th style="width:5%;"></th>
                         </tr>    
                     </thead>
@@ -75,6 +52,8 @@
                           
                         </tbody>
                 </table>
+
+                <nav id="paginationLinks"></nav>
 
                 <div id="loadMore" style="display: none;" data-next-page="">
                     <div class="alignCenter">
@@ -87,13 +66,12 @@
                                 <clipPath id="clip0_443_3072"><rect width="20" height="20" fill="white"/></clipPath>
                             </defs>
                         </svg>
-
                     </div>
                 </div>
 
                 <div class="btns_bottom">
                     <div class="AlignBtns">
-                        <div class="btn_finishSend">
+                        <div class="btn_finishSend" data-id="{{$ProjectFile->id}}" data-href="{{ route('project.recordsErrors', $ProjectFile->id) }}">
                             <div class="alignCenter">
                                 <span>Concluir e enviar</span>
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -115,19 +93,22 @@
                         </div>
                     </form>
                 </div>
-              
-
             </div>
         </div>
     </div>
 </x-app-layout>
 
 <script>
+    const ListProdutos = @json($AllBundles);
+    const ListRespostas = @json($AllAnswers);
+</script>
+
+<script>
     $(document).ready(function () {
         $(".side_menu_big").addClass("menu_hidden").removeClass("menu_visible");
         $(".side_menu_small").addClass("menu_visible").removeClass("menu_hidden");
 
-        function fetchUsers(url = "{{ route('knowledge.recordsFilterErrors', $idKnowledgeBase) }}", append = false) {
+        function fetchUsers(url = "{{ route('project.recordsFilter', $idProjectFile) }}", append = false) {
             $.ajax({
                 url: url,
                 method: 'GET',
@@ -136,31 +117,33 @@
                     // Atualizar tabela
                     let rows = '';
                     response.data.forEach(record => {
-                        // <td style="width:10%; display: flex; align-items: center; word-wrap: break-word; white-space: normal; overflow: visible; text-align: left;">${record.classificacao2}</td>
                         //console.log(record);
+
+                        // Verifica se record.bundle_id está presente em ListProdutos
+                        let existsInListProducts = ListProdutos.some(produto => produto.bundle_id === record.bundle_id);
+
+                        // Se o bundle_id não existir na lista, ele aparece como desabilitado e selecionado
+                        let bundleOptions = !existsInListProducts 
+                            ? `<option disabled selected>${record.bundle_old || '?'}</option>` 
+                            : '<option disabled selected>?</option>';
+                        ListProdutos.forEach(produto => {
+                            bundleOptions += `<option value="${produto.bundle_id}" ${produto.bundle_id === record.bundle_id ? 'selected' : ''}>${produto.bundle}</option>`;
+                        });
+
+                        // Verifica se record.resposta está presente em ListRespostas
+                        let existsInList = ListRespostas.some(resposta => resposta.anwser === record.resposta);
+                        let AnwserOptions = !existsInList  ? `<option disabled selected>${record.resposta}</option>` : '';
+                        console.log(ListRespostas);
+                        ListRespostas.forEach(resposta => {
+                            AnwserOptions += `<option value="${resposta.anwser}" ${resposta.anwser === record.resposta ? 'selected' : ''}>${resposta.anwser}</option>`;
+                        });
+
+
                         rows += `
                             <tr class="listaTabela ${record.rfp_bundles ? '' : 'highlighted_error'}" data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
-                                <td style="width:3%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
-                                <td style="width:9%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.classificacao}</td>
-                                <td style="width:21%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;">${record.requisito}</td>
-                                <td style="width:10%; display: flex; align-items: center;">
-                                    <select name="resposta"  style="border-radius: 8px; width:100%">
-                                        ${record.resposta == "Atende" ? '<option value="Atende" selected>Atende</option>' : '<option value="Atende">Atende</option>'}
-                                        ${record.resposta == "Atende Parcialmente" ? '<option value="Atende Parcialmente" selected>Atende Parcialmente</option>' : '<option value="Atende Parcialmente">Atende Parcialmente</option>'}
-                                        ${record.resposta == "Customizado" ? '<option value="Customizado" selected>Customizado</option>' : '<option value="Customizado">Customizado</option>'}
-                                        ${record.resposta == "Não Atende" ? '<option value="Não Atende" selected>Não Atende</option>' : '<option value="Não Atende">Não Atende</option>'}
-                                    </select>
-                                </td>
-                                <td style="width:11%;  display: flex; align-items: center;  word-wrap: break-word; white-space: normal;overflow: visible; text-align: left;">${record.resposta2 ? record.resposta2 : '-'}</td>
-                                <td style="width:13%;  display: flex; align-items: center;">
-                                    <select name="bundle"  style="border-radius: 8px; width:100%">
-                                        <option value="ERP Protheu" selected>ERP Protheus</option>
-                                        <option value="Winthor">Winthor</option>
-                                    </select>
-                                </td>
-
-                                <td style="width:23%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px; font-size:14px;">${record.observacao ? record.observacao : '-'}</td>
-
+                                <td style="width:8.57%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
+                                <td style="width:11.5%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.classificacao}</td>
+                                <td style="width:73%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;">${record.requisito}</td>
                                 <td style="width:5%;  display: flex; align-items: center;">
                                     <div class="btnEditRecord" style="margin: 0px; float:left; cursor:pointer;">
                                         <button type="submit" class="records_edit">
@@ -190,15 +173,34 @@
                         $('#TableExcel .body_table').html(rows);
                     }
 
-                    // Atualiza o botão "Carregar Mais"
-                    if (response.next_page_url) {
-                        $('#loadMore').data('next-page', response.next_page_url).show();
-                    } else {
-                        $('#loadMore').hide();
+                   
+                    // Atualizar links de paginação
+                    let pagination = '';
+                    if (response.links) {
+                        pagination = response.links
+                            .filter(link => !["&laquo; Anterior", "Próximo &raquo;"].includes(link.label)) // Remove "Anterior" e "Próximo"
+                            .map(link =>
+                                `<a href="${link.url}" class="pagination-link ${link.active ? 'active' : ''}">${link.label}</a>`
+                            ).join('');
                     }
+                    $('#paginationLinks').html(pagination);
                 }
             });
         }
+
+
+         // Navegar na paginação
+         $(document).on('click', '#paginationLinks a', function (e) {
+            e.preventDefault();
+            const url = $(this).attr('href');
+            if (url) {
+                fetchUsers(url);
+                const div = document.getElementById("contentBody");
+                div.scrollTop = 0; 
+            }
+        });
+
+        
 
         $(document).on('click', '#loadMore', function () {
             const nextPage = $(this).data('next-page');
@@ -211,7 +213,7 @@
         $(document).on('change', 'select[name="resposta"]', function () {
             const IdRecord = $(this).closest('tr').data('id'); // Obtém o ID do registro da linha da tabela
             if (IdRecord) {
-                let url = `{{ route('knowledge.records.update', ':id') }}`.replace(':id', IdRecord);
+                let url = `{{ route('project.records.update', ':id') }}`.replace(':id', IdRecord);
                 console.log(url); // Verifica a URL gerada no console
 
                 // Opcional: Enviar automaticamente a alteração via AJAX para salvar no banco
@@ -257,9 +259,10 @@
 
 
         $(document).on('change', 'select[name="bundle"]', function () {
+            const Record = $(this);
             const IdRecord = $(this).closest('tr').data('id'); // Obtém o ID do registro da linha da tabela
             if (IdRecord) {
-                let url = `{{ route('knowledge.records.update', ':id') }}`.replace(':id', IdRecord);
+                let url = `{{ route('project.records.update', ':id') }}`.replace(':id', IdRecord);
                 console.log(url); // Verifica a URL gerada no console
 
                 // Opcional: Enviar automaticamente a alteração via AJAX para salvar no banco
@@ -271,6 +274,9 @@
                         _token: $('meta[name="csrf-token"]').attr('content') // Se necessário para Laravel
                     },
                     success: function(response) {
+
+                        Record.parent().parent().removeClass("highlighted_error");
+
                         // Verifica se já existe um alerta visível e fecha ele
                         if ($('#success-alert').length) {
                             $('#success-alert').remove();
@@ -329,12 +335,10 @@
         });
 
 
-        
-
         $(document).on('click', '.btnDeleteRecord', function () {
             const IdRecord = $(this).parent().parent().data('id');
             if (IdRecord) {
-                let url = `{{ route('knowledge.recordsFilterRemove', ':id') }}`.replace(':id', IdRecord);
+                let url = `{{ route('project.recordsFilterRemove', ':id') }}`.replace(':id', IdRecord);
                 $("#ModalDelete form").attr('action', url);
                 $("#ModalDelete form").attr('data-id', IdRecord);
                 $("#ModalDelete").show();
@@ -388,9 +392,42 @@
 
         // BTN Concluir e Enviar
         $(document).on('click', '.btn_finishSend', function () {
-            //alert('BTN Concluir e Enviar');
+            const url = $(this).data('href'); // Obtém o valor do atributo data-href
+            const IdRecord = $(this).data('id');
+            console.log(url);
+            if (url) {
+                let escopo = $("#escopo");
+                let time = $("#time");
+                let data = $("#data");
+                let isValid = true;
+                let firstError = null;
+                let alertContainer = $("#alert-container");
+
+                $(".border-red").removeClass("border-red"); // Remove bordas vermelhas anteriores
+                
+                    let urlFiltro = `{{ route('project.recordsFilterErrors', ':id') }}`.replace(':id', IdRecord);
             
+                    // Envia ajax para validar se todos os campos estão preenchidos, caso contrario, direciona para a página de "error"
+                    $.ajax({
+                        url: urlFiltro,
+                        method: 'GET',
+                        success: function(response) {
+                            console.log(response);
+                            if (response.data.length === 0 && response.next_page_url === null) {
+                                let urlSuccess = `{{ route('project.records.processing', ':id') }}`.replace(':id', IdRecord);
+                                window.location.href = urlSuccess;
+                            } else {
+                                window.location.href = url;
+                            }
+                        },
+                        error: function(error) {
+                            console.error('Erro ao atualizar:', error);
+                        }
+                    });
+                
+            }
         });
+
 
 
 
@@ -418,7 +455,7 @@
 
     function saveToDatabase(field, value) {
       // Substitua esta URL pelo endpoint do seu servidor
-      const url = "{{ route('knowledge.updateInfos', $idKnowledgeBase) }}"
+      const url = "{{ route('project.updateInfos', $ProjectFile) }}"
         
       $.ajax({
         url: url,
@@ -457,35 +494,20 @@
 
 
 <script>
-        $(document).ready(function() {
-            // Aplica a máscara de entrada
-            $('#data').mask('00/00/0000', {placeholder: "__/__/____"});
-
-            // Função para validar a data
-            function validarData(data) {
-                if (!data) return false;
-                const partes = data.split('/');
-                if (partes.length !== 3) return false;
-
-                const dia = parseInt(partes[0], 10);
-                const mes = parseInt(partes[1], 10) - 1;
-                const ano = parseInt(partes[2], 10);
-
-                const dataObj = new Date(ano, mes, dia);
-                return (
-                    dataObj.getDate() === dia &&
-                    dataObj.getMonth() === mes &&
-                    dataObj.getFullYear() === ano
-                );
-            }
-
-            // Valida ao sair do input
-            $('#data').on('blur', function() {
-                const valor = $(this).val();
-                if (!validarData(valor)) {
-                    alert('A data inserida é inválida. Por favor, corrija!');
-                    $(this).val('');
-                }
-            });
+    document.addEventListener("DOMContentLoaded", function() {
+        flatpickr("#data", {
+            dateFormat: "d/m/Y", // Formato da data (dia/mês/ano)
+            enableTime: false,    // Desativa a seleção de horário
+            locale: "pt"         // Define para português
         });
-    </script>
+    });
+
+
+    document.getElementById('btnLimpar').addEventListener('click', function () {
+        document.getElementById('filterForm').reset();
+    });
+
+
+
+</script>
+

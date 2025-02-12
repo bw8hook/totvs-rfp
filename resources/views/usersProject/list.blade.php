@@ -12,14 +12,14 @@
                     </div>
                 </div>
                
-                <a href="{{route('userproject.register')}}" type="button" class="btn flex items-center justify-center  py-3 rounded-lg font-semibold transition mb-6 bg-#5570F1" style="box-shadow: 0px 19px 34px -20px #43BBED; background-color: #5570F1; color: white; padding: 0px 24px; height: 45px; font-size: 15px; text-transform: uppercase; letter-spacing: 0px; margin-top: 28px; border-radius: 60px;">
+                <a href="{{route('users.register')}}" type="button" class="btn flex items-center justify-center  py-3 rounded-lg font-semibold transition mb-6 bg-#5570F1" style="box-shadow: 0px 19px 34px -20px #43BBED; background-color: #5570F1; color: white; padding: 0px 24px; height: 45px; font-size: 15px; text-transform: uppercase; letter-spacing: 0px; margin-top: 28px; border-radius: 8px;">
                     <img src="{{ asset('icons/btn_nova_base.svg') }}" alt="Upload Icon" style="height: 22px; padding-right: 18px;">    
                     Criar Novo Usuário
                 </a>
             </div>
 
             <div id="BlocoLista" class="p-4 sm:p-8">
-                <div class="bloco_info_details_header">
+                <!-- <div class="bloco_info_details_header">
                     <form id="filterForm">
                         <span>Filtragem rápida:</span>
                         <select name="sort_by" style="height: 40px; padding: 0px 14px;">
@@ -31,29 +31,28 @@
                             <option value="asc">Ascendente</option>
                             <option value="desc">Descendente</option>
                         </select>
-                        <!-- <button type="submit">Filtrar</button> -->
+                        <button type="submit">Filtrar</button>
                     </form> 
 
                     <div id="bloco_info_found">
                         <div class="info_details_total">
-                            Total Encontrados: <span>15</span>
+                            Total Encontrados: <span>0</span>
                         </div>
                     </div>
-                </div>
+                </div> -->
                
 
                 <table id="userTable" class="tabela">
                     <thead>
                         <tr>
-                            <th style="width:15%">Nome:</th>
-                            <th style="width:12%" >ID TOTVS:</th>
-                            <th style="width:13%">Cargo</th>
-                            <th style="width:12%">Setor</th>
-                            <th style="width:12%">Produtos/Skills</th>
-                            <th style="width:15%">Contato</th>
-                            <th>Data do Cadastro</th>
-                            <th>Tipo de Cadastro</th>
-                            <th style="width:170px; text-align:center;" scope="col">Ações</th>
+                            <th style="width:12%;">Nome:</th>
+                            <th style="width:11%; text-align:center;" >ID TOTVS:</th>
+                            <th style="width:12%; text-align:center;">Setor</th>
+                            <!-- <th style="width:12%">Produtos/Skills</th> -->
+                            <th style="width:20%; text-align:center;">Contato</th>
+                            <th style="width:10%; text-align:center;">Data do Cadastro</th>
+                            <th style="width:15%; text-align:center;">Tipo de Cadastro</th>
+                            <th style="width:10%; text-align:center;">Ações</th>
                         </tr>
                     </thead>
                     <tbody class="body_table">
@@ -88,14 +87,13 @@
                         const formattedDate = `${day}/${month}/${year}`;
                         rows += `
                             <tr class="listaTabela">
-                                <td style="width: 15%; text-align: left;">${user.name}</td>
-                                <td style="width: 13%; text-align: left;">${user.idtotvs ? user.idtotvs : '-'}</td>
-                                <td style="width: 13%; text-align: left;">${user.account_type}</td>
-                                <td style="width: 12%; text-align: left;">${user.departament.departament}</td>
-                                <td style="width: 15%; text-align: left;">${user.email}</td>
-                                <td style="width: 12% text-align: left;;">${formattedDate}</td>
-                                <td style="width: 14%; text-align: left;"> <div class="tipo_cadastro">${user.account_type}</div></td>
-                                <td style="width:70px; text-align:center; position:relative;">
+                                <td style="width: 28%; text-align: left;">${user.name}</td>
+                                <td style="width: 24%; text-align: center;">${user.idtotvs ? user.idtotvs : '-'}</td>
+                                <td style="width: 32%; text-align: center;">${user.departament.departament}</td>
+                                <td style="width: 42%; text-align: center;">${user.email}</td>
+                                <td style="width: 32%; text-align: center;">${formattedDate}</td>
+                                <td style="width: 30%; text-align: center;"> <div class="tipo_cadastro" style="width:auto;">${user.role.name}</div></td>
+                                <td style="width:12%; margin-left:3%; text-align:center; position:relative; display:flex;">
                                     <a href="/users/edit/${user.id}" class="btn_edit_row">
                                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <g clip-path="url(#clip0_126_4845)">

@@ -27,4 +27,5 @@ class KnowledgeBase extends Model
     {
         return $this->hasMany(KnowledgeRecord::class, 'knowledge_base_id'); // Certifique-se de que 'knowledge_base_id' seja a chave estrangeira
     }
+
 }

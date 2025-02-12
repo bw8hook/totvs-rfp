@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UsersDepartaments;
+use App\Models\UserRole;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ class UserProjectController extends Controller
 
     public function filter(Request $request)
     {
-        $query = User::query()->with('departament');
+        $query = User::query()->with('departament')->with(relations: 'role');
 
         // Aplicar filtros
         if ($request->has('filter')) {
@@ -55,19 +56,19 @@ class UserProjectController extends Controller
           $ListUsers = array();
 
           foreach ($AllUsers as $key => $User) {
-
                 $user = User::find($User->id);
-                $position = $user->userPosition;
-            
+
                 $ListUser = array();
                 $ListUser['id'] = $User->id;
                 $ListUser['nome'] = $User->name;
                 $ListUser['email'] = $User->email;
-                $ListUser['perfil'] = $User->role;
-                $ListUser['position'] = $position;
-                $ListUser['account_type'] = $User->account_type;
+                $ListUser['idtotvs'] = $User->idtotvs;
+                $ListUser['perfil'] = $User->role->description;
+                $ListUser['departamento'] = $user->departament->departament;;
+                $ListUser['status'] = $User->status;
                 $ListUser['updated_at'] = $User->updated_at;
                 $ListUser['created_at'] = date("d/m/Y", strtotime($User->created_at));
+
                 $ListUsers[] = $ListUser;
           }
 
@@ -89,22 +90,14 @@ class UserProjectController extends Controller
      */
     public function create(): View
     {
-        $UsersPosition = UsersDepartaments::all();
-        $ListPositions = array();
+        $UsersDepartaments = UsersDepartaments::where('departament_type', 'Geral')->get();
 
-        //$AgentId = Auth::user()->id;
-
-        foreach ($UsersPosition as $key => $User) {
-              $ListPosition = array();
-              $ListPosition['id'] = $User->user_position_id;
-              $ListPosition['position'] = $User->position;
-              $ListPosition['type'] = $User->type_position;
-              $ListPositions[] = $ListPosition;
-        }
+        $UsersRoles = UserRole::where('status', 'view')->get();
 
         $data = array(
             'title' => 'Todos Arquivos',
-            'ListPositions' => $ListPositions,
+            'UsersDepartaments' => $UsersDepartaments,
+            'UsersRoles' => $UsersRoles,
         );
 
 

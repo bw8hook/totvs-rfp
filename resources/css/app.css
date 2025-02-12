@@ -169,11 +169,10 @@ table {
         display: inline-table;
         width: 100%;
         color: #5570F1;
-        background-color: #EDF2FA;
-        border: 1px solid #0097EB;
+        background-color: #FFF;
         justify-content: space-between;
         border-radius: 8px;
-        height: 34px;
+        height: 50px;
         margin-bottom: 5px;
     }
 
@@ -210,7 +209,7 @@ table {
             border: 2px solid #0000000d;
             background-color: #FFFFFF;
             border-radius: 10px;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             color: #5E6470;
             display: inline-flex;
             width: 100%;
@@ -247,7 +246,7 @@ table {
         } */
 
         .btn_delete_row{
-            width: 100%;
+            width: 40px;
             text-align: center;
             text-transform: uppercase;
             font-weight: bold;
@@ -262,7 +261,7 @@ table {
             }
 
         .btn_edit_row{
-            width: 100%;
+            width: 40px;
             text-align: center;
             text-transform: uppercase;
             font-weight: bold;
@@ -466,7 +465,7 @@ table {
             }
             
             #filterForm select{
-                padding: 14px;
+                padding:  14px;
                 min-width: 140px;
                 border: 2px solid #CBD0DD;
                 font-size: 14px;
@@ -487,6 +486,12 @@ table {
 }
 
 .highlighted_error select[name="bundle"] {
+    background-color: #ffe1df;
+    border-color: #f7b5b0;
+    color: red;
+}
+
+.highlighted_error select[name="classificacao_id"] {
     background-color: #ffe1df;
     border-color: #f7b5b0;
     color: red;
@@ -548,6 +553,9 @@ table {
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
     background-color: #F7F7F7;
     height: 54px;
+    font-size: 14px;
+    font-weight: 100;
+    color: #6f778c;
 }
 
 
@@ -1174,6 +1182,7 @@ label{
     font-size: 17px;
     line-height: 21px;
     color: rgba(48, 52, 77, 0.8);
+    margin-top: 20px;;
 }
 
 .bloco_importacao_topo h6{
@@ -1367,4 +1376,13 @@ label{
     color: #3A57E8;
     background-color: transparent;
     border-color: #3A57E8;
+}
+
+
+[type='checkbox']:checked, [type='radio']:checked{
+    background-color: #3A57E8;
+}
+
+[type='checkbox']:checked:hover, [type='checkbox']:checked:focus, [type='radio']:checked:hover, [type='radio']:checked:focus{
+    background-color: #3A57E8;
 }

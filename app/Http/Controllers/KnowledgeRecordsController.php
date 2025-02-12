@@ -42,6 +42,7 @@ class KnowledgeRecordsController extends Controller
                 ->where('knowledge_records.knowledge_base_id', $KnowledgeBase->id)
                 ->groupBy('knowledge_records.bundle_id')
                 ->select('knowledge_records.bundle_id', 'rfp_bundles.bundle')
+                ->groupBy('rfp_bundles.bundle') // Agrupa pelo ID do bundle
                 ->get();
 
                 $Records = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->get();
@@ -228,19 +229,12 @@ class KnowledgeRecordsController extends Controller
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
             $query->where('knowledge_base_id', '=', $KnowledgeBase->id);
-
             $query->whereNull('bundle_id')->orWhere('bundle_id', ''); // Para strings vazias
                         
             // Paginação
-            $records = $query->paginate(40);
+            $records = $query->paginate(100);
 
-            // Retornar dados em JSON
-            return response()->json([
-                'data' => $records->items(),
-                'next_page_url' => $records->nextPageUrl(),
-            ]);
-
-            //return response()->json($records);
+            return response()->json($records);
         }
     }
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Auth\User;
 use App\Models\RfpBundle;
+use App\Models\Agent;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,33 +19,33 @@ class BundlesController extends Controller
 {
     public function filter(Request $request)
     {
+        // Aplicar ordenação
+        $orderBy = $request->get('sort_order', 'id_desc'); // Padrão: mais recente primeiro
+
         $query = RfpBundle::query();
 
-        // Aplicar filtros
-        if ($request->has('filter')) {
-            foreach ($request->filter as $field => $value) {
-                if (!empty($value)) {
-                    $query->where($field, 'like', '%' . $value . '%');
-                }
+        switch ($orderBy) {
+            case 'id_asc':
+                $query->orderBy('bundle_id', 'asc');
+                break;
+            case 'id_desc':
+                $query->orderBy('bundle_id', 'desc');
+                break;
+            case 'bundle_asc':
+                $query->orderBy('bundle', 'asc');
+                break;
+            case 'bundle_desc':
+                $query->orderBy('bundle', 'desc');
+               
+                break;
             }
-        }
 
-        // Aplicar ordenação
-        if ($request->has('sort_by') && $request->has('sort_order')) {
-            $sortBy = $request->sort_by;
-            $sortOrder = $request->sort_order;
-
-            if (in_array($sortBy, ['bundle', 'bundle_id', 'created_at']) && in_array($sortOrder, ['asc', 'desc'])) {
-                $query->orderBy($sortBy, $sortOrder);
-            }
-        }
-
-        dd($query);
         // Paginação
-        $users = $query->paginate(40);
+        $bundles = $query->paginate(40);
+
 
         // Retornar dados em JSON
-        return response()->json($users);
+        return response()->json(data: $bundles);
     }
     
     public function list(Request $request): View
@@ -58,7 +59,6 @@ class BundlesController extends Controller
                 $ListBundle = array();
                 $ListBundle['id'] = $Bundle->bundle_id;
                 $ListBundle['nome'] = $Bundle->bundle;
-                $ListBundle['color'] = $Bundle->bundle_color;
                 if(isset($Bundle->created_at)){
                     $ListBundle['created_at'] = date("d/m/Y", strtotime($Bundle->created_at));
                 }else{
@@ -71,7 +71,9 @@ class BundlesController extends Controller
 
           $data = array(
               'ListBundles' => $ListBundles,
+              'TotalFound' => $AllBundles->count(),
           );
+
   
           //return view('auth.register')->with($data);
 
@@ -107,17 +109,25 @@ class BundlesController extends Controller
     public function edit($id): View
     {
         if(Auth::user()->role->role_priority >= 90){
-            $user = RfpBundle::where('bundle_id', $id)->firstOrFail();
+            $Bundle = RfpBundle::where('bundle_id', $id)->firstOrFail();
+            $AgentSelected = Agent::where('id', $Bundle->agent_id)->first();
+            $agents = Agent::all();
 
-            if ($user) {
-                return view('bundles.edit', compact('user'));
+            if ($Bundle && $agents) {
+                $data = array(
+                    'bundle' => $Bundle,
+                    'agents' => $agents,
+                    'id' => $id,
+                    'AgentSelected' => $AgentSelected
+                );
+
+                return view('bundles.edit')->with($data);;
             } else {
                 return redirect()->back()->with('error', 'Produto não encontrado.');
             }
         }else{
             return redirect()->back()->with('error', 'Usuário sem permissão para editar.');
         }
-
     }
 
       /**
@@ -171,7 +181,7 @@ class BundlesController extends Controller
         /**
      * Display the registration view.
      */
-    public function edit_user(Request $request)
+    public function update(Request $request)
     {
         if(Auth::user()->role->role_priority >= 90){
             // Validação dos dados
@@ -181,9 +191,16 @@ class BundlesController extends Controller
             ]);
 
             $produto = RfpBundle::where('bundle_id', $validatedData['bundle_id'])->firstOrFail(); // Encontra o registro pelo ID
-           
+        
+
+
             if ($produto) {
                 $produto->bundle =  $validatedData['name'];
+                $produto->status =  $request->status;
+                if($request->selected_agents){
+                    $produto->agent_id =  intval($request->selected_agents[0]);   
+                }
+                
                 $produto->save(); // Salva as alterações no banco
                 
                 return redirect()->route('bundles.list')->with('success', 'Produto editado com sucesso.');

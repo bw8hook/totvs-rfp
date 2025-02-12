@@ -226,7 +226,8 @@
                         $('#TableExcel .body_table').html(rows);
                     }
 
-                   
+                   console.log(response);
+
                     // Atualizar links de paginação
                     let pagination = '';
                     if (response.links) {
@@ -573,4 +574,3 @@
         });
     });
 </script>
-

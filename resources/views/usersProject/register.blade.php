@@ -1,9 +1,4 @@
 <x-app-layout>
-    <div class="flex min-w-full flex-col">
-        <div style="display: flex; padding-top: 10px; align-self: end;">
-            <x-profile-bar></x-profile-bar>
-        </div>
-    </div>
     <div class="flex items-center justify-center  flex-col">
         <div class="w-full justify-center items-center flex flex-column" style="width: 100%; max-width: 80%;">
 
@@ -37,20 +32,22 @@
 
                 <!-- USER POSITION -->
                 <div class="mt-4" style="height: 86px;">
-                    <label for="user_position" class="block text-sm font-medium text-gray-700 mb-2">Selecione o tipo da conta</label>
-                    <select id="totvs-erp" name="user_position" style="background-color: #f1f1f1;">
-                        <option value="default" selected>Padrão</option>
-                        <option value="admin">Administrador</option>
+                    <label for="user_role_id" class="block text-sm font-medium text-gray-700 mb-2">Selecione o tipo da conta</label>
+                    <select id="user_role_id" name="user_role_id" style="background-color: #f1f1f1; width:100%;">
+                        @foreach($UsersRoles as $UsersRole)
+                            <!-- Código que será executado para cada item -->
+                            <option value="{{ $UsersRole['id'] }}">{{ $UsersRole['description'] }}</option>
+                        @endforeach
                     </select>
                 </div>
 
                 <!-- USER POSITION -->
                 <div class="mt-4" style="height: 86px;">
-                    <label for="user_position" class="block text-sm font-medium text-gray-700 mb-2">Selecione o Cargo</label>
-                    <select id="totvs-erp" name="user_position" style="background-color: #f1f1f1;">
-                        @foreach($ListPositions as $ListPosition)
+                    <label for="departament_id" class="block text-sm font-medium text-gray-700 mb-2">Selecione o Departamento</label>
+                    <select id="departament_id" name="departament_id" style="background-color: #f1f1f1; width:100%;">
+                        @foreach($UsersDepartaments as $UsersDepartament)
                             <!-- Código que será executado para cada item -->
-                            <option value="{{ $ListPosition['id'] }}">{{ $ListPosition['position'] }}</option>
+                            <option value="{{ $UsersDepartament['id'] }}">{{ $UsersDepartament['departament'] }}</option>
                         @endforeach
                     </select>
                 </div>

@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
         renderer: "svg",
         loop: true,
         autoplay: true,
-        path: "/storage/lottie/loading.json", // Caminho gerado pelo Storage
+        path: "/icons/lottie/loading.json", // Caminho gerado pelo Storage
     });
 
     window.showAlertBootstrap = function (type, message) {
