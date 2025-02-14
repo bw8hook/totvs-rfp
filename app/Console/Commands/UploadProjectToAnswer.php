@@ -149,6 +149,13 @@ class UploadProjectToAnswer extends Command
                     if($Answer->aderencia_na_mesma_linha != 'desconhecido'){
                         $Record->update(['status' => 'respondido ia']);
                         $Record->update(['project_answer_id' => $DadosResposta->id]);
+
+                        $ProjectFile = ProjectFiles::where('id', $Record->project_id)->first();
+                        if($ProjectFile->status == "processando"){
+                            $ProjectFile->status = 'processado';
+                            $ProjectFile->save();
+                        }
+        
                     }
                    
                     Log::info("Processamento de todos os arquivos concluído com sucesso");
