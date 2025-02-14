@@ -150,6 +150,9 @@ class UploadProjectToAnswer extends Command
                         $Record->update(['status' => 'respondido ia']);
                     }
                    
+                    Log::info("Processamento de todos os arquivos concluído com sucesso");
+                   
+
                 },
                 'rejected' => function ($reason, $index) {
                     Log::error("Request failed: " . $reason->getMessage());
@@ -157,6 +160,7 @@ class UploadProjectToAnswer extends Command
                 },
             ]);
     
+            Log::info("Executado com sucesso");
             // Executa o pool
             $promise = $pool->promise();
             $promise->wait();
@@ -168,4 +172,52 @@ class UploadProjectToAnswer extends Command
             //return response()->json(['error' => 'Ocorreu um erro durante o processamento'], 500);
         }
     }
+
+
+    // O método getSchema deve ser definido fora da classe MentoriaController para ser acessível
+    function getSchema()
+    {
+        return [
+            "name" => "answer",
+            "description" => "Uma resposta que indica se o software atende o requisito.",
+            "strict" => true,
+            "parameters" => [
+                "type" => "object",
+                "additionalProperties" => false,
+                "properties" => [
+                    "aderencia_na_mesma_linha" => [
+                        "type" => "string",
+                        "description" => "Atende, Atende Parcial, Customizável, Não Atende ou Desconhecido. Caso não encontre uma referencia sempre traga como Desconhecido",
+                        "enum" => ["Atende", "Atende Parcial", "Customizável", "Não Atende", "Desconhecido"]
+                    ],
+                    "linha_produto" => [
+                        "type" => "string",
+                        "description" => "Valor da coluna LINHA/PRODUTO para o requisito encontrado."
+                    ],
+                    "resposta" => [
+                        "type" => "string",
+                        "description" => "Análise e justificativa do porquê algum produto atende os requisitos. Pode incluir análise de complexidade e frequência na tabela."
+                    ],
+                    "referencia" => [
+                        "type" => "string",
+                        "description" => "Requisito encontrado como referência para a resposta. Deve trazer todas as informações sobre essa referência (nome do arquivo, linha, etc.). Caso não tenha encontrado, retorne todos os campos vazios.",
+                    ],
+                    "observacao" => [
+                        "type" => "string",
+                        "description" => "Valor da coluna OBSERVAÇÕES para o requisito encontrado, se houver."
+                    ],
+                    "acuracidade_porcentagem" => [
+                        "type" => "string",
+                        "description" => "Valor da acuracidade da resposta informada, em porcentagem",
+                    ],
+                    "acuracidade_explicacao" => [
+                        "type" => "string",
+                        "description" => "explicação do calculo que foi executado para chegar a respota da acuracidade_porcentagem.",
+                    ]
+                ],
+                "required" => ["aderencia_na_mesma_linha", "linha_produto", "resposta", "referencia", "observacao", "acuracidade_porcentagem", "acuracidade_explicacao"]
+            ]
+        ];
+    }
+
 }
