@@ -219,6 +219,8 @@
                     let rows = '';
                     response.data.forEach(record => {
 
+                        console.log(record);
+
 
                         // Verifica se record.resposta está presente em ListRespostas
                         let existsInList = ListAnswers.some(resposta => resposta.anwser === record.answers.aderencia_na_mesma_linha);
@@ -226,7 +228,6 @@
                         let highlighted_error = !existsInList  ? false : true;
                         console.log(existsInList);
                         ListAnswers.forEach(resposta => {
-        
                             AnwserOptions += `<option value="${resposta.id}" ${resposta.anwser === record.answers.aderencia_na_mesma_linha ? 'selected' : ''}>${resposta.anwser}</option>`;
                         });
                         
@@ -234,13 +235,12 @@
                             <tr class="listaTabela ${highlighted_error ? '' : 'highlighted_error'}" data-id="${record.id}" style="min-height:60px; max-height: 100%;">                                
                                 <td style="width:15%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.classificacao ? record.classificacao : ''} </td>
                                 <td style="width:38%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.requisito} </td>
-                                <td style="width:42%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.resposta ? record.answers.resposta : ''} </td>
                                 <td style="width:20%; display: flex; align-items: center;">
                                     <select name="classificacao_id"  style="border-radius: 8px; width:100%">
-                                        ${AnwserOptions}
+                                      ${AnwserOptions}
                                     </select>
                                 </td>
-                                <td style="width:26%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.observacao ? record.answers.observacao : ''} </td>
+                                 <td style="width:42%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.resposta ? record.answers.resposta : ''} </td>
                                 <td style="width:30%; font-size:12px; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.referencia ? record.answers.referencia : ''} </td>
                                 <td style="width:12%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #D2E4FF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #0E2ECF;"> ${record.answers.acuracidade_porcentagem ? record.answers.acuracidade_porcentagem : ''} </span> </td>
                                 <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #C7EBFF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #141824;"> ${record.rfp_bundles.bundle ? record.rfp_bundles.bundle : ''} </span></td>
