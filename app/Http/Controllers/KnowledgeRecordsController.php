@@ -193,9 +193,10 @@ class KnowledgeRecordsController extends Controller
                         ->orWhere('knowledge_records.resposta', '')
                         ->orWhere('knowledge_records.resposta2', '');
                 })
-                ->groupBy('knowledge_records.bundle_id')
+                ->groupBy('knowledge_records.bundle_id', 'rfp_bundles.bundle')
                 ->select('knowledge_records.bundle_id', 'rfp_bundles.bundle')
                 ->get();
+
 
                 $CountRecordsEmpty = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->whereNull('bundle_id')->orWhere('bundle_id', '')->count();
                 $CountRecords = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->count();

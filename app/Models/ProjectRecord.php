@@ -26,6 +26,12 @@ class ProjectRecord extends Model
         return $this->belongsTo(RfpBundle::class, 'bundle_id', 'bundle_id'); // Relacionamento com a tabela RfpBundle
     }
 
+
+    public function answers()
+    {
+        return $this->belongsTo(ProjectAnswer::class, 'project_answer_id'); // Relacionamento com a tabela RfpBundle
+    }
+
     public function file()
     {
         return $this->belongsTo(ProjectFiles::class, 'project_file_id');

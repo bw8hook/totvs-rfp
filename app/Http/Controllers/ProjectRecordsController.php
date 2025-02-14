@@ -384,4 +384,133 @@ class ProjectRecordsController extends Controller
         }
 
     }
+
+
+
+
+
+
+      /**
+    * Valida as Informações Gerais de um REGISTRO ESPECIFICO
+    */
+    public function answer(string $id)
+    {
+        $ProjectFile = ProjectFiles::with('rfp_bundles')->findOrFail($id);
+        if($ProjectFile->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
+            if($ProjectFile->status != "processando"){
+                $Project = Project::with('user')->findOrFail($ProjectFile->project_id);
+       
+                $ListClassificacaoRecebidas = ProjectRecord::where('project_file_id', $ProjectFile->id)->groupBy('classificacao')->pluck('classificacao');
+                $UsersDepartaments = UsersDepartaments::where('departament_type', '!=', 'Admin')->orderBy('departament', 'asc')->get();
+
+                $AllAnswers =  RfpAnswer::orderBy('order', 'asc')->get();
+                $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
+                $AllModules = Module::orderBy('module_name', 'asc')->get();
+
+                $ListProdutos = DB::table('project_records')
+                ->leftJoin('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
+                ->where('project_records.project_file_id', $ProjectFile->id)
+                ->groupBy('project_records.bundle_id')
+                ->select('project_records.bundle_id', 'rfp_bundles.bundle')
+                ->groupBy('rfp_bundles.bundle')
+                ->get();
+
+                $Records = ProjectRecord::where('project_file_id', $ProjectFile->id)->get();
+                $CountRecords = 0;
+
+                foreach ($Records as $key => $Record) {
+                    $CountRecords++;
+                }
+
+                $countIA = ProjectRecord::whereHas('answers', function ($query) {
+                    $query->where('aderencia_na_mesma_linha', '!=', 'Desconhecido');
+                })->count();
+
+                $registrosSemResposta = $CountRecords - $countIA;
+                $porcentagemSemResposta = ($countIA / $CountRecords) * 100;
+
+                $data = array(
+                    'title' => 'Todos Arquivos',
+                    'idProjectFile' => $id,
+                    'Project' => $Project,
+                    'ProjectFile' => $ProjectFile,
+                    'UsersDepartaments' => $UsersDepartaments,
+                    'ListClassificacao' => $ListClassificacaoRecebidas,
+                    'ListProdutos' => $ListProdutos,
+                    'AllBundles' => $AllBundles,
+                    'AllModules' => $AllModules,
+                    'AllAnswers' => $AllAnswers,
+                    'CountRFPs' => 123,
+                    'CountPacotes' => 150,
+                    'CountRequisitos' => $CountRecords,
+                    'totalRequisitos' => 1160,
+                    'totalRespostasIA' => 1000,
+                    'CountAnswerIA' => $countIA,
+                    'CountAnswerUser' => 0,
+                    'progress' => $porcentagemSemResposta,
+                    'registrosSemResposta' => $registrosSemResposta,
+                    'CountCountRecordsResultado' => $CountRecords,
+                );
+                
+                if($ProjectFile->status != "processando"){
+                    return view('project.records.answer')->with($data);
+                }else{
+                    return view('project.records.answer')->with($data);
+                }
+            }else{
+                // Caso a base esteja sendo processada não deixa fazer nada.
+                session(['error' => 'Esta Base de Conhecimento está em processamentoe não pode ser editada.']);
+                return redirect()->route('project.answer')->with('error', session('error'));
+            }
+        }
+    }
+
+
+    
+    public function filterAnswer(Request $request, string $id)
+    { 
+        if(Auth::user()->role->role_priority >= 90){       
+            $Project = ProjectFiles::findOrFail($id);
+            $query = ProjectRecord::query()->with('rfp_bundles')->with('answers');
+
+            // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
+            $query->where('project_file_id', '=', $Project->id);
+            
+            // Aplicar filtros
+            if ($request->has('keyWord') && !empty($request->keyWord)) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('requisito', 'like', '%' . $request->keyWord . '%')
+                      ->orWhere('observacao', 'like', '%' . $request->keyWord . '%')
+                      ->orWhere('classificacao', 'like', '%' . $request->keyWord . '%')
+                      ->orWhere('classificacao2', 'like', '%' . $request->keyWord . '%')
+                      ->orWhere('resposta', 'like', '%' . $request->keyWord . '%')
+                      ->orWhere('resposta2', 'like', '%' . $request->keyWord . '%')
+                      ->orWhere('bundle_old', 'like', '%' . $request->keyWord . '%');
+                });
+            }
+            
+            $classificacao1 = $request->classificacao1 === "null" ? null : $request->classificacao1;
+            if (filled($classificacao1)) {
+                $query->where('classificacao', 'like', '%' . $request->classificacao1 . '%');
+            }
+             
+            $resposta = $request->resposta === "null" ? null : $request->resposta;
+            if (filled($resposta)) {
+                $query->where('resposta', 'like', '%' . $request->resposta . '%');
+            }
+
+            $product = $request->product === "null" ? null : $request->product;
+            if (filled($product)) {
+                $query->where('bundle_old', 'like', '%' . $request->product . '%');
+            }
+            // Paginação
+            $records = $query->paginate(100);
+
+            // Retornar dados em JSON
+            return response()->json($records);
+        }
+    }
+
+
+
 }
