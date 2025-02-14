@@ -74,11 +74,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/project/cron', [ProjectController::class,'cron'])->name('knowledge.cron');
 
     // REGISTROS DA BASE DE CONHECIMENTO
+    Route::get('/project/answers/{id}', [ProjectRecordsController::class,'answer'])->name('project.answer');
     Route::get('/project/records/{id}', [ProjectRecordsController::class,'index'])->name('project.records');
     Route::get('/project/records-errors/{id}', [ProjectRecordsController::class,'errors'])->name('project.recordsErrors');
     Route::get('/project/records/processing/{id}', [ProjectRecordsController::class,'processing'])->name('project.records.processing');
         //AJAX
         Route::get('/project/records/filter/{id}', [ProjectRecordsController::class,'filter'])->name('project.recordsFilter');
+        Route::get('/project/answer/filter/{id}', [ProjectRecordsController::class,'filterAnswer'])->name('project.recordsFilterAnswer');
         Route::delete('/project/records/{id}', [ProjectRecordsController::class,'filterRemove'])->name('project.recordsFilterRemove');
         Route::post('/project/update-record/{id}', [ProjectRecordsController::class,'updateDetails'])->name('project.records.update');
         Route::get('/project/records-errors/filter/{id}', [ProjectRecordsController::class,'filterError'])->name('project.recordsFilterErrors');

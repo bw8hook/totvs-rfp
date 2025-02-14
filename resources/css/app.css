@@ -1386,3 +1386,46 @@ label{
 [type='checkbox']:checked:hover, [type='checkbox']:checked:focus, [type='radio']:checked:hover, [type='radio']:checked:focus{
     background-color: #3A57E8;
 }
+
+
+
+.progress-container {
+    text-align: center;
+}
+
+.circular-progress {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: conic-gradient(
+        #92d2f6 0% 23%, 
+        #e0e0e0 23% 100%
+    );
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.inner-circle {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background-color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.progress-value {
+    font-size: 55px;
+    font-weight: bold;
+    color: #0E2ECF;
+}
+
+.progress-text {
+    font-size: 14px;
+    color: #666;
+    margin-top: 10px;
+    font-weight: 100;;
+}

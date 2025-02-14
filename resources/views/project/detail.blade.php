@@ -228,6 +228,7 @@
                         
                         let recordId = record.id; // Supondo que já tenha essa variável no JS
                         let projectRecords = "{{ route('project.records', ':id') }}".replace(':id', recordId);
+                        let projectAnswer = "{{ route('project.answer', ':id') }}".replace(':id', recordId);
 
                         if (record.status === 'não enviado') {
                             status = '<div style="background: #FFEFCA; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #E5780C; width: auto; padding: 0px 20px; position: relative; display: inline-block;">'+record.status+'</div>';
@@ -239,6 +240,13 @@
                         } else   if (record.status === 'em processamento') {
                             status = '<div style="background: #d5edff; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #2196F3; width: auto; padding: 0px 20px; position: relative; display: inline-block;">'+record.status+'</div>';
                             btnEdit = ``;
+                        } else   if (record.status === 'processado') {
+                            status = '<div style="background: #d5edff; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #2196F3; width: auto; padding: 0px 20px; position: relative; display: inline-block;">'+record.status+'</div>';
+                            btnEdit = `<a href="${projectAnswer}" style="margin: 0px; float:left;">
+                                            <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
+                                                <img src="{{ asset('icons/eye.svg') }}" alt="Edit Icon">
+                                            </button>
+                                        </a>`;
                         } else if (record.status === 'concluído') {
                             btnEdit = `<a href="${projectRecords}" style="margin: 0px; float:left;">
                                             <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">

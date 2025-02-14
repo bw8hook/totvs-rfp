@@ -12,10 +12,12 @@ class KnowledgeBaseExport implements FromCollection, WithHeadings
 {
     protected $id;
     protected $Records;
-    public function __construct($id, $Records)
+    protected $KnowledgeBaseExportedId;
+    public function __construct($id, $Records, $KnowledgeBaseExportedId)
     {
-         $this->id = $id;
-         $this->Records = $Records;
+        $this->id = $id;
+        $this->Records = $Records;
+        $this->KnowledgeBaseExportedId = $KnowledgeBaseExportedId; 
     }
 
     /**
@@ -26,16 +28,16 @@ class KnowledgeBaseExport implements FromCollection, WithHeadings
         foreach ($this->Records as $key => $value) {
             $ProjectRecord = KnowledgeRecord::where('id_record', $value->id_record)->first();
             $ProjectRecord->status = 'processado';
+            $ProjectRecord->base_exported_id = $this->KnowledgeBaseExportedId;
             $ProjectRecord->save();
         }
 
         return $this->Records;
-        //return KnowledgeRecord::select('classificacao', 'classificacao2', 'requisito', 'resposta', 'resposta2', 'observacao', 'bundle_old')->get();
     }
 
     public function headings(): array
     {
-        return ["Classificação 1", "Classificação 2", "Descrição do Requisito", "Resposta 1", "Resposta 2", "Observações", "Linha/Produto"];
+        return ["ID Registro", "Processo", "Subprocesso", "Requisito", "Resposta", "Módulo", "Observações", "Linha/Produto"];
     }
 
 
