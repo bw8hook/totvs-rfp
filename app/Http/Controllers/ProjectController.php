@@ -26,10 +26,7 @@ use Illuminate\Support\Str;
 use DateTime;
 
 
-use GuzzleHttp\Promise\Utils;
-use GuzzleHttp\Promise\PromiseInterface;
-use GuzzleHttp\Promise\Promise;
-use GuzzleHttp\Promise\Create;
+use App\Services\ParallelRequests;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -38,6 +35,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Exception\RequestException;
+
 
 
 
@@ -550,7 +548,14 @@ class ProjectController extends Controller
     }
 
 
-    public function cron(Request $request){
+    public function cron(Request $request)
+    {
+    
+}
+
+
+
+    public function cronBackup(Request $request){
         $ProjectFiles = ProjectFiles::where('status', "em processamento")->get();
      
         if ($ProjectFiles->count() > 0) {
@@ -584,6 +589,17 @@ class ProjectController extends Controller
 
                             //ProjectAnswer::
                             if($Resposta){
+
+                                // // Remove % caso tenha
+                                // $acuracidade = $Resposta->acuracidade_porcentagem;
+                                // $acuracidade = trim(str_replace('%', '', $acuracidade));
+                                // if (is_numeric($acuracidade)) {
+                                //     $acuracidade = floatval($acuracidade) . '%';
+                                // } else {
+                                //     $acuracidade = '0%'; 
+                                // }
+                            
+
                                 $DadosResposta = new ProjectAnswer;
                                 $DadosResposta->bundle_id = $Record->bundle_id;
                                 $DadosResposta->user_id = $Record->user_id;
@@ -600,9 +616,12 @@ class ProjectController extends Controller
                             }
                         }
 
-
                         dd('resposta');
                     }
+
+                    $File->status = 'processado';
+                    $$File->save();
+
                 } catch (\Exception $e) {
                     dd($e);
                 }
