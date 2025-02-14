@@ -148,6 +148,7 @@ class UploadProjectToAnswer extends Command
                     // Atualizar o status do Record
                     if($Answer->aderencia_na_mesma_linha != 'desconhecido'){
                         $Record->update(['status' => 'respondido ia']);
+                        $Record->update(['project_answer_id' => $DadosResposta->id]);
                     }
                    
                     Log::info("Processamento de todos os arquivos concluído com sucesso");
