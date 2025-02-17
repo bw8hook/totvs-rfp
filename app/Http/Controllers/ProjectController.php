@@ -188,6 +188,7 @@ class ProjectController extends Controller
             $Detail = Project::with('user')->find($id);
             $AllFiles = ProjectFiles::where('project_id', $id)->withCount('records')->get();
 
+
             // Último atualizado
             $lastUpdated = ProjectFiles::where('user_id', Auth::id())->orderBy('updated_at', 'desc')->first();
             if ($lastUpdated) {
@@ -272,7 +273,7 @@ class ProjectController extends Controller
     { 
         // Valida a Permissão do usuário
         if(Auth::user()->role->role_priority >= 90){    
-            $query = ProjectFiles::query()->with('user')->with('rfp_bundles')->withCount('projectRecords');;
+            $query = ProjectFiles::query()->with('user')->with('rfp_bundles')->withCount('projectRecords')->where('project_id', $request->id);
             
             // Aplicar filtros
             if ($request->has('filter')) {

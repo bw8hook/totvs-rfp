@@ -59,6 +59,7 @@ class ProcessKnowledgeBase extends Command
                             $KnowledgeBaseExported = new KnowledgeBaseExported();
                             $KnowledgeBaseExported->user_id = $item->user_id;
                             $KnowledgeBaseExported->bundle_id = $bundle->bundle_id;
+                            $KnowledgeBaseExported->default_base_id = $item->id;
                             $KnowledgeBaseExported->save();
                             $KnowledgeBaseExportedid = $KnowledgeBaseExported->id;
                             $KnowledgeBaseExported->filepath = $filePath;
