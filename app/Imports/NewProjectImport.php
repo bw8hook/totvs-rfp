@@ -137,33 +137,9 @@ class NewProjectImport implements ToCollection, WithChunkReading, WithStartRow, 
 
         
 
-        // Ignorar a primeira linha (cabeçalho) se necessário
-        // $rows->skip(1)->each(function ($row) use ($client, &$promises) {
-            
-        // });
         
-        //$responses = Utils::settle($promises)->wait();
-
-        // foreach ($responses as $response) {
-        //     if ($response['state'] === 'fulfilled') {
-        //         $data = json_decode($response['value']->getBody(), true);
-                
-        //         // Salve ou processe os dados da API
-        //         //if(isset($data['content'])){
-        //             KnowledgeRecord::create([
-        //                 'bundle_id' => 130,
-        //                 'user_id' => 4,
-        //                 'knowledge_base_id' =>8
-        //             ]);               
-        //     } else {
-        //         dd($response['reason']);
-        //         // Tratar erros
-        //         \Log::error(message: 'Erro na chamada API: ' . $response['reason']);
-        //     }
-        // }
-
         // Pool para gerenciar as requisições
-        $pool = new Pool($client, $requests($rows), [
+        $pool = new Pool($client, $requests(rows: $rows), [
             'concurrency' => $concurrency,
             'fulfilled' => function ($response, $index) {
                 // Requisição concluída com sucesso

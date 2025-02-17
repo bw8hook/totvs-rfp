@@ -106,6 +106,10 @@
                 
                 <div id="BlocoLista" class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
 
+                <form id="filterForm">
+                    <input type="hidden" name="id" value="{{$Detail->id}}">
+                </form>
+
                     <div style="display: flex;">
                         <div style="margin:80px 30px 30px">
                             <div style="font-size: 28px; font-weight: 700; line-height: 44.2px; text-align: left; color:#141824;">Total de RFPs</div>
@@ -248,13 +252,13 @@
                                             </button>
                                         </a>`;
                         } else if (record.status === 'concluído') {
-                            btnEdit = `<a href="${projectRecords}" style="margin: 0px; float:left;">
+                            btnEdit = `<a href="${projectAnswer}" style="margin-top: 5px; float:left;">
                                             <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
                                                 <img src="{{ asset('icons/eye.svg') }}" alt="Edit Icon">
                                             </button>
                                         </a>
 
-                                        <a href="${projectRecords}" style="margin: 0px; float:left;">
+                                        <a href="${projectAnswer}" style="margin-top: 5px; float:left;">
                                             <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
                                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="#8A94AD" xmlns="http://www.w3.org/2000/svg">
                                                 <g clip-path="url(#clip0_485_4256)">
@@ -281,7 +285,7 @@
                                     <td style="width:19%; line-height: 33px;"> - </td>
                                     <td style="width:19%; line-height: 33px;"> - </td>
                                     <td style="width:20%; line-height: 33px;"> ${status}</td>
-                                    <td style="width:3%; margin-left:2%;"> 
+                                    <td style="width:3%; margin-left:2%; display:contents;"> 
                                         ${btnEdit}
                                     </td>
                                 </tr>

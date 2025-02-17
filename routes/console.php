@@ -19,8 +19,7 @@ Schedule::command('app:upload-knowledge-base')->everyMinute();
 // Pega os arquivos processados e envia para a BASE de CONHECIMENTO do  MENTORIA
 Schedule::command('app:upload-project-to-answer')->everyMinute();
 
+// Pega os arquivos processados e envia para a BASE de CONHECIMENTO do  MENTORIA
+Schedule::command('app:debug')->everyMinute();
 
-// Schedule::call(function () {
-    
-// })->everyMinute();
 

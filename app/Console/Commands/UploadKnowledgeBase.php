@@ -57,7 +57,7 @@ class UploadKnowledgeBase extends Command
 
                         $gBaseById['sources'][] = ["type" => "file", "file" => $Arquivo];
 
-                        $item->status = 'exportado';
+                        $item->status = "exportado";
                         $item->save();
                     } 
                 }
@@ -65,9 +65,12 @@ class UploadKnowledgeBase extends Command
                     $updatedBase = $RDStationMentoria->Bases->updateBase($gBaseById['id'], $gBaseById);
                     $UpdateBase = false;
                 }
-               
             }
+
         }
+
+       
+
        
         Log::info('Finalizando o processamento da base de conhecimento'); // Adiciona log aqui
     }

@@ -198,7 +198,9 @@
 
                         // Verifica se record.resposta está presente em ListRespostas
                         let existsInList = ListRespostas.some(resposta => resposta.anwser === record.resposta);
-                        let AnwserOptions = !existsInList  ? `<option disabled selected>${record.resposta}</option>` : '';
+                        let AnwserOptions = !existsInList 
+                            ? `<option disabled selected>${record.resposta || '?'}</option>` 
+                            : '<option disabled selected>?</option>';
                         console.log(ListRespostas);
                         ListRespostas.forEach(resposta => {
                             AnwserOptions += `<option value="${resposta.anwser}" ${resposta.anwser === record.resposta ? 'selected' : ''}>${resposta.anwser}</option>`;
@@ -208,8 +210,8 @@
                         rows += `
                             <tr class="listaTabela ${record.rfp_bundles ? '' : 'highlighted_error'}" data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
                                 <td style="width:3%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
-                                <td style="width:9%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.classificacao}</td>
-                                <td style="width:21%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;">${record.requisito}</td>
+                                <td style="width:9%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.classificacao ? record.classificacao : '-'}</td>
+                                <td style="width:21%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.requisito ? record.requisito : '-'}</td>
                                 <td style="width:10%; display: flex; align-items: center;">
                                     <select name="resposta"  style="border-radius: 8px; width:100%">
                                         ${AnwserOptions}
@@ -487,6 +489,7 @@
                 $(".border-red").removeClass("border-red"); // Remove bordas vermelhas anteriores
 
                 if (escopo.val() && escopo.val().trim() === "") {
+                    console.log('empty');
                     escopo.addClass("border-red");
                     showAlertBootstrap("error", "o campo 'ESCOPO' é um requisito obrigatório, preencha para continuar.");
                     if (!firstError) firstError = escopo;
@@ -506,6 +509,8 @@
                     if (!firstError) firstError = data;
                     isValid = false;
                 }
+
+
 
                 if (!isValid) {
                     event.preventDefault(); // Impede o envio do formulário
