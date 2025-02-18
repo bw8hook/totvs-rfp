@@ -60,27 +60,34 @@ class ProjectController extends Controller
      */
     public function index()
     { 
+        // Validação se mostra Tudo ou apenas do usuário
         if(Auth::user()->role->role_priority >= 90){  
-            //$AllFiles = Project::withCount('records')->get();
-            $AllProject = Project::withCount('records')
-                ->where('iduser_responsable', Auth::id()) // Adicione sua condição aqui
-                ->get();
-            $AllFiles = ProjectFiles::withCount('records')
-                ->where('user_id', Auth::id()) // Adicione sua condição aqui
-                ->get();
-            
-                //$AllFiles = ProjectFiles::withCount('records')->get();
+            $AllProject = Project::withCount('records')->get();
+            $AllFiles = ProjectFiles::withCount('records')->get();
 
             // Último atualizado
-            
+            $lastUpdated = ProjectFiles::orderBy('updated_at', 'desc')->first();
+            if ($lastUpdated) {
+                $lastUpdatedDate = Carbon::parse($lastUpdated->updated_at)->format('d/m/Y');
+                $lastUpdatedTime = Carbon::parse($lastUpdated->updated_at)->format('H\hi');
+            } else {
+                $lastUpdatedDate = null;
+                $lastUpdatedTime = null;
+            }
+        }else{
+            $AllProject = Project::withCount('records')->where('iduser_responsable', Auth::id())->get();
+            $AllFiles = ProjectFiles::withCount('records')->where('user_id', Auth::id())->get();
+
+            // Último atualizado
             $lastUpdated = ProjectFiles::where('user_id', Auth::id())->orderBy('updated_at', 'desc')->first();
             if ($lastUpdated) {
-                $lastUpdatedDate = Carbon::parse($lastUpdated->updated_at)->format('d/m/Y'); // Apenas o dia
-                $lastUpdatedTime = Carbon::parse($lastUpdated->updated_at)->format('H\hi');  // Apenas a hora
+                $lastUpdatedDate = Carbon::parse($lastUpdated->updated_at)->format('d/m/Y');
+                $lastUpdatedTime = Carbon::parse($lastUpdated->updated_at)->format('H\hi');
             } else {
-                $lastUpdatedDate = null; // Ou algum valor padrão
-                $lastUpdatedTime = null; // Ou algum valor padrão
+                $lastUpdatedDate = null;
+                $lastUpdatedTime = null;
             }
+        }
 
             $ListFiles = array();
             $CountRFPs = 0;
@@ -90,39 +97,22 @@ class ProjectController extends Controller
             $CountAnswerIA = 0;
 
             foreach ($AllFiles as $key => $File) {
-                    $CountRFPs++;
-                    $ListFile = array();
-                    $ListFile['project_file_id'] = $File->id;
-                    $ListFile['bundle'] = RfpBundle::firstWhere('bundle_id', $File->bundle_id);
-                    $ListFile['filepath'] = $File->filepath;
-                    $ListFile['filename_original'] = $File->filename_original;
-                    $ListFile['filename'] = $File->filename;
-                    $ListFile['file_extension'] = $File->file_extension;
-                    $ListFile['status'] = $File->status;
-                    $ListFile['created_at'] = date("d/m/Y", strtotime($File->created_at));;
-                    $ListFiles[] = $ListFile;
+                $CountRFPs++;
+                $ListFile = array();
+                $ListFile['project_file_id'] = $File->id;
+                $ListFile['bundle'] = RfpBundle::firstWhere('bundle_id', $File->bundle_id);
+                $ListFile['filepath'] = $File->filepath;
+                $ListFile['filename_original'] = $File->filename_original;
+                $ListFile['filename'] = $File->filename;
+                $ListFile['file_extension'] = $File->file_extension;
+                $ListFile['status'] = $File->status;
+                $ListFile['created_at'] = date("d/m/Y", strtotime($File->created_at));;
+                $ListFiles[] = $ListFile;
 
-                    $CountRequisitos += $File->records_count;
-                    $CountNotAnswer += $File->records->where('status', 'aguardando')->count();
-                    $CountAnswerUser += $File->records->where('status', 'user edit')->count();
-                    $CountAnswerIA += $File->records->where('status', 'respondido ia')->count();
-            }
-
-
-            $resultados = DB::table(table: 'project_records')
-            ->leftJoin('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id') // INNER JOIN
-            ->select('project_records.bundle_id', 'rfp_bundles.bundle',  DB::raw('COUNT(*) as total'))
-            ->where('project_records.user_id',  Auth::id()) // Filtra pelo ID do usuário
-            ->groupBy('project_records.bundle_id') // Agrupa pelo ID do bundle
-            ->groupBy('rfp_bundles.bundle') // Agrupa pelo ID do bundle
-            ->get();
-        
-            $CountResultado = 0;
-            $CountPacotes = 0;
-            //Exibindo o resultado
-            foreach ($resultados as $resultado) {
-                $CountPacotes++;
-                $CountResultado = $CountResultado + $resultado->total;
+                $CountRequisitos += $File->records_count;
+                $CountNotAnswer += $File->records->where('status', 'aguardando')->count();
+                $CountAnswerUser += $File->records->where('status', 'user edit')->count();
+                $CountAnswerIA += $File->records->where('status', 'respondido ia')->count();
             }
 
             $data = array(
@@ -133,7 +123,6 @@ class ProjectController extends Controller
                 'ListFiles' => $ListFiles,
                 'CountProject' => $AllProject->count(),
                 'CountRFPs' => $CountRFPs,
-                'CountPacotes' => $CountPacotes,
                 'CountRequisitos' => $CountRequisitos,
                 'CountNotAnswer' => $CountNotAnswer,
                 'CountAnswerUser' => $CountAnswerUser,
@@ -141,7 +130,7 @@ class ProjectController extends Controller
             );
     
             return view('project.list')->with($data);
-        }
+        
 
     }
 
@@ -151,7 +140,9 @@ class ProjectController extends Controller
         // Valida a Permissão do usuário
         if(Auth::user()->role->role_priority >= 90){       
             $query = Project::query()->with('user')->withCount(relations: 'records');
-
+        }else{
+            $query = Project::query()->with('user')->withCount(relations: 'records')->where('iduser_responsable', Auth::id());
+        }
 
             // Aplicar filtros
             if ($request->has('filter')) {
@@ -177,26 +168,24 @@ class ProjectController extends Controller
             
             // Retornar dados em JSON
             return response()->json($data);
-        }
+        
     }
 
 
 
     public function detail(string $id)
     { 
-        if(Auth::user()->role->role_priority >= 90){  
-            $Detail = Project::with('user')->find($id);
+        $Detail = Project::with('user')->find($id);
+        if(Auth::user()->role->role_priority >= 90 || $Detail->iduser_responsable == Auth::id()){  
             $AllFiles = ProjectFiles::where('project_id', $id)->withCount('records')->get();
 
-
-            // Último atualizado
             $lastUpdated = ProjectFiles::where('user_id', Auth::id())->orderBy('updated_at', 'desc')->first();
             if ($lastUpdated) {
-                $lastUpdatedDate = Carbon::parse($lastUpdated->updated_at)->format('d/m/Y'); // Apenas o dia
-                $lastUpdatedTime = Carbon::parse($lastUpdated->updated_at)->format('H\hi');  // Apenas a hora
+                $lastUpdatedDate = Carbon::parse($lastUpdated->updated_at)->format('d/m/Y');
+                $lastUpdatedTime = Carbon::parse($lastUpdated->updated_at)->format('H\hi');
             } else {
-                $lastUpdatedDate = null; // Ou algum valor padrão
-                $lastUpdatedTime = null; // Ou algum valor padrão
+                $lastUpdatedDate = null;
+                $lastUpdatedTime = null;
             }
 
             $ListFiles = array();
@@ -209,7 +198,6 @@ class ProjectController extends Controller
             $ListProducts = array();
 
             foreach ($AllFiles as $key => $File) {
-                    // print_r($File->id);
                     $CountRFPs++;
                     $ListFile = array();
                     $ListFile['project_file_id'] = $File->id;
@@ -231,23 +219,6 @@ class ProjectController extends Controller
                     $ListFiles[] = $ListFile;
             }
 
-            $resultados = DB::table(table: 'project_records')
-            ->leftJoin('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id') // INNER JOIN
-            ->select('project_records.bundle_id', 'rfp_bundles.bundle',  DB::raw('COUNT(*) as total'))
-            ->where('project_records.user_id',  Auth::id()) // Filtra pelo ID do usuário
-            ->groupBy('project_records.bundle_id') // Agrupa pelo ID do bundle
-            ->groupBy('rfp_bundles.bundle') // Agrupa pelo ID do bundle
-            ->get();
-        
-            $CountResultado = 0;
-            $CountPacotes = 0;
-            //Exibindo o resultado
-            foreach ($resultados as $resultado) {
-                $CountPacotes++;
-                $CountResultado = $CountResultado + $resultado->total;
-            }
-
-
             $data = array(
                 'Detail' => $Detail,
                 'lastUpdated' => $lastUpdated,
@@ -256,7 +227,6 @@ class ProjectController extends Controller
                 'ListFiles' => $ListFiles,
                 'ListProducts' => $ListProducts,
                 'CountRFPs' => $CountRFPs,
-                'CountPacotes' => $CountPacotes,
                 'CountRequisitos' => $CountRequisitos,
                 'CountAnswerUser' => $CountAnswerUser,
                 'CountAnswerIA' => $CountAnswerIA,

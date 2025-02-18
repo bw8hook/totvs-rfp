@@ -400,10 +400,10 @@ class ProjectRecordsController extends Controller
             if($ProjectFile->status != "processando"){
                 $Project = Project::with('user')->findOrFail($ProjectFile->project_id);
        
-                $ListClassificacaoRecebidas = ProjectRecord::where('project_file_id', $ProjectFile->id)->groupBy('classificacao')->pluck('classificacao');
+                $ListClassificacaoRecebidas = ProjectRecord::where('project_file_id', $ProjectFile->id)->groupBy('processo')->pluck('processo');
                 $UsersDepartaments = UsersDepartaments::where('departament_type', '!=', 'Admin')->orderBy('departament', 'asc')->get();
 
-                $AllAnswers =  RfpAnswer::orderBy('order', 'asc')->get();
+                $AllAnswers = RfpAnswer::orderBy('order', 'asc')->get();
                 $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
                 $AllModules = Module::orderBy('module_name', 'asc')->get();
 
