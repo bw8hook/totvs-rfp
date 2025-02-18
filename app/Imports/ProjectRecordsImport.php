@@ -95,8 +95,8 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
                 }
                 
                 // Dados do arquivo
-                $ProjectRecord->classificacao = $row[0];
-                $ProjectRecord->classificacao2 = $row[1];
+                $ProjectRecord->processo = $row[0];
+                $ProjectRecord->subprocesso = $row[1];
                 $ProjectRecord->requisito = $row[2];
                 $ProjectRecord->status = "aguardando";
 

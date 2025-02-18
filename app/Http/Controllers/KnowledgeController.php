@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\KnowledgeBase;
 use App\Models\KnowledgeRecord;
+use App\Models\KnowledgeError;
 use App\Models\KnowledgeBaseExported;
 use App\Models\RfpBundle;
 use App\Models\RfpAnswer;
@@ -278,28 +279,25 @@ class KnowledgeController extends Controller
 
         } catch (\Exception $e) {
             $CatchError = json_decode($e->getMessage());
-
-            dd($e);
-
             $InsertError = KnowledgeError::create([
                 'error_code' => 'ERR003',
-                'error_message' => $CatchError->error_message,
-                'error_data' => json_encode(value: $CatchError->error_data),
+                'error_message' => $e->getMessage(),
+                'error_data' => json_encode($e),
                 'user_id' => Auth::id(), // Associar ao usuário logado, se necessário
             ]);
 
             $InsertErrorID = $InsertError->id;
     
             // Remove a Base Enviada
-            // if ($KnowledgeBaseDataid) {
-            //     DB::table('knowledge_base')->where('knowledge_base_id', $KnowledgeBaseDataid)->delete();
-            // }
+            if ($KnowledgeBaseDataid) {
+                DB::table('knowledge_base')->where('id', $KnowledgeBaseDataid)->delete();
+            }
 
             // Captura quaisquer outras exceções
             return response()->json([
-                'message' => 'Erro durante a importação!',
-                'redirectUrl' => '/import/erro/'.$InsertErrorID
-            ], 500);
+                'error' => true,
+                'message' => $e->getMessage(),
+            ]);
         }
   }
 

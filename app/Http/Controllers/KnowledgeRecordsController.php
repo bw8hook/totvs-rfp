@@ -29,7 +29,7 @@ class KnowledgeRecordsController extends Controller
         $KnowledgeBase = KnowledgeBase::findOrFail($id);
         if($KnowledgeBase->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
             if($KnowledgeBase->status != "processando"){
-                $ListClassificacaoRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('classificacao')->pluck('classificacao');
+                $ListClassificacaoRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('processo')->pluck('processo');
                 $ListRespostaRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('resposta')->pluck('resposta');
                 $ListProdutosRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('bundle_old')->pluck('bundle_old');
                 $UsersDepartaments = UsersDepartaments::where('departament_type', '!=', 'Admin')->orderBy('departament', 'asc')->get();
@@ -98,17 +98,17 @@ class KnowledgeRecordsController extends Controller
                 $query->where(function ($q) use ($request) {
                     $q->where('requisito', 'like', '%' . $request->keyWord . '%')
                       ->orWhere('observacao', 'like', '%' . $request->keyWord . '%')
-                      ->orWhere('classificacao', 'like', '%' . $request->keyWord . '%')
-                      ->orWhere('classificacao2', 'like', '%' . $request->keyWord . '%')
+                      ->orWhere('processo', 'like', '%' . $request->keyWord . '%')
+                      ->orWhere('subprocesso', 'like', '%' . $request->keyWord . '%')
                       ->orWhere('resposta', 'like', '%' . $request->keyWord . '%')
-                      ->orWhere('resposta2', 'like', '%' . $request->keyWord . '%')
+                      ->orWhere('modulo', 'like', '%' . $request->keyWord . '%')
                       ->orWhere('bundle_old', 'like', '%' . $request->keyWord . '%');
                 });
             }
             
             $classificacao1 = $request->classificacao1 === "null" ? null : $request->classificacao1;
             if (filled($classificacao1)) {
-                $query->where('classificacao', 'like', '%' . $request->classificacao1 . '%');
+                $query->where('processo', 'like', '%' . $request->classificacao1 . '%');
             }
              
             $resposta = $request->resposta === "null" ? null : $request->resposta;
