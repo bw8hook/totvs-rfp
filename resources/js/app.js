@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
         path: "/icons/lottie/loading.json", // Caminho gerado pelo Storage
     });
 
-    window.showAlertBootstrap = function (type, message) {
+    window.showAlertBootstrap = function (type, message, autoclose = true ) {
         let alertContainer = $("#alert-global");
     
         let alertClass = "";
@@ -35,16 +35,19 @@ document.addEventListener("DOMContentLoaded", function () {
     
         alertContainer.html(`
             <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-                ${message}
+                <pre>${message}</pre>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         `).fadeIn();
     
         $("#contentBody").animate({ scrollTop: 0 }, 500);
-    
-        setTimeout(() => {
-            alertContainer.fadeOut();
-        }, 5000);
+            
+        if(autoclose){
+            setTimeout(() => {
+                alertContainer.fadeOut();
+            }, 5000);
+       }
+       
     };
     
 

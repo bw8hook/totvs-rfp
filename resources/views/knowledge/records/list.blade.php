@@ -104,12 +104,12 @@
                     <thead>
                         <tr>
                             <th style="width:3%;"></th>
-                            <th style="width:9%;">Classificação 1</th>
-                            <!-- <th style="width:9%;">Classificação 2</th> -->
+                            <th style="width:9%;">Processo</th>
+                            <th style="width:9%;">Subprocesso</th>
                             <th style="width:22%;">Descrição do Requisito</th>
-                            <th style="width:10.5%;">Resposta 1</th>
-                            <th style="width:14.5%;">Resposta 2</th>
-                            <th>Produto/Linha</th>
+                            <th style="width:10.5%;">Resposta</th>
+                            <th style="width:14.5%;">Módulo</th>
+                            <th>Produto</th>
                             <th style="width:25.5%;">Observações</th>
                             <th style="width:5%;"></th>
                         </tr>    
@@ -183,15 +183,13 @@
                     // Atualizar tabela
                     let rows = '';
                     response.data.forEach(record => {
-                        //console.log(record);
+                        console.log(record);
 
                         // Verifica se record.bundle_id está presente em ListProdutos
                         let existsInListProducts = ListProdutos.some(produto => produto.bundle_id === record.bundle_id);
 
                         // Se o bundle_id não existir na lista, ele aparece como desabilitado e selecionado
-                        let bundleOptions = !existsInListProducts 
-                            ? `<option disabled selected>${record.bundle_old || '?'}</option>` 
-                            : '<option disabled selected>?</option>';
+                        let bundleOptions = !existsInListProducts ? `<option disabled selected>${record.bundle_old}</option>` : '<option disabled selected> - </option>';
                         ListProdutos.forEach(produto => {
                             bundleOptions += `<option value="${produto.bundle_id}" ${produto.bundle_id === record.bundle_id ? 'selected' : ''}>${produto.bundle}</option>`;
                         });
@@ -210,7 +208,8 @@
                         rows += `
                             <tr class="listaTabela ${record.rfp_bundles ? '' : 'highlighted_error'}" data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
                                 <td style="width:3%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
-                                <td style="width:9%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.classificacao ? record.classificacao : '-'}</td>
+                                <td style="width:9%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.processo ? record.processo : '-'}</td>
+                                <td style="width:9%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.subprocesso ? record.subprocesso : '-'}</td>
                                 <td style="width:21%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.requisito ? record.requisito : '-'}</td>
                                 <td style="width:10%; display: flex; align-items: center;">
                                     <select name="resposta"  style="border-radius: 8px; width:100%">

@@ -100,11 +100,11 @@ class KnowledgeBaseImport_ implements ToCollection, WithChunkReading, WithStartR
                     $KnowledgeRecord->bundle_id = $id;
                     $KnowledgeRecord->knowledge_base_id = $this->id;
                     $KnowledgeRecord->user_id = Auth::id();
-                    $KnowledgeRecord->classificacao = $row[0];
-                    $KnowledgeRecord->classificacao2 = $row[1];
+                    $KnowledgeRecord->processo = $row[0];
+                    $KnowledgeRecord->subprocesso = $row[1];
                     $KnowledgeRecord->requisito = $row[2];
                     $KnowledgeRecord->resposta = $row[3];
-                    $KnowledgeRecord->resposta2 = $row[4];
+                    $KnowledgeRecord->modulo = $row[4];
                     $KnowledgeRecord->importancia = $row[5];
 
                     // Tenta salvar
@@ -122,11 +122,11 @@ class KnowledgeBaseImport_ implements ToCollection, WithChunkReading, WithStartR
                     $KnowledgeRecord->bundle_id = $this->idpacote;
                     $KnowledgeRecord->knowledge_base_id = $this->id;
                     $KnowledgeRecord->user_id = Auth::id();
-                    $KnowledgeRecord->classificacao = $row[0] ?? null;
-                    $KnowledgeRecord->classificacao2 = $row[1] ?? null;
+                    $KnowledgeRecord->processo = $row[0] ?? null;
+                    $KnowledgeRecord->subprocesso = $row[1] ?? null;
                     $KnowledgeRecord->requisito = $row[2] ?? null;
                     $KnowledgeRecord->resposta = $row[3] ?? null;
-                    $KnowledgeRecord->resposta2 = $row[4] ?? null;
+                    $KnowledgeRecord->modulo = $row[4] ?? null;
                     $KnowledgeRecord->importancia = $row[5] ?? null;
 
                     $KnowledgeRecord->save();

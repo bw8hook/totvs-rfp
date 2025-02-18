@@ -40,7 +40,7 @@ class ProcessKnowledgeBase extends Command
                             ->where('knowledge_records.bundle_id', $bundle->bundle_id)
                             ->where('knowledge_records.status', 'aguardando')
                             ->join('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id')
-                            ->select('knowledge_records.id_record', 'knowledge_records.classificacao', 'knowledge_records.classificacao2', 'knowledge_records.requisito', 'knowledge_records.resposta', 'knowledge_records.resposta2', 'knowledge_records.observacao', 'rfp_bundles.bundle')
+                            ->select('knowledge_records.id_record', 'knowledge_records.processo', 'knowledge_records.subprocesso', 'knowledge_records.requisito', 'knowledge_records.resposta', 'knowledge_records.modulo', 'knowledge_records.observacao', 'rfp_bundles.bundle')
                             ->get();
                         
                         if (!$Records->isEmpty()) {
