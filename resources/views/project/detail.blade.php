@@ -240,12 +240,24 @@
                                             <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
                                                 <img src="{{ asset('icons/file-edit 1.svg') }}" alt="Edit Icon">
                                             </button>
-                                        </a>`;
+                                        </a>
+                                        
+                                         <a href="knowledge/remove/${record.id}" style="margin: 0px; float:left;">
+                                            <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
+                                                <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M4.18476 0.553125L3.9619 1H0.990476C0.442619 1 0 1.44687 0 2C0 2.55312 0.442619 3 0.990476 3H12.8762C13.424 3 13.8667 2.55312 13.8667 2C13.8667 1.44687 13.424 1 12.8762 1H9.90476L9.6819 0.553125C9.51476 0.2125 9.17119 0 8.79667 0H5.07C4.69548 0 4.3519 0.2125 4.18476 0.553125ZM12.8762 4H0.990476L1.64667 14.5938C1.69619 15.3844 2.34619 16 3.12929 16H10.7374C11.5205 16 12.1705 15.3844 12.22 14.5938L12.8762 4Z" fill="#b8bbc5"></path>
+                                                    <clipPath id="clip0_2032_702"> <rect width="13.8667" height="16" fill="white"></rect></clipPath>
+                                                </svg>
+                                            </button>
+                                        </a>
+                                        `;
                         } else   if (record.status === 'em processamento') {
                             status = '<div style="background: #d5edff; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #2196F3; width: auto; padding: 0px 20px; position: relative; display: inline-block;">'+record.status+'</div>';
-                            btnEdit = ``;
+                            btnEdit = `<div style="margin: 0px; float:left;">
+                                            
+                                        </div>`;
                         } else   if (record.status === 'processado') {
-                            status = '<div style="background: #d5edff; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #2196F3; width: auto; padding: 0px 20px; position: relative; display: inline-block;">'+record.status+'</div>';
+                            status = '<div style="background: #0097EB; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #FFF; width: auto; padding: 0px 20px; position: relative; display: inline-block;">'+record.status+'</div>';
                             btnEdit = `<a href="${projectAnswer}" style="margin: 0px; float:left;">
                                             <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
                                                 <img src="{{ asset('icons/eye.svg') }}" alt="Edit Icon">

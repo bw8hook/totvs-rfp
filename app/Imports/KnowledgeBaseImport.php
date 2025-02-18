@@ -74,10 +74,10 @@ class KnowledgeBaseImport implements ToCollection, WithStartRow, WithEvents, Wit
     public function collection(Collection $rows)
     {
         try {
+            $this->validateAndCleanExcel($rows);
+
             // Ignorar a primeira linha o cabeçalho
             $rows = $rows->skip(1);
-
-            $this->validateAndCleanExcel($rows);
 
             // Busca em Todas as linhas
             foreach ($rows as $index => $row) {  
@@ -182,7 +182,7 @@ class KnowledgeBaseImport implements ToCollection, WithStartRow, WithEvents, Wit
                 return mb_strtolower(trim((string)$value), 'UTF-8');
             })
             ->values();
-    
+
         // Converte os cabeçalhos esperados para minúsculas
         $expectedHeadersLower = array_map(function($header) {
             return mb_strtolower(trim($header), 'UTF-8');
