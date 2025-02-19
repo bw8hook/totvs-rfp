@@ -89,6 +89,20 @@
 
                 </div>
 
+
+                <div id="ModalDelete">
+                    <form method="delete" action="">
+                        @csrf
+                        <h2>Tem certeza que deseja excluir esse arquivo?</h2>
+                        <div class="btns_Delete">
+                            <div class="BtnConfirmDelete">Sim, excluir agora</div>
+                            <div class="btnCancelDelete">Não excluir</div>
+                        </div>
+                    </form>
+                </div>
+
+
+
             </div>
         </div>
     </div>
@@ -122,14 +136,14 @@
                                             </button>
                                         </a>
                                         
-                                        <a href="knowledge/remove/${record.id}" style="margin: 0px; float:left;">
-                                            <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
+                                        <div class="btnDeleteRecord" style="margin: 0px; float:left;">
+                                            <button type="submit" class="records_delete">
                                                 <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M4.18476 0.553125L3.9619 1H0.990476C0.442619 1 0 1.44687 0 2C0 2.55312 0.442619 3 0.990476 3H12.8762C13.424 3 13.8667 2.55312 13.8667 2C13.8667 1.44687 13.424 1 12.8762 1H9.90476L9.6819 0.553125C9.51476 0.2125 9.17119 0 8.79667 0H5.07C4.69548 0 4.3519 0.2125 4.18476 0.553125ZM12.8762 4H0.990476L1.64667 14.5938C1.69619 15.3844 2.34619 16 3.12929 16H10.7374C11.5205 16 12.1705 15.3844 12.22 14.5938L12.8762 4Z" fill="#b8bbc5"></path>
-                                                    <clipPath id="clip0_2032_702"> <rect width="13.8667" height="16" fill="white"></rect></clipPath>
+                                                    <path d="M4.18476 0.553125L3.9619 1H0.990476C0.442619 1 0 1.44687 0 2C0 2.55312 0.442619 3 0.990476 3H12.8762C13.424 3 13.8667 2.55312 13.8667 2C13.8667 1.44687 13.424 1 12.8762 1H9.90476L9.6819 0.553125C9.51476 0.2125 9.17119 0 8.79667 0H5.07C4.69548 0 4.3519 0.2125 4.18476 0.553125ZM12.8762 4H0.990476L1.64667 14.5938C1.69619 15.3844 2.34619 16 3.12929 16H10.7374C11.5205 16 12.1705 15.3844 12.22 14.5938L12.8762 4Z" fill="#CCCED9"/>
+                                                    <clipPath id="clip0_2032_702"> <rect width="13.8667" height="16" fill="white"/></clipPath>
                                                 </svg>
                                             </button>
-                                        </a>`;
+                                        </div>`;
                         } else   if (record.status === 'processando') {
                             status = '<div style="background: #d5edff; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #2196F3; width: auto; padding: 5px 20px; position: relative; display: inline-block;">'+record.status+'</div>';
                             btnEdit = ``;
@@ -186,7 +200,7 @@
                         
                         // DADOS DE CADA LINHA
                         rows += `
-                            <tr class="listaTabela" style="min-height:60px; max-height: 100%;">
+                            <tr class="listaTabela" style="min-height:60px; max-height: 100%;" data-id="${record.id}" >
                                     <td style="width:30%; text-align:left; line-height: 33px;" title="${record.filename_original}">${record.name}.${record.file_extension}</td>
                                     <td style="width:10%; line-height: 33px;"> ${record.knowledge_records_count} </td>
                                     <td style="width:15%; line-height: 33px;">${formattedDate}</td>
@@ -236,5 +250,62 @@
 
         // Carregar lista inicial
         fetchUsers();
+
+
+        $(document).on('click', '.btnDeleteRecord', function () {
+            const IdRecord = $(this).parent().parent().data('id');
+            console.log(IdRecord);
+            if (IdRecord) {
+                let url = `{{ route('knowledge.remove', ':id') }}`.replace(':id', IdRecord);
+                $("#ModalDelete form").attr('action', url);
+                $("#ModalDelete form").attr('data-id', IdRecord);
+                $("#ModalDelete").show();
+                console.log(url);// Passa "true" para adicionar itens ao invés de substituir
+            }
+        });
+
+
+        $(document).on('click', '#ModalDelete', function (event) { if (event.target === this) { $(this).hide(); }});
+        $(document).on('click', '.btnCancelDelete', function (event) {$('#ModalDelete').hide(); });$(document).on('click', '.BtnConfirmDelete', function () {
+            $.ajax({
+                url: $('#ModalDelete form').attr('action'),
+                method: 'DELETE',
+                data: $('#ModalDelete form').serialize(),
+                success: function (response) {
+                    console.log(response);
+                    if(response.status == "success"){
+                            const idRecord = $('#ModalDelete form').attr('data-id');
+                            console.log(idRecord);
+                            $(`.listaTabela[data-id='${idRecord}']`).fadeOut(300, function() {
+                            $(this).remove();
+
+                            // Criando o alerta dinamicamente
+                            $('body').append(`
+                                <div id="error-alert" class="bg-red-100 border-t-4 border-red-500 rounded-b text-red-900 px-4 py-3 shadow-md" role="alert" style="position: absolute; top: 10px; right: 10px; z-index:9;">
+                                    <div class="flex">
+                                        <div class="py-1"><svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
+                                        <div>
+                                        <p class="fonet-bold">Removido</p>
+                                        <p class="text-sm">${response.message}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `);
+
+                            // Aguardar 5 segundos antes de remover o alerta
+                            setTimeout(function() {
+                                $('#error-alert').remove();
+                            }, 5000);
+                        });
+           
+                        $("#ModalDelete").hide();
+                    }
+                }
+            })
+        });
+
+
+
+
     });
 </script>

@@ -40,7 +40,7 @@
 
                         <!-- Name -->
                         <div style="width: 35%; margin-bottom: 25px;">
-                            <x-input-label for="data" :value="__('Data:')" />
+                            <x-input-label for="data" :value="__('Data de Upload:')" />
                             <x-text-input id="data" class="formAddKnowledge" type="text" name="data" value="{{ now()->format('d/m/Y') }}" required autofocus autocomplete="name" disabled/>
                         </div>
 
@@ -134,7 +134,18 @@
 
             function uploadFiles() {
                 fileListGlobal.forEach(file => {
+                    if(!document.getElementById('name').value){
+                        alert('Preencha o nome da Base de Conhecimento');
+                        $("#name").css({
+                            'border': '1px solid red',
+                            'background': '#fdf4ef'
+                        });
+                       
+                        return false;
+                    }
+                    
                     $('.loading').fadeIn(500);
+                    
                     const formData = new FormData();
                     formData.append('name', document.getElementById('name').value);
                     formData.append('file', file);

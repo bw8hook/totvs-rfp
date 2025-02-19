@@ -371,9 +371,7 @@ class ProjectController extends Controller
         $fileName = trim($fileName, '_');
         $fileName = Str::slug($fileName).'_'.$File->hashName();;
         $filePath = 'cdn/projects/archives/'.$RfpBundle->bundle.'/'.$fileName;
-
         $UploadedFile = Storage::disk('s3')->put($filePath, file_get_contents($File));
-        //$content = Storage::disk('s3')->temporaryUrl($path,now()->addMinutes(10));
 
         // Sobe o arquivo para historico e salva no BD
         $ProjectFile = new ProjectFiles();
@@ -386,7 +384,6 @@ class ProjectController extends Controller
         $ProjectFile->file_extension = $File->getClientOriginalExtension();
         $ProjectFile->save();
         
-
         try {
             // Chama a importação do EXCEL
             $import = new ProjectRecordsImport($ProjectFile->id);
@@ -400,34 +397,7 @@ class ProjectController extends Controller
                 'redirectUrl' => '/project/records/'.$ProjectFile->id,
             ]);
 
-                // // Obter os dados atualizados
-                // $updatedData = $import->getUpdatedRows();
 
-                // // Gerar o arquivo Excel e salvar no storage temporário
-                // $fileName = 'planilha-respondida-' . time() . '.xlsx';
-                // $filePath = '/public/temp/' . $fileName;
-
-                // Excel::store(new NewProjectExport($updatedData), $filePath, 'local');
-
-                // // Gerar a URL para download
-                // $url = Storage::url($filePath);
-                // $NewUrl = str_replace("/storage//public", "", $url);
-
-                // // Cria uma nova instância do modelo
-                // $project = new RfpProject();
-                // $project->user_id = Auth::id();
-                // $project->title = 'Novo Projeto';
-                // $project->description = 'Descrição detalhada do projeto';
-                // $project->answered = $import->updatedCount;
-                // $project->unanswered = $import->NotUpdatedCount;
-                // $project->filename_original = $File->getClientOriginalName();
-                // $project->filepath = 'https://totvs.bw8.tech/storage/'.$NewUrl;
-                // $project->filename = $fileName;
-                // $project->file_extension = '.xlsx';
-                // $project->save();
-                // // Pega o ID inserido
-                // $insertedId = $project->id;            
-    
              // Acessar a URL gerada dentro da classe de importação
             $MensagemErro = $import->Erros;
 

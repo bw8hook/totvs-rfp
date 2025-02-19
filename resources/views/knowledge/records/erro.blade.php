@@ -73,14 +73,14 @@
                     <thead>
                         <tr>
                             <th style="width:3%;"></th>
-                            <th style="width:9%;">Classificação 1</th>
-                            <!-- <th style="width:9%;">Classificação 2</th> -->
-                            <th style="width:22%;">Descrição do Requisito</th>
-                            <th style="width:10.5%;">Resposta 1</th>
-                            <th style="width:14.5%;">Resposta 2</th>
-                            <th>Produto/Linha</th>
-                            <th style="width:25.5%;">Observações</th>
-                            <th style="width:5%;"></th>
+                            <th style="width:11%;">Processo</th>
+                            <th style="width:11%;">Subprocesso</th>
+                            <th style="width:19%;">Descrição do Requisito</th>
+                            <th style="width:9.5%;">Resposta</th>
+                            <th style="width:11.5%;">Módulo</th>
+                            <th style="width:12.5%;">Produto</th>
+                            <th style="width:19.5%;">Observações</th>
+                            <th style="width:12%;"></th>
                         </tr>    
                     </thead>
                         <tbody class="body_table">
@@ -138,6 +138,7 @@
 <script>
     const ListProdutos = @json($AllBundles);
     const ListRespostas = @json($AllAnswers);
+    const ListProcessos = @json($AllProcess);
 </script>
 
 <script>
@@ -154,37 +155,46 @@
                     // Atualizar tabela
                     let rows = '';
                     response.data.forEach(record => {
-                        //console.log(record);
-
                         // Verifica se record.bundle_id está presente em ListProdutos
                         let existsInListProducts = ListProdutos.some(produto => produto.bundle_id === record.bundle_id);
 
                         // Se o bundle_id não existir na lista, ele aparece como desabilitado e selecionado
-                        let bundleOptions = !existsInListProducts 
-                            ? `<option disabled selected>${record.bundle_old || '?'}</option>` 
-                            : '<option disabled selected>?</option>';
+                        let bundleOptions = !existsInListProducts ? `<option disabled selected>${record.bundle_old}</option>` : '<option disabled selected> - </option>';
                         ListProdutos.forEach(produto => {
-                        
                             bundleOptions += `<option value="${produto.bundle_id}" ${produto.bundle_id === record.bundle_id ? 'selected' : ''}>${produto.bundle}</option>`;
                         });
 
-
-
                         // Verifica se record.resposta está presente em ListRespostas
                         let existsInList = ListRespostas.some(resposta => resposta.anwser === record.resposta);
-                        let AnwserOptions = !existsInList  ? `<option disabled selected>${record.resposta}</option>` : '';
+                        let AnwserOptions = !existsInList 
+                            ? `<option disabled selected>${record.resposta || '?'}</option>` 
+                            : '<option disabled selected>?</option>';
+                        console.log(ListRespostas);
                         ListRespostas.forEach(resposta => {
                             AnwserOptions += `<option value="${resposta.anwser}" ${resposta.anwser === record.resposta ? 'selected' : ''}>${resposta.anwser}</option>`;
                         });
 
 
+                        // Verifica se record.resposta está presente em ListRespostas
+                        let existsInListProcess = ListProcessos.some(processo => processo.process === record.processo);
+                        let ProcessOptions = !existsInListProcess   ? `<option disabled selected>${record.processo}</option>` : '';
+                       
+                        ListProcessos.forEach(processo => {
+                            ProcessOptions += `<option value="${processo.id}" ${processo.process === record.processo ? 'selected' : ''}>${processo.process}</option>`;
+                        });
+
                         rows += `
                             <tr class="listaTabela ${record.rfp_bundles ? '' : 'highlighted_error'}" data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
                                 <td style="width:3%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
-                                <td style="width:9%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.classificacao}</td>
-                                <td style="width:21%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;">${record.requisito}</td>
+                                <td style="width:11%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">
+                                     <select name="processo" class="${existsInListProcess ? '' : 'highlighted_error_select'}" style="border-radius: 8px; width:100%">
+                                        ${ProcessOptions}
+                                    </select>
+                                </td>
+                                <td style="width:11%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.subprocesso ? record.subprocesso : '-'}</td>
+                                <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.requisito ? record.requisito : '-'}</td>
                                 <td style="width:10%; display: flex; align-items: center;">
-                                    <select name="resposta"  style="border-radius: 8px; width:100%">
+                                    <select name="resposta" class="${existsInList ? '' : 'highlighted_error_select'}""  style="border-radius: 8px; width:100%">
                                         ${AnwserOptions}
                                     </select>
                                 </td>
@@ -195,7 +205,7 @@
                                     </select>
                                 </td>
 
-                                <td style="width:23%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px; font-size:14px;">${record.observacao ? record.observacao : '-'}</td>
+                                <td style="width:18%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px; font-size:14px;">${record.observacao ? record.observacao : '-'}</td>
 
                                 <td style="width:5%;  display: flex; align-items: center;">
                                     <div class="btnEditRecord" style="margin: 0px; float:left; cursor:pointer;">
@@ -226,11 +236,11 @@
                         $('#TableExcel .body_table').html(rows);
                     }
 
-                   console.log(response);
-
+    
                     // Atualizar links de paginação
                     let pagination = '';
                     if (response.links) {
+                        console.log(response);
                         pagination = response.links
                             .filter(link => !["&laquo; Anterior", "Próximo &raquo;"].includes(link.label)) // Remove "Anterior" e "Próximo"
                             .map(link =>
@@ -296,6 +306,83 @@
 
                     },
                     error: function(error) {
+                        console.error('Erro ao atualizar:', error);
+                    }
+                });
+            }
+        });
+
+
+        $(document).on('change', 'select[name="processo"]', function () {
+            const Record = $(this);
+            const IdRecord = $(this).closest('tr').data('id'); // Obtém o ID do registro da linha da tabela
+            if (IdRecord) {
+                let url = `{{ route('knowledge.records.update', ':id') }}`.replace(':id', IdRecord);
+                console.log(url); // Verifica a URL gerada no console
+
+                // Opcional: Enviar automaticamente a alteração via AJAX para salvar no banco
+                $.ajax({
+                    url: url,
+                    method: 'POST',
+                    data: {
+                        processo: $(this).val(), // Valor selecionado no select
+                        _token: $('meta[name="csrf-token"]').attr('content') // Se necessário para Laravel
+                    },
+                    success: function(response) {
+
+                        Record.parent().parent().removeClass("highlighted_error");
+
+                        // Verifica se já existe um alerta visível e fecha ele
+                        if ($('#success-alert').length) {
+                            $('#success-alert').remove();
+                            clearTimeout(alertTimeout); // Limpa o timeout anterior
+                        }
+
+                        // Criando o alerta dinamicamente
+                        $('body').append(`
+                            <div id="success-alert" class="show bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md" role="alert" style="position: absolute; top: 10px; right: 10px; z-index:9;">
+                                <div class="flex">
+                                    <div class="py-1"><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
+                                    <div>
+                                    <p class="font-bold">Salvamento Automático!</p>
+                                    <p class="text-sm">Informações salvas com sucesso!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+
+                    // Define um novo temporizador para remover o alerta após 5 segundos
+                        alertTimeout = setTimeout(function() {
+                            $('#success-alert').remove();
+                        }, 5000);
+
+                    },
+                    error: function(error) {
+                        // Verifica se já existe um alerta visível e fecha ele
+                        if ($('#error-alert').length) {
+                            $('#error-alert').remove();
+                            clearTimeout(alertTimeout); // Limpa o timeout anterior
+                        }
+                        
+                        // Criando o alerta dinamicamente
+                        $('body').append(`
+                            <div id="error-alert" class="bg-red-100 border-t-4 border-red-500 rounded-b text-red-900 px-4 py-3 shadow-md" role="alert" style="position: absolute; top: 10px; right: 10px; z-index:9;">
+                                <div class="flex">
+                                    <div class="py-1"><svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
+                                    <div>
+                                    <p class="fonet-bold">Erro</p>
+                                    <p class="text-sm">Não foi possível atualizar essa informação nesse momento!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+
+                        // Aguardar 5 segundos antes de remover o alerta
+                        setTimeout(function() {
+                            $('#error-alert').remove();
+                        }, 5000);
+
+
                         console.error('Erro ao atualizar:', error);
                     }
                 });

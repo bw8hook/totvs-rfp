@@ -9,6 +9,7 @@ use App\Models\RfpAnswer;
 use App\Models\UsersDepartaments;
 use App\Imports\KnowledgeBaseImport;
 use App\Imports\KnowledgeBaseInfoImport;
+use App\Models\RfpProcess;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -35,6 +36,7 @@ class KnowledgeRecordsController extends Controller
                 $UsersDepartaments = UsersDepartaments::where('departament_type', '!=', 'Admin')->orderBy('departament', 'asc')->get();
 
                 $AllAnswers =  RfpAnswer::orderBy('order', 'asc')->get();
+                $AllProcess =  RfpProcess::orderBy('order', 'asc')->get();
                 $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
 
                 $ListProdutos = DB::table('knowledge_records')
@@ -63,6 +65,7 @@ class KnowledgeRecordsController extends Controller
                     'ListProdutos' => $ListProdutos,
                     'AllBundles' => $AllBundles,
                     'AllAnswers' => $AllAnswers,
+                    'AllProcess' => $AllProcess,
                     'CountCountRecordsResultado' => $CountRecords,
                 );
                 
@@ -106,9 +109,9 @@ class KnowledgeRecordsController extends Controller
                 });
             }
             
-            $classificacao1 = $request->classificacao1 === "null" ? null : $request->classificacao1;
-            if (filled($classificacao1)) {
-                $query->where('processo', 'like', '%' . $request->classificacao1 . '%');
+            $processo = $request->processo === "null" ? null : $request->processo;
+            if (filled($processo)) {
+                $query->where('processo', 'like', '%' . $request->processo . '%');
             }
              
             $resposta = $request->resposta === "null" ? null : $request->resposta;
@@ -142,6 +145,12 @@ class KnowledgeRecordsController extends Controller
             if($request->bundle){
                 $KnowledgeRecords->bundle_id = $request->bundle;
             }
+
+            if($request->processo){
+                $KnowledgeProcess = RfpProcess::findOrFail($request->processo);
+                $KnowledgeRecords->processo_id = $request->processo;
+                $KnowledgeRecords->processo = $KnowledgeProcess->process;
+            }
                
             try{
                 $KnowledgeRecords->save();
@@ -171,12 +180,13 @@ class KnowledgeRecordsController extends Controller
         $KnowledgeBase = KnowledgeBase::findOrFail($id);
         if($KnowledgeBase->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){  
             
-            $ListClassificacaoRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('classificacao')->pluck('classificacao');
+            $ListClassificacaoRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('processo')->pluck('processo');
             $ListRespostaRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('resposta')->pluck('resposta');
             $ListProdutosRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('bundle_old')->pluck('bundle_old');
             $UsersDepartaments = UsersDepartaments::where('departament_type', '!=', 'Admin')->orderBy('departament', 'asc')->get();
 
             $AllAnswers =  RfpAnswer::orderBy('order', 'asc')->get();
+            $AllProcess =  RfpProcess::orderBy('order', 'asc')->get();
             $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
 
             $ListProdutos = DB::table('knowledge_records')
@@ -184,14 +194,14 @@ class KnowledgeRecordsController extends Controller
                 ->where('knowledge_records.knowledge_base_id', $KnowledgeBase->id)
                 ->where(function ($query) {
                     $query->orWhereNull('knowledge_records.bundle_id')
-                        ->orWhereNull('knowledge_records.classificacao')
+                        ->orWhereNull('knowledge_records.processo')
                         ->orWhereNull('knowledge_records.requisito')
                         ->orWhereNull('knowledge_records.resposta')
-                        ->orWhereNull('knowledge_records.resposta2')
-                        ->orWhere('knowledge_records.classificacao', '')
+                        ->orWhereNull('knowledge_records.modulo')
+                        ->orWhere('knowledge_records.processo', '')
                         ->orWhere('knowledge_records.requisito', '')
                         ->orWhere('knowledge_records.resposta', '')
-                        ->orWhere('knowledge_records.resposta2', '');
+                        ->orWhere('knowledge_records.modulo', '');
                 })
                 ->groupBy('knowledge_records.bundle_id', 'rfp_bundles.bundle')
                 ->select('knowledge_records.bundle_id', 'rfp_bundles.bundle')
@@ -213,6 +223,7 @@ class KnowledgeRecordsController extends Controller
                     'ListProdutos' => $ListProdutos,
                     'AllBundles' => $AllBundles,
                     'AllAnswers' => $AllAnswers,
+                    'AllProcess' => $AllProcess,
                     'CountCountRecordsResultado' => $CountRecords,
                     'CountCountRecordsEmpty' => $CountRecordsEmpty,
                 );
@@ -230,8 +241,24 @@ class KnowledgeRecordsController extends Controller
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
             $query->where('knowledge_base_id', '=', $KnowledgeBase->id);
-            $query->whereNull('bundle_id')->orWhere('bundle_id', ''); // Para strings vazias
-                        
+
+            // Pelo menos uma das três condições opcionais deve ser verdadeira
+            $query->where(function($q) {
+                $q->where(function($subQ) {
+                    $subQ->whereNull('bundle_id')
+                        ->orWhere('bundle_id', '');
+                })
+                ->orWhere(function($subQ) {
+                    $subQ->whereNull('processo_id')
+                        ->orWhere('processo_id', '');
+                })
+                ->orWhere(function($subQ) {
+                    $subQ->whereNotIn('resposta', ['Atende', 'Não Atende', 'Atende Parcial', 'Customizável'])
+                        ->orWhereNull('resposta');
+                });
+            });
+
+
             // Paginação
             $records = $query->paginate(100);
 
