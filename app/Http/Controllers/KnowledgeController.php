@@ -318,11 +318,7 @@ class KnowledgeController extends Controller
         if ($Arquivo['user_id'] == Auth::id() || Auth::user()->role->role_priority >= 90){
 
             if (Storage::disk('s3')->exists($Arquivo->filepath)) {
-
-                $fullPath = Storage::disk('s3')->url($Arquivo->filepath);
-
-                dd($fullPath);
-                
+                $fullPath = Storage::disk('s3')->url($Arquivo->filepath);                
                 if (Storage::disk('s3')->delete($Arquivo->filepath)) {
                     KnowledgeRecord::where('knowledge_base_id', $id)->delete();// 
                     KnowledgeBase::where('id', $id)->delete();// Exclui o usuário do banco de dados
