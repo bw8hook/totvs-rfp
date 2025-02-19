@@ -305,9 +305,6 @@ class KnowledgeController extends Controller
   }
 
     
-   
-
-
     /**
      * Remove the specified resource from storage.
      */
@@ -322,17 +319,17 @@ class KnowledgeController extends Controller
                 if (Storage::disk('s3')->delete($Arquivo->filepath)) {
                     KnowledgeRecord::where('knowledge_base_id', $id)->delete();// 
                     KnowledgeBase::where('id', $id)->delete();// Exclui o usuário do banco de dados
-                    return redirect()->back()->with('success', 'Arquivo excluído com sucesso.');
+                    return response()->json(['status' => 'success', 'message' => 'Arquivo excluído com sucesso!']);
                 }else{
                     KnowledgeRecord::where('knowledge_base_id', $id)->delete();// 
                     KnowledgeBase::where('id', $id)->delete();// Exclui o usuário do banco de dados
-                    return redirect()->back()->with('error', 'Erro ao excluir arquivo.');
+                    return response()->json(['status' => 'error', 'message' => 'Erro ao excluir arquivo']);
                 }
             }else{
-                return redirect()->back()->with('error', 'Arquivo não encontrado.');
+                return response()->json(['status' => 'error', 'message' => 'Arquivo não encontrado']);
             }
         } else {
-            return redirect()->back()->with('error', 'Usuário sem permissão para excluir.');
+            return response()->json(['status' => 'error', 'message' => 'Usuário sem permissão para excluir']);
         }
     }
 
