@@ -253,7 +253,7 @@ class KnowledgeRecordsController extends Controller
                         ->orWhere('processo_id', '');
                 })
                 ->orWhere(function($subQ) {
-                    $subQ->whereNotIn('resposta', ['Atende', 'Não Atende', 'Atende Parcial', 'Customizável'])
+                    $subQ->whereNotIn('resposta', ['Atende', 'Não Atende', 'Atende Parcialmente', 'Customizável'])
                         ->orWhereNull('resposta');
                 });
             });
