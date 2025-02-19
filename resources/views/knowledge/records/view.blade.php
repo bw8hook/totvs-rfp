@@ -6,13 +6,22 @@
                 <div class="block" style="width: 50%;">    
                     <div class="flex" style="width: 100%;">
                     <img src="{{ asset('icons/base_conhecimento.svg') }}" alt="Upload Icon" style="height: 33%; padding-right: 18px;">
-                        <span>{{$Project->name}}</span>
+                        <span>{{$KnowledgeBase->name}}</span>
                     </div>
                     <div class="relative block items-center" style="padding-bottom: 12px; padding-left:7px;">        
-                        <div class="info_details" style="color:#3A57E8"> {{$ProjectFile->filename_original}} </div>
+                        <div class="info_details" style="color:#3A57E8"> {{$KnowledgeBase->filename_original}} </div>
                         <div class="info_details"> Requisitos:<span> {{$CountCountRecordsResultado}}</span></div>
-                        <div class="info_details"> Produto:<span> {{$ProjectFile->rfp_bundles->bundle}}</span></div>
-                        <div class="info_details"> Responsável:<span> {{$Project->user->name}}</span></div>
+                        <div class="info_details"> Escopo da RFP:<span>  {{$KnowledgeBase->project}}</span></div>
+                        <div class="info_details"> Time Responsável:<span> 
+                            @foreach($UsersDepartaments as $Departament)
+                                @if ($KnowledgeBase->project_team == $Departament->id)
+                                    {{$Departament->departament}}
+                                @endif
+                            @endforeach
+                            </span>
+                        </div>
+                        <div class="info_details"> Data da RFP:<span> @if($KnowledgeBase->rfp_date) {{ date('d/m/Y', strtotime($KnowledgeBase->rfp_date)) }} @endif</span></div>
+                       
                     </div>
                 </div>
             </div>
@@ -22,7 +31,7 @@
                 <div class="bloco_info_filter_records">
                     <div>
                         <h2>Edição e Envio de Requisitos</h2>
-                        <h4>VVerifique cada requisito antes de enviar para análise da IA. Para facilitar a sua escolha de edição de requisitos, escolha os filtros abaixo através do ID, palavras-chave e/ou classificação. Ao finalizar a sua edição, conclua a operação com o botão <b>“Concluir e enviar”.</b></h4>
+                        <h4>Verifique cada item enviado. Para facilitar a sua escolha de edição de requisitos, escolha os filtros abaixo através de palavras-chave, classificação e linha de produto. Ao finalizar a sua edição, conclua a operação com o botão <b>“Concluir e enviar” ou salve para continuar depois.</b></h4>
                     </div>
                         
                     <form id="filterForm">
@@ -42,21 +51,47 @@
                             </select>
                         </div>
                         
+
+                        <div class="inputField" style="width: 300px;">
+                            <label>Resposta:</label>
+                            <select name="resposta">
+                                <option value="null" selected>Selecione</option>
+                                @foreach($ListResposta as $Resposta)
+                                    @if ($Resposta)
+                                        <option value="{{$Resposta}}">{{$Resposta}}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="inputField">
+                            <label>Selecione o Produto:</label>
+                            <select name="product">
+                                <option value="null" selected>Selecione</opt>
+                                    @foreach($ListProdutosRecebidas as $Produtos)
+                                        <option value="{{$Produtos}}">{{$Produtos}}</option>
+                                    @endforeach
+                            </select>
+                        </div>
+
                         <button type="submit">FILTRAR</button>
                         <button id="btnLimpar" style=" border: 2px solid #CBD0DD; background: #FFF; color: #5E6470;" type="button">LIMPAR</button>
                     </form> 
 
-                    <span style="font-size: 13px; color: #818181;">*Os filtros são combinados, e o campo de palavra-chave aplica-se aos campos (Classificação 1, Descrição, Resposta 1, Resposta 2, Produto/Linha e Observações).</span>
+                    <span style="font-size: 13px; color: #818181;">*Os filtros são combinados e o campo de palavra-chave busca em todos os campos.</span>
                 </div>
             
                 <table id="TableExcel" class="tabela">
                     <thead>
                         <tr>
-                            <th style="width:1%;">#ID</th>
-                            <th style="width:7.4%;">Processo</th>
-                            <th style="width:7.4%;">Subprocesso</th>
-                            <th style="width:22%;">Descrição do Requisito</th>
-                            <th style="width:5%;"></th>
+                            <th style="width:3%;"></th>
+                            <th style="width:11%;">Processo</th>
+                            <th style="width:11%;">Subprocesso</th>
+                            <th style="width:19%;">Descrição do Requisito</th>
+                            <th style="width:9.5%;">Resposta</th>
+                            <th style="width:11.5%;">Módulo</th>
+                            <th style="width:12.5%;">Produto</th>
+                            <th style="width:19.5%;">Observações</th>
+                            <th style="width:12%;"></th>
                         </tr>    
                     </thead>
                         <tbody class="body_table">
@@ -80,9 +115,9 @@
                     </div>
                 </div>
 
-                <div class="btns_bottom">
+                <!-- <div class="btns_bottom">
                     <div class="AlignBtns">
-                        <div class="btn_finishSend" data-id="{{$ProjectFile->id}}" data-href="{{ route('project.recordsErrors', $ProjectFile->id) }}">
+                        <div class="btn_finishSend" data-id="{{$KnowledgeBase->id}}" data-href="{{ route('knowledge.recordsErrors', $KnowledgeBase->id) }}">
                             <div class="alignCenter">
                                 <span>Concluir e enviar</span>
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -92,25 +127,18 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
-                <div id="ModalDelete">
-                    <form method="delete" action="">
-                        @csrf
-                        <h2>Tem certeza que deseja excluir esse requisito?</h2>
-                        <div class="btns_Delete">
-                            <div class="BtnConfirmDelete">Sim, excluir agora</div>
-                            <div class="btnCancelDelete">Não excluir</div>
-                        </div>
-                    </form>
-                </div>
+    
             </div>
         </div>
     </div>
 </x-app-layout>
 
 <script>
-    const ListProcess = @json($AllProcess);
+    const ListProdutos = @json($AllBundles);
+    const ListRespostas = @json($AllAnswers);
+    const ListProcessos = @json($AllProcess);
 </script>
 
 <script>
@@ -118,7 +146,7 @@
         $(".side_menu_big").addClass("menu_hidden").removeClass("menu_visible");
         $(".side_menu_small").addClass("menu_visible").removeClass("menu_hidden");
 
-        function fetchUsers(url = "{{ route('project.recordsFilter', $idProjectFile) }}", append = false) {
+        function fetchUsers(url = "{{ route('knowledge.recordsFilter', $idKnowledgeBase) }}", append = false) {
             $.ajax({
                 url: url,
                 method: 'GET',
@@ -127,43 +155,56 @@
                     // Atualizar tabela
                     let rows = '';
                     response.data.forEach(record => {
+                        // Verifica se record.bundle_id está presente em ListProdutos
+                        let existsInListProducts = ListProdutos.some(produto => produto.bundle_id === record.bundle_id);
+
+                        // Se o bundle_id não existir na lista, ele aparece como desabilitado e selecionado
+                        let bundleOptions = !existsInListProducts ? `<option disabled selected>${record.bundle_old}</option>` : '<option disabled selected> - </option>';
+                        ListProdutos.forEach(produto => {
+                            bundleOptions += `<option value="${produto.bundle_id}" ${produto.bundle_id === record.bundle_id ? 'selected' : ''}>${produto.bundle}</option>`;
+                        });
 
                         // Verifica se record.resposta está presente em ListRespostas
-                        let existsInListProcess = ListProcess.some(processo => processo.process === record.processo);
+                        let existsInList = ListRespostas.some(resposta => resposta.anwser === record.resposta);
+                        let AnwserOptions = !existsInList 
+                            ? `<option disabled selected>${record.resposta || '?'}</option>` 
+                            : '<option disabled selected>?</option>';
+                        console.log(ListRespostas);
+                        ListRespostas.forEach(resposta => {
+                            AnwserOptions += `<option value="${resposta.anwser}" ${resposta.anwser === record.resposta ? 'selected' : ''}>${resposta.anwser}</option>`;
+                        });
+
+
+                        // Verifica se record.resposta está presente em ListRespostas
+                        let existsInListProcess = ListProcessos.some(processo => processo.process === record.processo);
                         let ProcessOptions = !existsInListProcess   ? `<option disabled selected>${record.processo}</option>` : '';
-                        ListProcess.forEach(processo => {
+                       
+                        ListProcessos.forEach(processo => {
                             ProcessOptions += `<option value="${processo.id}" ${processo.process === record.processo ? 'selected' : ''}>${processo.process}</option>`;
                         });
-                        
+
                         rows += `
-                            <tr class="listaTabela" data-id="${record.id}" style="min-height:60px; max-height: 100%;">
+                            <tr class="listaTabela ${record.rfp_bundles ? '' : 'highlighted_error'}" data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
                                 <td style="width:3%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
-                                
-                                <td style="width:17%; display: flex; align-items: center;">
-                                    <select name="processo_id"  style="border-radius: 8px; width:100%" class="${existsInListProcess ? '' : 'highlighted_error_select'}">
-                                        ${ProcessOptions}
+                                <td style="width:11%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.processo ? record.processo : '-'}</td>
+                                <td style="width:11%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.subprocesso ? record.subprocesso : '-'}</td>
+                                <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.requisito ? record.requisito : '-'}</td>
+                                <td style="width:10%; display: flex; align-items: center;">
+                                    <select name="resposta" class="${existsInList ? '' : 'highlighted_error_select'}""  style="border-radius: 8px; width:100%" disabled>
+                                        ${AnwserOptions}
                                     </select>
                                 </td>
-                                <td style="width:17%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.subprocesso ? record.subprocesso : ''} </td>
-                                <td style="width:58%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.requisito ? record.requisito : ''} </td>
-                               
+                                <td style="width:11%;  display: flex; align-items: center;  word-wrap: break-word; white-space: normal;overflow: visible; text-align: left;">${record.resposta2 ? record.resposta2 : '-'}</td>
+                                <td style="width:13%;  display: flex; align-items: center;">
+                                     <select name="bundle" style="border-radius: 8px; width:100%" disabled>
+                                        ${bundleOptions}
+                                    </select>
+                                </td>
+
+                                <td style="width:18%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px; font-size:14px;">${record.observacao ? record.observacao : '-'}</td>
+
                                 <td style="width:5%;  display: flex; align-items: center;">
-                                    <div class="btnEditRecord" style="margin: 0px; float:left; cursor:pointer;">
-                                        <button type="submit" class="records_edit">
-                                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M15.6775 8.33333C15.935 8.33333 16.1783 8.21417 16.3358 8.01083C16.4933 7.8075 16.5483 7.5425 16.485 7.29333C16.2258 6.27917 15.6975 5.3525 14.9575 4.6125L12.0533 1.70833C10.9517 0.606667 9.48667 0 7.92833 0H4.16583C1.86917 0 0 1.86917 0 4.16667V15.8333C0 18.1308 1.86917 20 4.16667 20H6.66667C7.12667 20 7.5 19.6267 7.5 19.1667C7.5 18.7067 7.12667 18.3333 6.66667 18.3333H4.16667C2.78833 18.3333 1.66667 17.2117 1.66667 15.8333V4.16667C1.66667 2.78833 2.78833 1.66667 4.16667 1.66667H7.92917C8.065 1.66667 8.2 1.67333 8.33333 1.68583V5.83333C8.33333 7.21167 9.455 8.33333 10.8333 8.33333H15.6775ZM10 5.83333V2.21583C10.3158 2.3975 10.61 2.6225 10.875 2.8875L13.7792 5.79167C14.0408 6.05333 14.265 6.34833 14.4483 6.66667H10.8333C10.3742 6.66667 10 6.2925 10 5.83333ZM19.2683 9.89917C18.3233 8.95417 16.6767 8.95417 15.7325 9.89917L10.1433 15.4883C9.51417 16.1175 9.16667 16.955 9.16667 17.8458V19.1675C9.16667 19.6275 9.54 20.0008 10 20.0008H11.3217C12.2125 20.0008 13.0492 19.6533 13.6783 19.0242L19.2675 13.435C19.74 12.9625 20 12.335 20 11.6667C20 10.9983 19.74 10.3708 19.2683 9.89917ZM18.0892 12.2558L12.4992 17.845C12.185 18.16 11.7667 18.3333 11.3208 18.3333H10.8325V17.845C10.8325 17.4 11.0058 16.9817 11.3208 16.6667L16.9108 11.0775C17.225 10.7625 17.7742 10.7625 18.0892 11.0775C18.2467 11.2342 18.3333 11.4433 18.3333 11.6667C18.3333 11.89 18.2467 12.0983 18.0892 12.2558Z" fill="#8A94AD"/>
-                                                <clipPath id="clip0_329_10365"><rect width="20" height="20" fill="white"/> </clipPath>            
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="btnDeleteRecord" style="margin: 0px; float:left;">
-                                        <button type="submit" class="records_delete">
-                                            <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M4.18476 0.553125L3.9619 1H0.990476C0.442619 1 0 1.44687 0 2C0 2.55312 0.442619 3 0.990476 3H12.8762C13.424 3 13.8667 2.55312 13.8667 2C13.8667 1.44687 13.424 1 12.8762 1H9.90476L9.6819 0.553125C9.51476 0.2125 9.17119 0 8.79667 0H5.07C4.69548 0 4.3519 0.2125 4.18476 0.553125ZM12.8762 4H0.990476L1.64667 14.5938C1.69619 15.3844 2.34619 16 3.12929 16H10.7374C11.5205 16 12.1705 15.3844 12.22 14.5938L12.8762 4Z" fill="#CCCED9"/>
-                                                <clipPath id="clip0_2032_702"> <rect width="13.8667" height="16" fill="white"/></clipPath>
-                                            </svg>
-                                        </button>
-                                    </div>
+                                    
                                 </td>
                             </tr>
                         `;
@@ -176,10 +217,11 @@
                         $('#TableExcel .body_table').html(rows);
                     }
 
-                   
+    
                     // Atualizar links de paginação
                     let pagination = '';
                     if (response.links) {
+                        console.log(response);
                         pagination = response.links
                             .filter(link => !["&laquo; Anterior", "Próximo &raquo;"].includes(link.label)) // Remove "Anterior" e "Próximo"
                             .map(link =>
@@ -212,11 +254,12 @@
             }
         });
 
-        $(document).on('change', 'select[name="processo_id"]', function () {
+
+        $(document).on('change', 'select[name="resposta"]', function () {
             const Record = $(this);
             const IdRecord = $(this).closest('tr').data('id'); // Obtém o ID do registro da linha da tabela
             if (IdRecord) {
-                let url = `{{ route('project.records.update', ':id') }}`.replace(':id', IdRecord);
+                let url = `{{ route('knowledge.records.update', ':id') }}`.replace(':id', IdRecord);
                 console.log(url); // Verifica a URL gerada no console
 
                 // Opcional: Enviar automaticamente a alteração via AJAX para salvar no banco
@@ -224,7 +267,59 @@
                     url: url,
                     method: 'POST',
                     data: {
-                        processo_id: $(this).val(), // Valor selecionado no select
+                        resposta: $(this).val(), // Valor selecionado no select
+                        _token: $('meta[name="csrf-token"]').attr('content') // Se necessário para Laravel
+                    },
+                    success: function(response) {
+                        Record.removeClass("highlighted_error_select");
+
+                        // Verifica se já existe um alerta visível e fecha ele
+                        if ($('#success-alert').length) {
+                            $('#success-alert').remove();
+                            clearTimeout(alertTimeout); // Limpa o timeout anterior
+                        }
+
+                        // Criando o alerta dinamicamente
+                        $('body').append(`
+                            <div id="success-alert" class="show bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md" role="alert" style="position: absolute; top: 10px; right: 10px; z-index:9;">
+                                <div class="flex">
+                                    <div class="py-1"><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
+                                    <div>
+                                    <p class="font-bold">Salvamento Automático!</p>
+                                    <p class="text-sm">Informações salvas com sucesso!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+
+                    // Define um novo temporizador para remover o alerta após 5 segundos
+                        alertTimeout = setTimeout(function() {
+                            $('#success-alert').remove();
+                        }, 5000);
+
+                    },
+                    error: function(error) {
+                        console.error('Erro ao atualizar:', error);
+                    }
+                });
+            }
+        });
+
+
+
+        $(document).on('change', 'select[name="processo"]', function () {
+            const Record = $(this);
+            const IdRecord = $(this).closest('tr').data('id'); // Obtém o ID do registro da linha da tabela
+            if (IdRecord) {
+                let url = `{{ route('knowledge.records.update', ':id') }}`.replace(':id', IdRecord);
+                console.log(url); // Verifica a URL gerada no console
+
+                // Opcional: Enviar automaticamente a alteração via AJAX para salvar no banco
+                $.ajax({
+                    url: url,
+                    method: 'POST',
+                    data: {
+                        processo: $(this).val(), // Valor selecionado no select
                         _token: $('meta[name="csrf-token"]').attr('content') // Se necessário para Laravel
                     },
                     success: function(response) {
@@ -289,10 +384,89 @@
         });
 
 
+        
+
+        $(document).on('change', 'select[name="bundle"]', function () {
+            const Record = $(this);
+            const IdRecord = $(this).closest('tr').data('id'); // Obtém o ID do registro da linha da tabela
+            if (IdRecord) {
+                let url = `{{ route('knowledge.records.update', ':id') }}`.replace(':id', IdRecord);
+                console.log(url); // Verifica a URL gerada no console
+
+                // Opcional: Enviar automaticamente a alteração via AJAX para salvar no banco
+                $.ajax({
+                    url: url,
+                    method: 'POST',
+                    data: {
+                        bundle: $(this).val(), // Valor selecionado no select
+                        _token: $('meta[name="csrf-token"]').attr('content') // Se necessário para Laravel
+                    },
+                    success: function(response) {
+
+                        Record.parent().parent().removeClass("highlighted_error");
+
+                        // Verifica se já existe um alerta visível e fecha ele
+                        if ($('#success-alert').length) {
+                            $('#success-alert').remove();
+                            clearTimeout(alertTimeout); // Limpa o timeout anterior
+                        }
+
+                        // Criando o alerta dinamicamente
+                        $('body').append(`
+                            <div id="success-alert" class="show bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md" role="alert" style="position: absolute; top: 10px; right: 10px; z-index:9;">
+                                <div class="flex">
+                                    <div class="py-1"><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
+                                    <div>
+                                    <p class="font-bold">Salvamento Automático!</p>
+                                    <p class="text-sm">Informações salvas com sucesso!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+
+                    // Define um novo temporizador para remover o alerta após 5 segundos
+                        alertTimeout = setTimeout(function() {
+                            $('#success-alert').remove();
+                        }, 5000);
+
+                    },
+                    error: function(error) {
+                        // Verifica se já existe um alerta visível e fecha ele
+                        if ($('#error-alert').length) {
+                            $('#error-alert').remove();
+                            clearTimeout(alertTimeout); // Limpa o timeout anterior
+                        }
+                        
+                        // Criando o alerta dinamicamente
+                        $('body').append(`
+                            <div id="error-alert" class="bg-red-100 border-t-4 border-red-500 rounded-b text-red-900 px-4 py-3 shadow-md" role="alert" style="position: absolute; top: 10px; right: 10px; z-index:9;">
+                                <div class="flex">
+                                    <div class="py-1"><svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
+                                    <div>
+                                    <p class="fonet-bold">Erro</p>
+                                    <p class="text-sm">Não foi possível atualizar essa informação nesse momento!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+
+                        // Aguardar 5 segundos antes de remover o alerta
+                        setTimeout(function() {
+                            $('#error-alert').remove();
+                        }, 5000);
+
+
+                        console.error('Erro ao atualizar:', error);
+                    }
+                });
+            }
+        });
+
+
         $(document).on('click', '.btnDeleteRecord', function () {
             const IdRecord = $(this).parent().parent().data('id');
             if (IdRecord) {
-                let url = `{{ route('project.recordsFilterRemove', ':id') }}`.replace(':id', IdRecord);
+                let url = `{{ route('knowledge.recordsFilterRemove', ':id') }}`.replace(':id', IdRecord);
                 $("#ModalDelete form").attr('action', url);
                 $("#ModalDelete form").attr('data-id', IdRecord);
                 $("#ModalDelete").show();
@@ -350,13 +524,45 @@
             const IdRecord = $(this).data('id');
             console.log(url);
             if (url) {
+                let escopo = $("#escopo");
+                let time = $("#time");
+                let data = $("#data");
                 let isValid = true;
                 let firstError = null;
                 let alertContainer = $("#alert-container");
 
                 $(".border-red").removeClass("border-red"); // Remove bordas vermelhas anteriores
-                
-                    let urlFiltro = `{{ route('project.recordsFilterErrors', ':id') }}`.replace(':id', IdRecord);
+
+                if (!escopo.val() || escopo.val().trim() === "") {
+                    escopo.addClass("border-red");
+                    showAlertBootstrap("error", "o campo 'ESCOPO' é um requisito obrigatório, preencha para continuar.");
+                    if (!firstError) firstError = escopo;
+                    isValid = false;
+                    console.log('escopo');
+                }
+
+                if (!time.val() || time.val().trim() === "") {
+                    time.addClass("border-red");
+                    showAlertBootstrap("error", "o campo 'TIME' é um requisito obrigatório, preencha para continuar.");
+                    if (!firstError) firstError = time;
+                    isValid = false;
+                }
+
+                if (!data.val() || data.val().trim() === "") {
+                    data.addClass("border-red");
+                    showAlertBootstrap("error", "o campo 'DATA' é um requisito obrigatório, preencha para continuar.");
+                    if (!firstError) firstError = data;
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    event.preventDefault(); // Impede o envio do formulário
+                    $("#contentBody").animate({
+                        scrollTop: firstError.offset().top - 50 // Ajuste para posicionar melhor o campo na tela
+                    }, 500);
+                }else{
+                    
+                    let urlFiltro = `{{ route('knowledge.recordsFilterErrors', ':id') }}`.replace(':id', IdRecord);
             
                     // Envia ajax para validar se todos os campos estão preenchidos, caso contrario, direciona para a página de "error"
                     $.ajax({
@@ -365,7 +571,7 @@
                         success: function(response) {
                             console.log(response);
                             if (response.data.length === 0 && response.next_page_url === null) {
-                                let urlSuccess = `{{ route('project.records.processing', ':id') }}`.replace(':id', IdRecord);
+                                let urlSuccess = `{{ route('knowledge.records.processing', ':id') }}`.replace(':id', IdRecord);
                                 window.location.href = urlSuccess;
                             } else {
                                 window.location.href = url;
@@ -375,9 +581,16 @@
                             console.error('Erro ao atualizar:', error);
                         }
                     });
+                }
             }
         });
 
+
+        $('#btnLimpar').on('click', function (e) {
+            document.getElementById('filterForm').reset();
+
+            fetchUsers();
+        });
 
 
 
@@ -389,13 +602,6 @@
 
         // Carregar lista inicial
         fetchUsers();
-
-        $('#btnLimpar').on('click', function (e) {
-            document.getElementById('filterForm').reset();
-
-            fetchUsers();
-        });
-
     });
 
 
@@ -412,7 +618,7 @@
 
     function saveToDatabase(field, value) {
       // Substitua esta URL pelo endpoint do seu servidor
-      const url = "{{ route('project.updateInfos', $ProjectFile) }}"
+      const url = "{{ route('knowledge.updateInfos', $idKnowledgeBase) }}"
         
       $.ajax({
         url: url,
@@ -446,11 +652,8 @@
             }, 5000);
         }
     })
-    }
-</script>
+}
 
-
-<script>
     document.addEventListener("DOMContentLoaded", function() {
         flatpickr("#data", {
             dateFormat: "d/m/Y", // Formato da data (dia/mês/ano)
@@ -458,6 +661,10 @@
             locale: "pt"         // Define para português
         });
     });
+
+
+
+
 
 </script>
 

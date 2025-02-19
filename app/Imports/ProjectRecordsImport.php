@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\RfpBundle;
 use App\Models\ProjectRecord;
 use App\Models\KnowledgeError;
+use App\Models\RfpProcess;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -33,6 +34,8 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
     use Importable;
 
     protected $id;
+
+    protected $idbundle;
     protected $idpacote; // Variável para armazenar o ID
     public $Erros = [];
     private $ListBundles = [];
@@ -40,9 +43,10 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
     public $erroRows = [];
     
 
-    public function __construct($id)
+    public function __construct($id, $idbundle)
     {
          $this->id = $id;
+         $this->idbundle = $idbundle;
         // $this->idpacote = $idpacote; // Define o ID recebido no construtor
     }
 
@@ -63,7 +67,7 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
     {
         $instance = $event->getConcernable();
         // Consulta os dados no banco de dados e preenche o array
-        $instance->ListBundles = RfpBundle::all()->pluck('bundle_id', 'bundle')->toArray();
+        $instance->ListProcess = RfpProcess::all()->pluck('id', 'process')->toArray();
     }
     
     public function startRow(): int{
@@ -78,7 +82,7 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
         // Busca em Todas as linhas
         foreach ($rows as $index => $row) {  
             // Busca se o PRODUTO enviado está cadastrado na lista
-            $bundleIDFound = $this->ListBundles[$row[7]] ?? null;
+            $processIDFound = $this->ListProcess[$row[0]] ?? null;
            
             // Salva o registro
             $ProjectRecord = new ProjectRecord();
@@ -88,13 +92,14 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
                 $ProjectRecord->spreadsheet_line = $index;
                 
                 // Valida o PRODUTO
-                if (!$bundleIDFound) {
-                    $ProjectRecord->bundle_id = null;
+                if (!$processIDFound) {
+                    $ProjectRecord->processo_id = null;
                 }else{
-                    $ProjectRecord->bundle_id = $bundleIDFound;
+                    $ProjectRecord->processo_id = $processIDFound;
                 }
                 
                 // Dados do arquivo
+                $ProjectRecord->bundle_id = $this->idbundle;
                 $ProjectRecord->processo = $row[0];
                 $ProjectRecord->subprocesso = $row[1];
                 $ProjectRecord->requisito = $row[2];

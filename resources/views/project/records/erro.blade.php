@@ -42,8 +42,9 @@
                 <table id="TableExcel" class="tabela">
                     <thead>
                         <tr>
-                            <th style="width:3%;">#ID</th>
-                            <th style="width:3%;">Classificação 1</th>
+                            <th style="width:1%;">#ID</th>
+                            <th style="width:7.4%;">Processo</th>
+                            <th style="width:7.4%;">Subprocesso</th>
                             <th style="width:22%;">Descrição do Requisito</th>
                             <th style="width:5%;"></th>
                         </tr>    
@@ -108,7 +109,7 @@
         $(".side_menu_big").addClass("menu_hidden").removeClass("menu_visible");
         $(".side_menu_small").addClass("menu_visible").removeClass("menu_hidden");
 
-        function fetchUsers(url = "{{ route('project.recordsFilter', $idProjectFile) }}", append = false) {
+        function fetchUsers(url = "{{ route('project.recordsFilterErrors', $idProjectFile) }}", append = false) {
             $.ajax({
                 url: url,
                 method: 'GET',
@@ -141,9 +142,10 @@
 
                         rows += `
                             <tr class="listaTabela ${record.rfp_bundles ? '' : 'highlighted_error'}" data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
-                                <td style="width:8.57%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
-                                <td style="width:11.5%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.classificacao}</td>
-                                <td style="width:73%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;">${record.requisito}</td>
+                                <td style="width:3%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
+                                <td style="width:17%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.processo}</td>
+                                <td style="width:17%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.subprocesso}</td>
+                                <td style="width:58%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;">${record.requisito}</td>
                                 <td style="width:5%;  display: flex; align-items: center;">
                                     <div class="btnEditRecord" style="margin: 0px; float:left; cursor:pointer;">
                                         <button type="submit" class="records_edit">

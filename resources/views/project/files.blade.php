@@ -14,19 +14,13 @@
                     </div>
                 </div>
 
-                <a href="/storage/Planilha Modelo - Carga de RFP's.xlsx" style="background-color: #5570F1; border-radius: 50px; color: white; padding: 8px 21px; font-size: 14px; font-weight: 600; margin: auto; float: right; margin-top: -4px;" download> 
+                <a href="https://bw8-dev-totvs-rfp.s3.us-east-1.amazonaws.com/cdn/projects/modelo-projeto.xlsx" style="background-color: #5570F1; border-radius: 50px; color: white; padding: 8px 21px; font-size: 14px; font-weight: 600; margin: auto; float: right; margin-top: -4px;" download> 
                     <div style="">
                         <img src="{{ asset('icons/download_2.svg') }}" alt="Upload Icon" style="height: 18px; padding-right: 12px; float: left; margin-top: 5px;">
                         <span>Baixar planilha modelo</span>
                     </div>
                 </a>
-
-
             </div>
-
-
-
-
             
             <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -34,7 +28,6 @@
 
                     <div class="loading" style="display:none; background: #ffffffcf; position: absolute; width: 100%; height: 100%; top: 0px; left: 0px;">
                         <div id="lottie-container" style="width: 100px; height:100px; position: absolute; top: 50%; left: 50%; transform: translate(-75px, -35px);"></div>
-
                     </div>
 
 

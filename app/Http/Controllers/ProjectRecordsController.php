@@ -5,6 +5,7 @@ use App\Models\Project;
 use App\Models\ProjectFiles;
 use App\Models\ProjectRecord;
 use App\Models\RfpBundle;
+use App\Models\RfpProcess;
 use App\Models\RfpAnswer;
 use App\Models\UsersDepartaments;
 use App\Models\Module;
@@ -37,12 +38,12 @@ class ProjectRecordsController extends Controller
             if($ProjectFile->status != "processando"){
                 $Project = Project::with('user')->findOrFail($ProjectFile->project_id);
        
-                $ListClassificacaoRecebidas = ProjectRecord::where('project_file_id', $ProjectFile->id)->groupBy('classificacao')->pluck('classificacao');
+                $ListClassificacaoRecebidas = ProjectRecord::where('project_file_id', $ProjectFile->id)->groupBy('processo')->pluck('processo');
                 $UsersDepartaments = UsersDepartaments::where('departament_type', '!=', 'Admin')->orderBy('departament', 'asc')->get();
 
                 $AllAnswers =  RfpAnswer::orderBy('order', 'asc')->get();
                 $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
-                $AllModules = Module::orderBy('module_name', 'asc')->get();
+                $AllProcess = RfpProcess::orderBy('order', 'asc')->get();
 
                 $ListProdutos = DB::table('project_records')
                 ->leftJoin('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
@@ -68,7 +69,7 @@ class ProjectRecordsController extends Controller
                     'ListClassificacao' => $ListClassificacaoRecebidas,
                     'ListProdutos' => $ListProdutos,
                     'AllBundles' => $AllBundles,
-                    'AllModules' => $AllModules,
+                    'AllProcess' => $AllProcess,
                     'AllAnswers' => $AllAnswers,
                     'CountCountRecordsResultado' => $CountRecords,
                 );
@@ -90,8 +91,8 @@ class ProjectRecordsController extends Controller
     
     public function filter(Request $request, string $id)
     { 
-        if(Auth::user()->role->role_priority >= 90){       
-            $Project = ProjectFiles::findOrFail($id);
+        $Project = ProjectFiles::findOrFail($id);
+        if($Project->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){             
             $query = ProjectRecord::query()->with('rfp_bundles');
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
@@ -147,10 +148,10 @@ class ProjectRecordsController extends Controller
                 $ProjectRecord->bundle_id = $request->bundle;
             }
              
-            if($request->classificacao_id){
-                $Module = Module::find($request->classificacao_id);
-                $ProjectRecord->classificacao_id = $request->classificacao_id;
-                $ProjectRecord->classificacao = $Module->module_name;
+            if($request->processo_id){
+                $Processo = RfpProcess::find($request->processo_id);
+                $ProjectRecord->processo_id = $request->processo_id;
+                $ProjectRecord->processo = $Processo->process;
             }
 
             try{
@@ -182,7 +183,7 @@ class ProjectRecordsController extends Controller
         if($ProjectFile->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
             $Project = Project::findOrFail($ProjectFile->project_id);
 
-            $ListClassificacaoRecebidas = ProjectRecord::where('project_file_id', $ProjectFile->id)->groupBy('classificacao')->pluck('classificacao');
+            $ListClassificacaoRecebidas = ProjectRecord::where('project_file_id', $ProjectFile->id)->groupBy('processo')->pluck('processo');
 
             $AllAnswers =  RfpAnswer::orderBy('order', 'asc')->get();
             $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
@@ -191,11 +192,12 @@ class ProjectRecordsController extends Controller
                 ->leftJoin('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
                 ->where('project_records.project_file_id', $ProjectFile->id)
                 ->where(function ($query) {
-                    $query->orWhereNull('project_records.classificacao_id')
-                        ->orWhere('project_records.classificacao_id', '');
+                    $query->orWhereNull('project_records.processo_id')
+                        ->orWhere('project_records.processo_id', '');
                 })
                 ->groupBy('project_records.bundle_id')
                 ->select('project_records.bundle_id', 'rfp_bundles.bundle')
+                ->groupBy('rfp_bundles.bundle') // Agrupa pelo ID do bundle
                 ->get();
 
                 $CountRecordsEmpty = ProjectRecord::where('project_file_id', $ProjectFile->id)->whereNull('bundle_id')->orWhere('bundle_id', '')->count();
@@ -222,14 +224,25 @@ class ProjectRecordsController extends Controller
 
     public function filterError(Request $request, string $id)
     { 
-        if(Auth::user()->role->role_priority >= 90){       
-            $Project = ProjectFiles::findOrFail($id);
+        $Project = ProjectFiles::findOrFail($id);
+        if($Project->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
             $query = ProjectRecord::query()->with('rfp_bundles');
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
-            $query->where('classificacao_id', '=', $Project->id);
+            $query->where('project_file_id', '=', $Project->id);
 
-            $query->whereNull('bundle_id')->orWhere('bundle_id', ''); // Para strings vazias
+            // Pelo menos uma das três condições opcionais deve ser verdadeira
+            $query->where(function($q) {
+                $q->where(function($subQ) {
+                    $subQ->whereNull('bundle_id')
+                        ->orWhere('bundle_id', '');
+                })
+                ->orWhere(function($subQ) {
+                    $subQ->whereNull('processo_id')
+                        ->orWhere('processo_id', '');
+                }) ;
+            });
+
                         
             // Paginação
             $records = $query->paginate(40);
@@ -251,8 +264,9 @@ class ProjectRecordsController extends Controller
      */
     public function processing(Request $request, string $id)
     {
-        if(Auth::user()->role->role_priority >= 90){     
-            $Project = ProjectFiles::findOrFail($id);
+        $Project = ProjectFiles::findOrFail($id);
+        if($Project->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
+            
             if($Project->status == "não enviado"){
                 $Project->status = "em processamento";
                 $Project->save();
