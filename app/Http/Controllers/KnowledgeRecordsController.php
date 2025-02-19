@@ -69,7 +69,7 @@ class KnowledgeRecordsController extends Controller
                     'CountCountRecordsResultado' => $CountRecords,
                 );
                 
-                if($KnowledgeBase->status != "processando"){
+                if($KnowledgeBase->status == "não enviado"){
                     return view('knowledge.records.list')->with($data);
                 }else{
                     return view('knowledge.records.view')->with($data);
@@ -85,12 +85,10 @@ class KnowledgeRecordsController extends Controller
 
 
 
-
-
     public function filter(Request $request, string $id)
     { 
-        if(Auth::user()->role->role_priority >= 90){       
-            $KnowledgeBase = KnowledgeBase::findOrFail($id);
+        $KnowledgeBase = KnowledgeBase::findOrFail($id);
+        if($KnowledgeBase->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
             $query = KnowledgeRecord::query()->with('rfp_bundles');
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
@@ -130,7 +128,6 @@ class KnowledgeRecordsController extends Controller
             return response()->json($records);
         }
     }
-
 
 
     public function updateDetails(Request $request, string $id)

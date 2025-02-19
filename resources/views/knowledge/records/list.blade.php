@@ -207,7 +207,6 @@
                         // Verifica se record.resposta está presente em ListRespostas
                         let existsInListProcess = ListProcessos.some(processo => processo.process === record.processo);
                         let ProcessOptions = !existsInListProcess   ? `<option disabled selected>${record.processo}</option>` : '';
-                       
                         ListProcessos.forEach(processo => {
                             ProcessOptions += `<option value="${processo.id}" ${processo.process === record.processo ? 'selected' : ''}>${processo.process}</option>`;
                         });
@@ -223,7 +222,7 @@
                                 <td style="width:11%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.subprocesso ? record.subprocesso : '-'}</td>
                                 <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.requisito ? record.requisito : '-'}</td>
                                 <td style="width:10%; display: flex; align-items: center;">
-                                    <select name="resposta" class="${existsInList ? '' : 'highlighted_error_select'}""  style="border-radius: 8px; width:100%">
+                                    <select name="resposta" class="${existsInList ? '' : 'highlighted_error_select'}"  style="border-radius: 8px; width:100%">
                                         ${AnwserOptions}
                                     </select>
                                 </td>
@@ -583,7 +582,7 @@
 
                 if (!escopo.val() || escopo.val().trim() === "") {
                     escopo.addClass("border-red");
-                    showAlertBootstrap("error", "o campo 'ESCOPO' é um requisito obrigatório, preencha para continuar.");
+                    showAlertBootstrap("error", "Preencha todos os campos para continuar.");
                     if (!firstError) firstError = escopo;
                     isValid = false;
                     console.log('escopo');
@@ -591,14 +590,14 @@
 
                 if (!time.val() || time.val().trim() === "") {
                     time.addClass("border-red");
-                    showAlertBootstrap("error", "o campo 'TIME' é um requisito obrigatório, preencha para continuar.");
+                    showAlertBootstrap("error", "Preencha todos os campos para continuar.");
                     if (!firstError) firstError = time;
                     isValid = false;
                 }
 
                 if (!data.val() || data.val().trim() === "") {
                     data.addClass("border-red");
-                    showAlertBootstrap("error", "o campo 'DATA' é um requisito obrigatório, preencha para continuar.");
+                    showAlertBootstrap("error", "Preencha todos os campos para continuar.");
                     if (!firstError) firstError = data;
                     isValid = false;
                 }

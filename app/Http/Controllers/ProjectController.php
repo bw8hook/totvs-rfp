@@ -6,6 +6,7 @@ use App\Models\KnowledgeRecord;
 use App\Models\RfpBundle;
 use App\Models\Agent;
 use App\Models\ProjectAnswer;
+use App\Models\RfpProcess;
 use App\Models\RfpAnswer;
 use App\Models\UsersDepartaments;
 use App\Imports\ProjectRecordsImport;
@@ -37,9 +38,6 @@ use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Exception\RequestException;
 
 
-
-
-
 class ProjectController extends Controller
 {
     protected $baseUrlConteudo;
@@ -53,7 +51,6 @@ class ProjectController extends Controller
         $this->baseUrlConteudo = 'https://api.conteudo.staging.rdstationmentoria.com.br/rest';
         $this->apiKey = 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYXBpIiwicHJvcGVydGllcyI6eyJrZXlJZCI6ImtleV8wMUpGMEhQWEc1SkRSNTlBUzU2OFgwVjk3WSIsIndvcmtzcGFjZUlkIjoid3BjXzAxSjVCSFdCNTRFSldDRE42QVFZMlg2NUo3IiwidXNlcklkIjoidXNlcl9hcGkifSwiaWF0IjoxNzM0MTExNjIyfQ.cLjsIB85bybra-rQOTAI-GLuIQKeQP95HLdXu-JG1yxMbrdzHwjqLGl8xzo3aVwz94uD3mWaOhajdqync0CCusVM_VF3dEsg2bRd9OM02HMD-rxil360HClB--5zYKOW7NZUPKmj0Q8rl-1v-aE4lFes6U7-_zB1gJWiGTLR9HLuZd3E5EsSqxu_mS49ss5tAFHQYrVotns6Ug5OGmxSgJ-IqlluVMPRbI8dtSb0ZsiYHe_xYtaERhTInevjaqgHbhZwLzyHg50R7MMoJLsGlw8CD3KRfcitxj8NZmilKK4vCkjm4dN5QYTuRxSqpgnGRtCCk-3fR0q8N3GwYF4oWQ';
     }
-
 
      /**
      * Display a listing of the resource.
@@ -386,7 +383,7 @@ class ProjectController extends Controller
         
         try {
             // Chama a importação do EXCEL
-            $import = new ProjectRecordsImport($ProjectFile->id);
+            $import = new ProjectRecordsImport($ProjectFile->id, $ProjectFile->bundle_id);
             // Executa a importação
             $Excel = Excel::import($import, $File);
 
@@ -491,210 +488,164 @@ class ProjectController extends Controller
 
     public function cron(Request $request)
     {
-    
-}
-
-
-
-    public function cronBackup(Request $request){
-        $ProjectFiles = ProjectFiles::where('status', "em processamento")->get();
-     
-        if ($ProjectFiles->count() > 0) {
-            foreach ($ProjectFiles as $File) {
-                try {
-                    $Records = ProjectRecord::whereNotNull('project_records.bundle_id') // Garante que bundle_id está preenchido
-                    ->where('project_records.project_file_id', $File->id) // Filtra apenas os registros da base específica
-                    ->where('project_records.status', "processando") // Filtra apenas os registros da base específica
-                    ->join('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id') // Faz o JOIN corretamente
-                    ->get();
-                            
-                    if (!$Records->isEmpty()) {
-                        foreach ($Records as $key => $Record) {
-
-                            $Agent = Agent::where('id', $Record->agent_id)->first();
-                            $Module = Module::where('id', $Record->classificacao_id)->first();
-
-
-                            $dados = [
-                                'agent_id' => $Agent->agent_id,
-                                'knowledge_id' => $Agent->knowledge_id,
-                                'requisito' => $Record->requisito,
-                                'modulo' => $Module->module_name,
-                                'registro' => $Record
-                            ];
-                            
-                            $mentoria = new MentoriaController();
-                            $Resposta = $mentoria->getAnswer($dados);
-
-                            //dd($Resposta);
-
-                            //ProjectAnswer::
-                            if($Resposta){
-
-                                // // Remove % caso tenha
-                                // $acuracidade = $Resposta->acuracidade_porcentagem;
-                                // $acuracidade = trim(str_replace('%', '', $acuracidade));
-                                // if (is_numeric($acuracidade)) {
-                                //     $acuracidade = floatval($acuracidade) . '%';
-                                // } else {
-                                //     $acuracidade = '0%'; 
-                                // }
-                            
-
-                                $DadosResposta = new ProjectAnswer;
-                                $DadosResposta->bundle_id = $Record->bundle_id;
-                                $DadosResposta->user_id = $Record->user_id;
-                                $DadosResposta->requisito_id = $Record->id;
-                                $DadosResposta->requisito = $Record->requisito;
-                                $DadosResposta->aderencia_na_mesma_linha = $Resposta->aderencia_na_mesma_linha;
-                                $DadosResposta->linha_produto = $Resposta->linha_produto;
-                                $DadosResposta->resposta = $Resposta->resposta;
-                                $DadosResposta->referencia = $Resposta->referencia;
-                                $DadosResposta->observacao = $Resposta->observacao;
-                                $DadosResposta->acuracidade_porcentagem = $Resposta->acuracidade_porcentagem;
-                                $DadosResposta->acuracidade_explicacao = $Resposta->acuracidade_explicacao;
-                                $DadosResposta->save();
-                            }
-                        }
-
-                        dd('resposta');
-                    }
-
-                    $File->status = 'processado';
-                    $$File->save();
-
-                } catch (\Exception $e) {
-                    dd($e);
-                }
-            }
-        }
-    }
-
-    /**
-    * UPLOAD - Do arquivo da base de conhecimento
-    */
-    public function cron2(Request $request) {
-        
-$ProjectFiles = ProjectFiles::where('status', "em processamento")->get();
-
-if ($ProjectFiles->count() > 0) {
-    foreach ($ProjectFiles as $File) {
         try {
-            $Records = ProjectRecord::whereNotNull('project_records.bundle_id')
-                ->where('project_records.project_file_id', $File->id)
-                ->where('project_records.status', "processando")
-                ->join('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
-                ->get();
+            $ProjectFiles = ProjectFiles::where('status', "em processamento")->get();
+    
+            $client = new Client([
+                'base_uri' => $this->baseUrl,
+                'timeout' => 30,
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->apiKey,
+                    'Accept' => 'application/json',
+                ],
+            ]);
 
-            if (!$Records->isEmpty()) {
-                // Divida os registros em blocos de 20
-                $chunks = $Records->chunk(20);
+    
+            $requests = function () use ($ProjectFiles, $client) {
+                foreach ($ProjectFiles as $File) {
+                    $Records = ProjectRecord::whereNotNull('project_records.bundle_id')
+                        ->where('project_records.project_file_id', $File->id)
+                        ->where('project_records.status', "processando")
+                        ->join('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
+                        ->get();
+            
+                    foreach ($Records as $Record) {
+                        $Agent = Agent::where('id', $Record->agent_id)->first();
+                        $Processo = RfpProcess::where('id', $Record->processo_id)->first();
+            
+                        $prompt = 'Você é uma IA avançada especializada em sistemas ERP da TOTVS, representando a equipe de engenharia da empresa. Seu objetivo é fornecer respostas técnicas precisas e claras sobre os produtos ERP da TOTVS, baseando-se na base de conhecimento fornecida.
 
-                foreach ($chunks as $chunk) {
-                    $client = new Client([
-                        'base_uri' => 'https://api.conteudo.rdstationmentoria.com.br/rest',
-                        'headers' => [
-                            'Authorization' => 'Bearer eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYXBpIiwicHJvcGVydGllcyI6eyJrZXlJZCI6ImtleV8wMUpGMEhQWEc1SkRSNTlBUzU2OFgwVjk3WSIsIndvcmtzcGFjZUlkIjoid3BjXzAxSjVCSFdCNTRFSldDRE42QVFZMlg2NUo3IiwidXNlcklkIjoidXNlcl9hcGkifSwiaWF0IjoxNzM0MTExNjIyfQ.cLjsIB85bybra-rQOTAI-GLuIQKeQP95HLdXu-JG1yxMbrdzHwjqLGl8xzo3aVwz94uD3mWaOhajdqync0CCusVM_VF3dEsg2bRd9OM02HMD-rxil360HClB--5zYKOW7NZUPKmj0Q8rl-1v-aE4lFes6U7-_zB1gJWiGTLR9HLuZd3E5EsSqxu_mS49ss5tAFHQYrVotns6Ug5OGmxSgJ-IqlluVMPRbI8dtSb0ZsiYHe_xYtaERhTInevjaqgHbhZwLzyHg50R7MMoJLsGlw8CD3KRfcitxj8NZmilKK4vCkjm4dN5QYTuRxSqpgnGRtCCk-3fR0q8N3GwYF4oWQ',
-                            'Accept' => 'application/json',
-                        ],
-                    ]);
+                        Instruções de busca e resposta:
 
-                    $requests = function ($chunk) use ($client) {
-                        foreach ($chunk as $Record) {
-                            yield function () use ($client, $Record) {
-                                $mentoria = new MentoriaController();
-                                $Agent = Agent::where('id', $Record->agent_id)->first();
-                                $Module = Module::where('id', $Record->classificacao_id)->first();
+                        1. Ao receber uma pergunta, identifique o produto, o processo, a classificação e o requisito mencionados pelo usuário.
+                        2. Realize a busca considerando tanto a coluna "DESCRIÇÃO DO REQUISITO" quanto a coluna "PROCESSO". Priorize correspondências que atendam tanto ao requisito quanto ao processo especificado.
+                        3. Use uma busca case-insensitive e considere sinônimos ou termos relacionados tanto para o requisito quanto para o processo.
+                        4. Se encontrar múltiplas correspondências, priorize as mais relevantes com base na similaridade com a pergunta do usuário e na correspondência do processo.
+                        5. Ao analisar a aderência do produto ao requisito, considere as seguintes categorias:
+                            - Atende: O produto atende completamente ao requisito no processo especificado.
+                            - Atende Parcial: O produto atende parte do requisito ou atende em um processo relacionado.
+                            - Customizável: O requisito pode ser atendido através de customizações para o processo específico.
+                            - Não Atende: O produto não atende ao requisito no processo especificado.
+                            - Desconhecido: Não há informações suficientes para determinar a aderência no processo especificado.
+                        6. Forneça uma análise detalhada justificando como o produto atende ou não ao requisito no contexto do processo especificado. Inclua considerações sobre complexidade e frequência de uso, se relevante.
+                        7. Se disponível, inclua informações da coluna OBSERVAÇÕES relacionadas ao requisito e processo encontrados.
+                        8. Quando não encontrar uma correspondência exata para o requisito e processo, forneça a informação mais próxima disponível, indicando claramente que é uma aproximação e explicando as diferenças.
+                        9. Se a pergunta for ambígua ou não houver informações suficientes na base de conhecimento sobre o requisito ou o processo, indique claramente essa limitação.
+                        10. Estime a acuracidade de sua resposta em porcentagem, considerando tanto a correspondência do requisito quanto do processo, e explique brevemente como chegou a essa estimativa.
+                        11. Mantenha sempre um tom profissional e técnico na resposta.
+                        12. Não divulgue informações confidenciais ou detalhes técnicos sensíveis que possam comprometer a segurança dos sistemas.
+                        13. Se necessário, sugira que o usuário entre em contato com o suporte técnico da TOTVS para informações mais detalhadas ou específicas sobre o requisito no contexto do processo mencionado.
 
-                                $dados = [
-                                    'agent_id' => $Agent->agent_id,
-                                    'knowledge_id' => $Agent->knowledge_id,
-                                    'requisito' => $Record->requisito,
-                                    'modulo' => $Module->module_name,
-                                    'registro' => $Record
-                                ];
+                        Lembre-se: Sua prioridade é fornecer informações precisas e úteis, considerando sempre tanto o requisito quanto o processo especificado. Baseie-se estritamente nas informações disponíveis na base de conhecimento fornecida, dando ênfase à relação entre o requisito e o processo mencionado.';
+                                                
+                        //$prompt = $Agent->prompt;
+                        $requisito = $Record->requisito;
+                        $processo = $Processo->process;
 
-                                // Lógica do método getAnswer encapsulada aqui
-                                try {
-                                    $body = [
-                                        'system' => 'Você é uma IA avançada representando o time de engenharia da TOTVS. Seu objetivo é responder dúvidas técnicas sobre os sistemas ERP da TOTVS, com base em uma base de conhecimento consolidada e a tabela que pode acessar. Sua prioridade é fornecer respostas claras e precisas, indicando se o sistema atende plenamente, parcialmente ou não possui capacidade para atender a necessidade apresentada. Sempre mantenha um tom profissional e indique limitações ou a necessidade de suporte humano quando aplicável. O usuário irá perguntar sobre algum produto e se ele atende ou não a um requisito. Você deve procurar na tabela algum requisito que atende ao produto, classificação e requisito que o usuário pedir. Você pode usar a coluna "DESCRIÇÃO DO REQUISITO" que tem requisitos, buscando de forma case-insensitive por algo adequado ao que o usuário pedir. Caso não encontre oque foi solicitado, em todas as repostas traga como DESCONHECIDO. Sempre traga respostas curtas e diretas com tom profissional.',
-                                        'kbs' => [$dados['knowledge_id']],
-                                        'messages' => [
-                                            [
-                                                'role' => 'user',
-                                                'content' => $dados['requisito']
-                                            ]
-                                        ],
-                                        'responseFormat' => [
-                                            'type' => 'json_schema',
-                                            'schema' => $this->getSchema()
-                                        ]
-                                    ];
 
-                                    $response = Http::withHeaders([
-                                        'Authorization' => "Bearer {$this->apiKey}",
-                                        'Content-Type' => 'application/json',
-                                    ])->post("{$this->baseUrl}/completions", $body);
+                        $prompt2 = 'Você é uma IA avançada representando o time de engenharia da TOTVS. Seu objetivo é responder dúvidas técnicas sobre os sistemas ERP da TOTVS, com base em uma base de conhecimento consolidada e a tabela que pode acessar. Sua prioridade é fornecer respostas claras e precisas, indicando se o sistema atende plenamente, parcialmente ou não possui capacidade para atender a necessidade apresentada. Sempre mantenha um tom profissional e indique limitações ou a necessidade de suporte humano quando aplicável.
 
-                                    if ($response->failed()) {
-                                        throw new \Exception("HTTP Error: {$response->status()}");
-                                    }
+O usuário irá perguntar sobre algum produto e se ele atende ou não a um requisito. 
 
-                                    $data = $response->json();
-                                    $Resposta = json_decode($data['output']['content']);
+Você deve procurar na tabela algum requisito que atende ao produto, classificação e requisito que o usuário pedir.
 
-                                    // Salvar a resposta no banco de dados
-                                    $DadosResposta = new ProjectAnswer;
-                                    $DadosResposta->bundle_id = $Record->bundle_id;
-                                    $DadosResposta->user_id = $Record->user_id;
-                                    $DadosResposta->requisito_id = $Record->id;
-                                    $DadosResposta->requisito = $Record->requisito;
-                                    $DadosResposta->aderencia_na_mesma_linha = $Resposta->aderencia_na_mesma_linha;
-                                    $DadosResposta->linha_produto = $Resposta->linha_produto;
-                                    $DadosResposta->resposta = $Resposta->resposta;
-                                    $DadosResposta->referencia = $Resposta->referencia;
-                                    $DadosResposta->observacao = $Resposta->observacao;
-                                    $DadosResposta->acuracidade_porcentagem = $Resposta->acuracidade_porcentagem;
-                                    $DadosResposta->acuracidade_explicacao = $Resposta->acuracidade_explicacao;
-                                    $DadosResposta->save();
-                                    
-                                    $Record->project_answer_id = $DadosResposta->id;
-                                    $Record->save();
+Você pode usar a coluna "DESCRIÇÃO DO REQUISITO" que tem requisitos, buscando de forma case-insensitive por algo adequado ao que o usuário pedir.';
 
-                                    return new \GuzzleHttp\Promise\FulfilledPromise($Resposta);
-                                } catch (\Exception $e) {
-                                    Log::error("Failed to process request. Error: {$e->getMessage()}");
-                                    return new \GuzzleHttp\Promise\RejectedPromise($e);
-                                }
-                            };
-                        }
-                    };
-
-                    $pool = new Pool($client, $requests($chunk), [
-                        'concurrency' => 20,
-                        'fulfilled' => function ($response, $index) {
-                            // Esta função é chamada quando uma tarefa é bem-sucedida
-                        },
-                        'rejected' => function ($reason, $index) {
-                            // Esta função é chamada quando uma tarefa falha
-                            Log::error("Erro: " . $reason->getMessage());
-                        },
-                    ]);
-
-                    // Aguarde todas as tarefas serem concluídas
-                    $promise = $pool->promise();
-                    $promise->wait();
+                        $body = [
+                            'system' => $prompt,
+                            'kbs' => [$Agent->knowledge_id],
+                            'messages' => [
+                                [
+                                    'role' => 'user',
+                                    'content' => json_encode([
+                                        'requisito' => $requisito,
+                                        'processo' => $processo
+                                    ])
+                                ]
+                            ],
+                            'responseFormat' => [
+                                'type' => 'json_schema',
+                                'schema' => $this->getSchema()
+                            ]
+                        ];                      
+    
+                        yield function () use ($client, $body, $Record) {
+                            return $client->postAsync('/rest/completions', [
+                                'json' => $body,
+                                'headers' => ['Content-Type' => 'application/json'],
+                            ])->then(function ($response) use ($Record) {
+                                return ['response' => $response, 'record' => $Record];
+                            });
+                        };
+                    }
                 }
+            };
+    
+            $pool = new Pool($client, $requests(), [
+                'concurrency' => 5,
+                'fulfilled' => function ($result, $index) {
+                    $response = $result['response'];
+                    $Record = $result['record'];
+                    $data = json_decode($response->getBody(), true);
+                
+                    print_r($Record->requisito);
 
-                dd('resposta');
-            }
+                    dd($data);
+
+                    $DadosResposta = new ProjectAnswer;
+                    $DadosResposta->bundle_id = $Record->bundle_id;
+                    $DadosResposta->user_id = $Record->user_id;
+                    $DadosResposta->requisito_id = $Record->id;
+                    $DadosResposta->requisito = $Record->requisito;
+    
+                    $Answer = json_decode($data['output']['content']);
+    
+                    $DadosResposta->aderencia_na_mesma_linha = $Answer->aderencia_na_mesma_linha ?? null;
+                    $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
+                    $DadosResposta->resposta = $Answer->resposta ?? null;
+                    $DadosResposta->referencia = $Answer->referencia ?? null;
+                    $DadosResposta->observacao = $Answer->observacao ?? null;
+                    $DadosResposta->acuracidade_porcentagem = $Answer->acuracidade_porcentagem ?? null;
+                    $DadosResposta->acuracidade_explicacao = $Answer->acuracidade_explicacao ?? null;
+                    $DadosResposta->save();
+    
+                    // Atualizar o status do Record
+                    if($Answer->aderencia_na_mesma_linha != 'desconhecido'){
+                        $Record->update(['status' => 'respondido ia']);
+                        $Record->update(['project_answer_id' => $DadosResposta->id]);
+
+                        $ProjectFile = ProjectFiles::where('id', $Record->project_id)->first();
+                        if($ProjectFile->status == "processando"){
+                            $ProjectFile->status = 'processado';
+                            $ProjectFile->save();
+                        }
+        
+                    }
+                   
+                    Log::info("Processamento de todos os arquivos concluído com sucesso");
+                   
+
+                },
+                'rejected' => function ($reason, $index) {
+                    Log::error("Request failed: " . $reason->getMessage());
+                    // Você pode querer atualizar o status do Record aqui também
+                },
+            ]);
+    
+            Log::info("Executado com sucesso");
+            // Executa o pool
+            $promise = $pool->promise();
+            $promise->wait();
+    
+            //return response()->json(['message' => 'Processamento concluído']);
         } catch (\Exception $e) {
-            dd($e);
+            //dd($e->getMessage());
+            Log::error("Erro no processamento: " . $e->getMessage());
+            //return response()->json(['error' => 'Ocorreu um erro durante o processamento'], 500);
         }
     }
-}
 
-    }
+
 
 
 
