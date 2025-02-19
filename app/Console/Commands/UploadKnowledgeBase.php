@@ -39,9 +39,8 @@ class UploadKnowledgeBase extends Command
         $RDStationMentoria->classBases();
         $UpdateBase = false;
         foreach ($Bundles as $bundle) {
-            
             $gBaseById = $RDStationMentoria->Bases->getBaseById($bundle->agent->knowledge_id);
-
+            
             if (!empty($gBaseById['id'])) {
                 $KnowledgeBaseExported = KnowledgeBaseExported::where('status', "aguardando")->where('bundle_id', $bundle->bundle_id)->get();
                 if ($KnowledgeBaseExported->count() > 0) {
@@ -64,6 +63,7 @@ class UploadKnowledgeBase extends Command
                 if($UpdateBase){
                     $updatedBase = $RDStationMentoria->Bases->updateBase($gBaseById['id'], $gBaseById);
                     $UpdateBase = false;
+                    
                 }
             }
 

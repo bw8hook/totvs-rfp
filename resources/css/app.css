@@ -485,6 +485,12 @@ table {
     width: 100%;
 }
 
+.highlighted_error_select{
+    background-color: #ffe1df;
+    border-color: #f7b5b0;
+    color: red;
+}
+
 .highlighted_error select[name="bundle"] {
     background-color: #ffe1df;
     border-color: #f7b5b0;

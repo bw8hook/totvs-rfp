@@ -74,7 +74,6 @@ class ProcessKnowledgeBase extends Command
                                 // Atualiza com a URL
                                 $KnowledgeBaseExported->file_url = $fileUrl;
                                 $KnowledgeBaseExported->save();
-
                                 $item->status = 'processado';
                                 $item->save();
                             }

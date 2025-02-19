@@ -139,30 +139,33 @@ class KnowledgeController extends Controller
     public function updateInfos(Request $request, string $id)
     { 
         // Valida a Permissão do usuário
-        if(Auth::user()->role->role_priority >= 90){          
-            $data = htmlspecialchars(trim($request->rfp_date)); // Sanitiza o input
-            $resultado = $this->validarEConverterData($data);
+        if(Auth::user()->role->role_priority >= 90){    
 
-            if ($resultado) {
-                $KnowledgeBase = KnowledgeBase::findOrFail($id);
-                $KnowledgeBase->project = $request->project;
-                $KnowledgeBase->rfp_date = $resultado;
-                $KnowledgeBase->project_team = $request->project_team;
-               
-                try{
-                    $KnowledgeBase->save();
-                    // Retornar dados em JSON
-                    return response()->json("success");    
-                } catch (\Exception $e) {
-                    $CatchError = json_decode($e->getMessage());
-                }
+            $KnowledgeBase = KnowledgeBase::findOrFail($id);
+            $KnowledgeBase->project = $request->project;
+            $KnowledgeBase->project_team = $request->project_team;
+
+            if (!empty($request->rfp_date)) {
+                $data = htmlspecialchars(trim($request->rfp_date)); // Sanitiza o input
+                $resultado = $this->validarEConverterData($data);
+
+                if ($resultado) {
+                    $KnowledgeBase->rfp_date = $resultado;
+                }else{
+                    return response()->json([ 'message' => 'Data Inválida!',], 422);
+                }  
+            }
+
+            try{
+                $KnowledgeBase->save();
+                // Retornar dados em JSON
+                return response()->json("success");    
+            } catch (\Exception $e) {
+                $CatchError = json_decode($e->getMessage());
+            }
                 
-            } else {
-               
-                return response()->json([
-                    'message' => 'Data Inválida!',
-                ], 422);
-            }                
+                
+                         
         }
     }
 
@@ -311,16 +314,22 @@ class KnowledgeController extends Controller
     public function destroy(string $id)
     {
         // Encontrar o usuário pelo ID
-        $Arquivo = KnowledgeBase::where('knowledge_base_id', $id)->first();
+        $Arquivo = KnowledgeBase::where('id', $id)->first();
         if ($Arquivo['user_id'] == Auth::id() || Auth::user()->role->role_priority >= 90){
-            if (Storage::exists($Arquivo->filepath)){
-                if (Storage::delete($Arquivo->filepath)){
+
+            if (Storage::disk('s3')->exists($Arquivo->filepath)) {
+
+                $fullPath = Storage::disk('s3')->url($Arquivo->filepath);
+
+                dd($fullPath);
+                
+                if (Storage::disk('s3')->delete($Arquivo->filepath)) {
                     KnowledgeRecord::where('knowledge_base_id', $id)->delete();// 
-                    KnowledgeBase::where('knowledge_base_id', $id)->delete();// Exclui o usuário do banco de dados
+                    KnowledgeBase::where('id', $id)->delete();// Exclui o usuário do banco de dados
                     return redirect()->back()->with('success', 'Arquivo excluído com sucesso.');
                 }else{
                     KnowledgeRecord::where('knowledge_base_id', $id)->delete();// 
-                    KnowledgeBase::where('knowledge_base_id', $id)->delete();// Exclui o usuário do banco de dados
+                    KnowledgeBase::where('id', $id)->delete();// Exclui o usuário do banco de dados
                     return redirect()->back()->with('error', 'Erro ao excluir arquivo.');
                 }
             }else{

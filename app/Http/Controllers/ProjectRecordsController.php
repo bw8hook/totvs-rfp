@@ -416,21 +416,28 @@ class ProjectRecordsController extends Controller
                 ->get();
 
                 $Records = ProjectRecord::where('project_file_id', $ProjectFile->id)->get();
+
                 $CountRecords = 0;
 
                 foreach ($Records as $key => $Record) {
                     $CountRecords++;
                 }
 
+                // $countIA = ProjectRecord::whereHas('answers', function ($query) {
+                //     $query->where('aderencia_na_mesma_linha', '!=', 'Desconhecido');
+                // })->count();
+
                 $countIA = ProjectRecord::whereHas('answers', function ($query) {
+                    $query->whereNotNull('id'); // Garante que answer_id está preenchido
+                })->whereHas('answers', function ($query) {
                     $query->where('aderencia_na_mesma_linha', '!=', 'Desconhecido');
                 })->count();
 
+                
                 $registrosSemResposta = $CountRecords - $countIA;
-                $porcentagemSemResposta = ($countIA / $CountRecords) * 100;
+                $porcentagemSemResposta = ($registrosSemResposta / $CountRecords) * 100;
 
                 $data = array(
-                    'title' => 'Todos Arquivos',
                     'idProjectFile' => $id,
                     'Project' => $Project,
                     'ProjectFile' => $ProjectFile,
@@ -440,11 +447,7 @@ class ProjectRecordsController extends Controller
                     'AllBundles' => $AllBundles,
                     'AllModules' => $AllModules,
                     'AllAnswers' => $AllAnswers,
-                    'CountRFPs' => 123,
-                    'CountPacotes' => 150,
                     'CountRequisitos' => $CountRecords,
-                    'totalRequisitos' => 1160,
-                    'totalRespostasIA' => 1000,
                     'CountAnswerIA' => $countIA,
                     'CountAnswerUser' => 0,
                     'progress' => $porcentagemSemResposta,

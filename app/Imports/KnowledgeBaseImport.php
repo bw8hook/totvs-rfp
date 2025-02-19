@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\KnowledgeBase;
 use App\Models\RfpBundle;
+use App\Models\RfpProcess;
 use App\Models\KnowledgeRecord;
 use App\Models\KnowledgeError;
 use Illuminate\Support\Facades\Log;
@@ -65,6 +66,7 @@ class KnowledgeBaseImport implements ToCollection, WithStartRow, WithEvents, Wit
         $instance = $event->getConcernable();
         // Consulta os dados no banco de dados e preenche o array
         $instance->ListBundles = RfpBundle::all()->pluck('bundle_id', 'bundle')->toArray();
+        $instance->ListProcess = RfpProcess::all()->pluck('id', 'process')->toArray();
     }
     
     public function startRow(): int{
@@ -83,7 +85,8 @@ class KnowledgeBaseImport implements ToCollection, WithStartRow, WithEvents, Wit
             foreach ($rows as $index => $row) {  
                 // Busca se o PRODUTO enviado está cadastrado na lista
                 $bundleIDFound = $this->ListBundles[$row[5]] ?? null;
-            
+                $ProcessIDFound = $this->ListProcess[$row[0]] ?? null;
+                
                 // Salva o registro
                 $KnowledgeRecord = new KnowledgeRecord();
                     // Dados de configuração
@@ -99,6 +102,13 @@ class KnowledgeBaseImport implements ToCollection, WithStartRow, WithEvents, Wit
                         $KnowledgeRecord->bundle_id = $bundleIDFound;
                     }
                     
+                     // Valida o PRODUTO
+                     if (!$ProcessIDFound) {
+                        $KnowledgeRecord->processo_id = null;
+                    }else{
+                        $KnowledgeRecord->processo_id = $ProcessIDFound;
+                    }
+
                     // Dados do arquivo
                     $KnowledgeRecord->processo = $row[0];
                     $KnowledgeRecord->subprocesso = $row[1];
