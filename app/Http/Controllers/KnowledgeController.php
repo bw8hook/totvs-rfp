@@ -237,39 +237,7 @@ class KnowledgeController extends Controller
                 'message' => 'Arquivo atualizado com sucesso!',
                 'redirectUrl' => '/knowledge/records/'.$KnowledgeBaseDataid,
             ]);
-
-                // // Obter os dados atualizados
-                // $updatedData = $import->getUpdatedRows();
-
-                // // Gerar o arquivo Excel e salvar no storage temporário
-                // $fileName = 'planilha-respondida-' . time() . '.xlsx';
-                // $filePath = '/public/temp/' . $fileName;
-
-                // Excel::store(new NewProjectExport($updatedData), $filePath, 'local');
-
-                // // Gerar a URL para download
-                // $url = Storage::url($filePath);
-                // $NewUrl = str_replace("/storage//public", "", $url);
-
-                // // Cria uma nova instância do modelo
-                // $project = new RfpProject();
-                // $project->user_id = Auth::id();
-                // $project->title = 'Novo Projeto';
-                // $project->description = 'Descrição detalhada do projeto';
-                // $project->answered = $import->updatedCount;
-                // $project->unanswered = $import->NotUpdatedCount;
-                // $project->filename_original = $File->getClientOriginalName();
-                // $project->filepath = 'https://totvs.bw8.tech/storage/'.$NewUrl;
-                // $project->filename = $fileName;
-                // $project->file_extension = '.xlsx';
-                // $project->save();
-                // // Pega o ID inserido
-                // $insertedId = $project->id;            
     
-             // Acessar a URL gerada dentro da classe de importação
-            $MensagemErro = $import->Erros;
-
-            //return response()->json(['success' => true, 'redirectUrl' => '/import/'.$KnowledgeBaseDataid]);
           
         } catch (ValidationException $e) {
             // Captura exceções de validação específicas do Maatwebsite Excel

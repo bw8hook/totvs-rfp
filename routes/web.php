@@ -43,7 +43,8 @@ Route::middleware('auth')->group(function () {
 
     // REGISTROS DA BASE DE CONHECIMENTO
     Route::get('/knowledge/records/{id}', [KnowledgeRecordsController::class,'index'])->name('knowledge.records');
-    Route::get('/knowledge/records-errors/{id}', [KnowledgeRecordsController::class,'errors'])->name('knowledge.recordsErrors');
+    Route::get('/knowledge/records/view/{id}', [KnowledgeRecordsController::class,'view'])->name('knowledge.records.view');
+    Route::get('/knowledge/records/errors/{id}', [KnowledgeRecordsController::class,'errors'])->name('knowledge.recordsErrors');
     Route::get('/knowledge/records/processing/{id}', [KnowledgeRecordsController::class,'processing'])->name('knowledge.records.processing');
         //AJAX
         Route::get('/knowledge/records/filter/{id}', [KnowledgeRecordsController::class,'filter'])->name('knowledge.recordsFilter');

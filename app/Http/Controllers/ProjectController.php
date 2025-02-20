@@ -393,12 +393,6 @@ class ProjectController extends Controller
                 'message' => 'Arquivo atualizado com sucesso!',
                 'redirectUrl' => '/project/records/'.$ProjectFile->id,
             ]);
-
-
-             // Acessar a URL gerada dentro da classe de importação
-            $MensagemErro = $import->Erros;
-
-            //return response()->json(['success' => true, 'redirectUrl' => '/import/'.$KnowledgeBaseDataid]);
           
         } catch (ValidationException $e) {
             // Captura exceções de validação específicas do Maatwebsite Excel
@@ -411,28 +405,12 @@ class ProjectController extends Controller
 
         } catch (\Exception $e) {
             $CatchError = json_decode($e->getMessage());
-
-            dd($e);
-
-            $InsertError = KnowledgeError::create([
-                'error_code' => 'ERR003',
-                'error_message' => $CatchError->error_message,
-                'error_data' => json_encode(value: $CatchError->error_data),
-                'user_id' => Auth::id(), // Associar ao usuário logado, se necessário
-            ]);
-
-            $InsertErrorID = $InsertError->id;
-    
-            // Remove a Base Enviada
-            // if ($KnowledgeBaseDataid) {
-            //     DB::table('knowledge_base')->where('knowledge_base_id', $KnowledgeBaseDataid)->delete();
-            // }
-
+           
             // Captura quaisquer outras exceções
             return response()->json([
-                'message' => 'Erro durante a importação!',
-                'redirectUrl' => '/import/erro/'.$InsertErrorID
-            ], 500);
+                'error' => true,
+                'message' => $e->getMessage(),
+            ]);
         }
   }
 
@@ -541,7 +519,6 @@ class ProjectController extends Controller
                         //$prompt = $Agent->prompt;
                         $requisito = $Record->requisito;
                         $processo = $Processo->process;
-
 
                         $prompt2 = 'Você é uma IA avançada representando o time de engenharia da TOTVS. Seu objetivo é responder dúvidas técnicas sobre os sistemas ERP da TOTVS, com base em uma base de conhecimento consolidada e a tabela que pode acessar. Sua prioridade é fornecer respostas claras e precisas, indicando se o sistema atende plenamente, parcialmente ou não possui capacidade para atender a necessidade apresentada. Sempre mantenha um tom profissional e indique limitações ou a necessidade de suporte humano quando aplicável.
 

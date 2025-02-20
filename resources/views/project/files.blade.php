@@ -147,9 +147,18 @@
 
             function uploadFiles() {
                 fileListGlobal.forEach(file => {
-                    //$('.loading').fadeIn(500);
                     const formData = new FormData();
                     formData.append('name', document.getElementById('name').value);
+
+                    if(!$('#bundle').val()) {
+                        alert('Preencha o Produto a ser utilizado para responder!');
+                        $("#bundle").css({
+                            'border': '1px solid red',
+                            'background': '#fdf4ef'
+                        });
+                        return false;
+                    }
+                    $('.loading').fadeIn(500);
                     formData.append('bundle', document.getElementById('bundle').value);
                     formData.append('file', file);
                     fetch('/project/'+Id+'/files', {
@@ -167,17 +176,25 @@
                                 console.log('sucesso entrou');
                                 window.location.replace(data.redirectUrl);
                             }else{
-                                console.log('erro entrou');
-                                window.location.replace(data.redirectUrl);
+                                if(data.error){
+                                    $('.loading').fadeOut(500);
+                                    showAlertBootstrap("error", data.message, false);
+                                }else{
+                                    console.log('erro entrou');
+                                    window.location.replace(data.redirectUrl);
+                                }
                             }
+
 
                             console.log('sucesso passou ');
                             fileListGlobal = [];
                             $('#fileList').empty();
+                            
                             console.log('Upload successful:', data);
                             $("#sucesso_message").show().delay(3200).fadeOut(300);
                         })
                         .catch(error => {
+                            $('.loading').fadeOut(500);
                             console.log('erro entrou');
                             //window.location.replace(error.redirectUrl);
                             ///$("#erro_message").show().delay(3200).fadeOut(300);

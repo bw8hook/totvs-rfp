@@ -71,46 +71,56 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
     }
     
     public function startRow(): int{
-        return 2; // Ignora as duas primeiras linhas
+        return 1; // Ignora as duas primeiras linhas
     }
 
     public function collection(Collection $rows)
     {
-        // Ignorar a primeira linha o cabeçalho
-        $rows = $rows->skip(1);
+        try{
+            $this->validateAndCleanExcel($rows);
 
-        // Busca em Todas as linhas
-        foreach ($rows as $index => $row) {  
-            // Busca se o PRODUTO enviado está cadastrado na lista
-            $processIDFound = $this->ListProcess[$row[0]] ?? null;
-           
-            // Salva o registro
-            $ProjectRecord = new ProjectRecord();
-            // Dados de configuração
-                $ProjectRecord->project_file_id = $this->id;
-                $ProjectRecord->user_id = Auth::id();
-                $ProjectRecord->spreadsheet_line = $index;
-                
-                // Valida o PRODUTO
-                if (!$processIDFound) {
-                    $ProjectRecord->processo_id = null;
+            // Ignorar a primeira linha o cabeçalho
+            $rows = $rows->skip(1);
+
+            // Busca em Todas as linhas
+            foreach ($rows as $index => $row) {  
+                // Busca se o PRODUTO enviado está cadastrado na lista
+                $processIDFound = $this->ListProcess[$row[0]] ?? null;
+            
+                // Salva o registro
+                $ProjectRecord = new ProjectRecord();
+                // Dados de configuração
+                    $ProjectRecord->project_file_id = $this->id;
+                    $ProjectRecord->user_id = Auth::id();
+                    $ProjectRecord->spreadsheet_line = $index;
+                    
+                    // Valida o PRODUTO
+                    if (!$processIDFound) {
+                        $ProjectRecord->processo_id = null;
+                    }else{
+                        $ProjectRecord->processo_id = $processIDFound;
+                    }
+                    
+                    // Dados do arquivo
+                    $ProjectRecord->bundle_id = $this->idbundle;
+                    $ProjectRecord->processo = $row[0];
+                    $ProjectRecord->subprocesso = $row[1];
+                    $ProjectRecord->requisito = $row[2];
+                    $ProjectRecord->status = "aguardando";
+
+                // Tenta salvar
+                if ($ProjectRecord->save()) {
+                    //$this->updatedRows[$index]['final'] = $row[2];
                 }else{
-                    $ProjectRecord->processo_id = $processIDFound;
-                }
-                
-                // Dados do arquivo
-                $ProjectRecord->bundle_id = $this->idbundle;
-                $ProjectRecord->processo = $row[0];
-                $ProjectRecord->subprocesso = $row[1];
-                $ProjectRecord->requisito = $row[2];
-                $ProjectRecord->status = "aguardando";
-
-            // Tenta salvar
-            if ($ProjectRecord->save()) {
-                //$this->updatedRows[$index]['final'] = $row[2];
-            }else{
-                dd($row);        
-            }   
+                    dd($row);        
+                }   
+            }
+        } catch (Exception $e) {
+    
+            throw new Exception(
+                "Erro no processamento do arquivo Excel. \n\n" .
+                $e->getMessage()
+            );
         }
     }
 
@@ -119,5 +129,76 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
     {
 
     }
+
+
+
+    private function validateAndCleanExcel(Collection $rows)
+    {
+        $expectedHeaders = [
+            'Processo',
+            'Subprocesso',
+            'Descrição do Requisito',
+        ];
+    
+        if ($rows->isEmpty()) {
+            throw new Exception('O arquivo Excel está vazio.');
+        }
+    
+        // Limpa e valida o cabeçalho
+        $headerRow = $rows->first()
+            ->filter(function ($value) {
+                return !empty(trim((string)$value));
+            })
+            ->map(function ($value) {
+                return mb_strtolower(trim((string)$value), 'UTF-8');
+            })
+            ->values();
+
+        // Converte os cabeçalhos esperados para minúsculas
+        $expectedHeadersLower = array_map(function($header) {
+            return mb_strtolower(trim($header), 'UTF-8');
+        }, $expectedHeaders);
+    
+        // Encontra as colunas que estão faltando
+        $missingColumns = array_diff($expectedHeadersLower, $headerRow->toArray());
+    
+        if (!empty($missingColumns)) {
+            // Mapeia de volta para os nomes originais das colunas
+            $missingOriginalNames = array_filter($expectedHeaders, function($header) use ($missingColumns) {
+                return in_array(mb_strtolower(trim($header), 'UTF-8'), $missingColumns);
+            });
+    
+            throw new Exception(
+                "Colunas obrigatórias faltando no arquivo: \n\n" .
+                "- " . implode("\n- ", $missingOriginalNames) . "\n\n" .
+                "Por favor, adicione estas colunas ao arquivo e tente novamente."
+            );
+        }
+    
+        // Valida a ordem das colunas
+        foreach ($headerRow as $index => $header) {
+            if ($header !== $expectedHeadersLower[$index]) {
+                throw new Exception(
+                    "Coluna na posição errada ou com nome incorreto.\n" .
+                    "Posição " . ($index + 1) . ":\n" .
+                    "Esperado: '{$expectedHeaders[$index]}'\n" .
+                    "Encontrado: '{$header}'\n\n" .
+                    "A ordem correta das colunas deve ser:\n" .
+                    "- " . implode("\n- ", $expectedHeaders)
+                );
+            }
+        }
+    
+        // Remove colunas vazias de todas as linhas
+        $expectedColumnCount = count($expectedHeaders);
+        return $rows->map(function ($row) use ($expectedColumnCount) {
+            return $row->filter(function ($value, $key) use ($expectedColumnCount) {
+                return $key < $expectedColumnCount;
+            })->values();
+        });
+    }
+    
+
+
 }
 
