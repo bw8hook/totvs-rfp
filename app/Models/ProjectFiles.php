@@ -44,7 +44,15 @@ class ProjectFiles extends Model
         return $this->hasMany(ProjectRecord::class, 'project_file_id');
     }
 
+    public function getRespondidosIa()
+    {
+        return $this->projectRecords->where('status', 'respondido ia')->count();
+    }
     
+    public function getRespondidosUser()
+    {
+        return $this->projectRecords->where('status', 'user edit')->count();
+    }
 
 
 }

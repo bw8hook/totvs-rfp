@@ -16,10 +16,13 @@ Schedule::command('knowledgebase:process')->everyMinute();
 // Pega os arquivos processados e envia para a BASE de CONHECIMENTO do  MENTORIA
 Schedule::command('app:upload-knowledge-base')->everyMinute();
 
-// Pega os arquivos processados e envia para a BASE de CONHECIMENTO do  MENTORIA
+// Pega os requisitos recebidos e envia para o MENTORIA para responder
 Schedule::command('app:upload-project-to-answer')->everyMinute();
 
-// Pega os arquivos processados e envia para a BASE de CONHECIMENTO do  MENTORIA
+// Valida se todos foram respondidos, e atualiza o status do projeto.
+Schedule::command('app:update-processed-project')->everyThreeMinutes();
+
+// Debug
 Schedule::command('app:debug')->everyMinute();
 
 
