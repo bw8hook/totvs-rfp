@@ -73,7 +73,7 @@
 
                         <div class="inputField" style="width: 300px;">
                             <label>Modulo:</label>
-                            <select name="classificacao1">
+                            <select name="modulo">
                                 <option value="null" selected>Selecione</option>
                                 @foreach($ListClassificacao as $Classificacao)
                                     <option value="{{$Classificacao}}">{{$Classificacao}}</option>
@@ -92,11 +92,10 @@
                     <thead>
                         <tr>
                             <th style="width:7.4%;">Modulo</th>
-                            <th style="width:19%;">Descrição do Requisito</th>
-                            <th style="width:19%;">Resposta</th>
-                            <th style="width:10%;">Complemento</th>
-                            <th style="width:13%;">Observações</th>
-                            <th style="width:13%;">Referências</th>
+                            <th style="width:21%;">Descrição do Requisito</th>
+                            <th style="width:11%;">Resposta</th>
+                            <th style="width:23%;">Observações</th>
+                            <th style="width:16%;">Referências</th>
                             <th style="width:10%;">Acuracidade</th>
                             <th style="width:22%;">Produto</th>
                             <th style="width:5%;"></th>
@@ -233,7 +232,7 @@
                         
                         rows += `
                             <tr class="listaTabela ${highlighted_error ? '' : 'highlighted_error'}" data-id="${record.id}" style="min-height:60px; max-height: 100%;">                                
-                                <td style="width:15%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.classificacao ? record.classificacao : ''} </td>
+                                <td style="width:15%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.modulo ? record.modulo : ''} </td>
                                 <td style="width:38%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.requisito} </td>
                                 <td style="width:20%; display: flex; align-items: center;">
                                     <select name="classificacao_id"  style="border-radius: 8px; width:100%">

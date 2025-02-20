@@ -182,6 +182,7 @@ Você pode usar a coluna "DESCRIÇÃO DO REQUISITO" que tem requisitos, buscando
                     $DadosResposta->aderencia_na_mesma_linha = $Answer->aderencia_na_mesma_linha ?? null;
                     $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
                     $DadosResposta->resposta = $Answer->resposta ?? null;
+                    $DadosResposta->modulo = $Answer->modulo ?? null;
                     $DadosResposta->referencia = $Answer->referencia ?? null;
                     $DadosResposta->observacao = $Answer->observacao ?? null;
                     $DadosResposta->acuracidade_porcentagem = $Answer->acuracidade_porcentagem ?? null;
@@ -243,7 +244,11 @@ Você pode usar a coluna "DESCRIÇÃO DO REQUISITO" que tem requisitos, buscando
                     ],
                     "linha_produto" => [
                         "type" => "string",
-                        "description" => "Valor da coluna LINHA/PRODUTO para o requisito encontrado."
+                        "description" => "Valor da coluna PRODUTO para o requisito encontrado."
+                    ],
+                    "modulo" => [
+                        "type" => "string",
+                        "description" => "Valor da coluna MÓDULO para o requisito encontrado."
                     ],
                     "resposta" => [
                         "type" => "string",
