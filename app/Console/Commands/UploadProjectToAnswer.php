@@ -271,7 +271,7 @@ Você pode usar a coluna "DESCRIÇÃO DO REQUISITO" que tem requisitos, buscando
                         "description" => "explicação do calculo que foi executado para chegar a respota da acuracidade_porcentagem.",
                     ]
                 ],
-                "required" => ["aderencia_na_mesma_linha", "linha_produto", "resposta", "referencia", "observacao", "acuracidade_porcentagem", "acuracidade_explicacao"]
+                "required" => ["aderencia_na_mesma_linha", "linha_produto", "resposta", "modulo", "referencia", "observacao", "acuracidade_porcentagem", "acuracidade_explicacao"]
             ]
         ];
     }

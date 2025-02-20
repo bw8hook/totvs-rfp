@@ -483,7 +483,7 @@ class ProjectController extends Controller
 
 
 
-    public function cron(Request $request)
+    public function cron2(Request $request)
     {
         try {
             $ProjectFiles = ProjectFiles::where('status', "em processamento")->get();
@@ -509,7 +509,7 @@ class ProjectController extends Controller
 
 
 
-    public function cron2(Request $request)
+    public function cron(Request $request)
     {
         try {
             $ProjectFiles = ProjectFiles::where('status', "em processamento")->get();
@@ -621,6 +621,7 @@ Você pode usar a coluna "DESCRIÇÃO DO REQUISITO" que tem requisitos, buscando
                     $DadosResposta->requisito = $Record->requisito;
     
                     $Answer = json_decode($data['output']['content']);
+                  
     
                     $DadosResposta->aderencia_na_mesma_linha = $Answer->aderencia_na_mesma_linha ?? null;
                     $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
@@ -696,6 +697,10 @@ Você pode usar a coluna "DESCRIÇÃO DO REQUISITO" que tem requisitos, buscando
                         "type" => "string",
                         "description" => "Análise e justificativa do porquê algum produto atende os requisitos. Pode incluir análise de complexidade e frequência na tabela."
                     ],
+                    "modulo" => [
+                        "type" => "string",
+                        "description" => "Valor da coluna MÓDULO para o requisito encontrado."
+                    ],
                     "referencia" => [
                         "type" => "string",
                         "description" => "Requisito encontrado como referência para a resposta. Deve trazer todas as informações sobre essa referência (nome do arquivo, linha, etc.). Caso não tenha encontrado, retorne todos os campos vazios.",
@@ -713,7 +718,7 @@ Você pode usar a coluna "DESCRIÇÃO DO REQUISITO" que tem requisitos, buscando
                         "description" => "explicação do calculo que foi executado para chegar a respota da acuracidade_porcentagem.",
                     ]
                 ],
-                "required" => ["aderencia_na_mesma_linha", "linha_produto", "resposta", "referencia", "observacao", "acuracidade_porcentagem", "acuracidade_explicacao"]
+                "required" => ["aderencia_na_mesma_linha", "linha_produto", "resposta", "modulo", "referencia", "observacao", "acuracidade_porcentagem", "acuracidade_explicacao"]
             ]
         ];
     }
