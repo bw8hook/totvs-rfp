@@ -232,7 +232,7 @@
                         
                         rows += `
                             <tr class="listaTabela ${highlighted_error ? '' : 'highlighted_error'}" data-id="${record.id}" style="min-height:60px; max-height: 100%;">                                
-                                <td style="width:15%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.modulo ? record.modulo : ''} </td>
+                                <td style="width:15%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.modulo ? record.answers.modulo : ''} </td>
                                 <td style="width:38%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.requisito} </td>
                                 <td style="width:20%; display: flex; align-items: center;">
                                     <select name="classificacao_id"  style="border-radius: 8px; width:100%">
