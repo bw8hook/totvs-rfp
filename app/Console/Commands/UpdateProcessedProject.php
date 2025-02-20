@@ -38,8 +38,8 @@ class UpdateProcessedProject extends Command
                         ->count();
             
                         if($Records == 0){
-                            $ProjectFiles->status = 'processado';
-                            $ProjectFiles->save();
+                            $File->status = 'processado';
+                            $File->save();
                         }
                 }
             Log::info("Executado com sucesso");
