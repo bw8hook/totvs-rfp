@@ -170,10 +170,6 @@ Você pode usar a coluna "DESCRIÇÃO DO REQUISITO" que tem requisitos, buscando
                     $response = $result['response'];
                     $Record = $result['record'];
                     $data = json_decode($response->getBody(), true);
-                
-                    print_r($Record->requisito);
-
-                    dd($data);
 
                     $DadosResposta = new ProjectAnswer;
                     $DadosResposta->bundle_id = $Record->bundle_id;
