@@ -239,8 +239,25 @@ class ProjectController extends Controller
     public function filterDetail(Request $request)
     { 
         // Valida a Permissão do usuário
+        
+
         if(Auth::user()->role->role_priority >= 90){    
-            $query = ProjectFiles::query()->with('user')->with('rfp_bundles')->withCount('projectRecords')->where('project_id', $request->id);
+            //$query = ProjectFiles::query()->with('user')->with('rfp_bundles')->withCount('projectRecords')->where('project_id', $request->id);
+            
+            $query = ProjectFiles::query()
+            ->with(['user', 'rfp_bundles'])
+            ->withCount([
+                'projectRecords',
+                'projectRecords as respondidos_ia_count' => function ($query) {
+                    $query->where('status', 'respondido ia');
+                },
+                'projectRecords as respondidos_user_count' => function ($query) {
+                    $query->where('status', 'respondido user');
+                }
+            ])
+            ->where('project_id', $request->id);
+
+
             
             // Aplicar filtros
             if ($request->has('filter')) {
@@ -464,7 +481,35 @@ class ProjectController extends Controller
     }
 
 
+
+
     public function cron(Request $request)
+    {
+        try {
+            $ProjectFiles = ProjectFiles::where('status', "em processamento")->get();
+                foreach ($ProjectFiles as $File) {
+                    $Records = ProjectRecord::whereNotNull('project_records.bundle_id')
+                        ->where('project_records.project_file_id', $File->id)
+                        ->where('project_records.status', "processando")
+                        ->join('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
+                        ->count();
+            
+                        if($Records == 0){
+                            $ProjectFiles->status = 'processado';
+                            $ProjectFiles->save();
+                        }
+                }
+            Log::info("Executado com sucesso");
+        } catch (\Exception $e) {
+            Log::error("Erro no processamento: " . $e->getMessage());
+        }
+    }
+
+
+
+
+
+    public function cron2(Request $request)
     {
         try {
             $ProjectFiles = ProjectFiles::where('status', "em processamento")->get();
