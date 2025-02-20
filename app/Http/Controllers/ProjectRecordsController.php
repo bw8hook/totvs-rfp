@@ -437,11 +437,14 @@ class ProjectRecordsController extends Controller
                 //     $query->where('aderencia_na_mesma_linha', '!=', 'Desconhecido');
                 // })->count();
 
-                $countIA = ProjectRecord::whereHas('answers', function ($query) {
+                $countIA = ProjectRecord::where('project_file_id', $ProjectFile->id)
+                ->whereHas('answers', function ($query) {
                     $query->whereNotNull('id'); // Garante que answer_id está preenchido
-                })->whereHas('answers', function ($query) {
+                })
+                ->whereHas('answers', function ($query) {
                     $query->where('aderencia_na_mesma_linha', '!=', 'Desconhecido');
-                })->count();
+                })
+                ->count();
 
                 
                 $registrosSemResposta = $CountRecords - $countIA;
