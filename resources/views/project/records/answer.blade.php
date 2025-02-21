@@ -72,7 +72,7 @@
                         </div>
 
                         <div class="inputField" style="width: 300px;">
-                            <label>Modulo:</label>
+                            <label>Processo:</label>
                             <select name="modulo">
                                 <option value="null" selected>Selecione</option>
                                 @foreach($ListClassificacao as $Classificacao)
