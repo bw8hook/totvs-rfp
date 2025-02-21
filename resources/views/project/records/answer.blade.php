@@ -91,12 +91,13 @@
                 <table id="TableExcel" class="tabela">
                     <thead>
                         <tr>
-                            <th style="width:7.4%;">Modulo</th>
-                            <th style="width:21%;">Descrição do Requisito</th>
+                            <th style="width:7.4%;">Processo</th>
+                            <th style="width:8.4%;">Subprocesso</th>
+                            <th style="width:20%;">Descrição do Requisito</th>
                             <th style="width:11%;">Resposta</th>
-                            <th style="width:23%;">Observações</th>
-                            <th style="width:16%;">Referências</th>
-                            <th style="width:10%;">Acuracidade</th>
+                            <th style="width:10%;">Módulo</th>
+                            <th style="width:21%;">Observações</th>
+                            <th style="width:8%;">Acuracidade</th>
                             <th style="width:22%;">Produto</th>
                             <th style="width:5%;"></th>
                         </tr>    
@@ -136,16 +137,82 @@
                     </div>
                 </div>
 
-                <div id="ModalDelete">
-                    <form method="delete" action="">
-                        @csrf
-                        <h2>Tem certeza que deseja excluir esse requisito?</h2>
-                        <div class="btns_Delete">
-                            <div class="BtnConfirmDelete">Sim, excluir agora</div>
-                            <div class="btnCancelDelete">Não excluir</div>
+                <div id="ModalEdit">
+                    <div class="content">
+
+                        <div class="loading" style="background: #ffffffcf; position: relative; width: 100%; height: 100%; top: 0px; left: 0px;">
+                            <div id="lottie-container" style="width: 100px; height:100px; position: absolute; top: 50%; left: 50%; transform: translate(-75px, -35px);"></div>
                         </div>
-                    </form>
+
+
+                        <div class="ListaHistorico">
+
+                        </div>
+
+                        <form id="UserEdit" method="post" action="" style="display:none;">
+                            @csrf
+                            <div class="Title">
+                                <h2>Edite o conteúdo sugerido pela IA</h2>
+                                <div class="btnHistorico"> Ver histórico </div>
+                            </div>
+                            
+                            <div class="inputField">
+                                <label>Resposta:</label>
+                                <select id="resposta" name="resposta">
+                                    <option value="null" disabled>Selecione</option>
+                                    @foreach($AllAnswers as $Answer)
+                                        <option value="{{$Answer->id}}">{{$Answer->anwser}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="inputField"> 
+                                <label>Módulo:</label>
+                                <input type="text" id="modulo" name="modulo">
+                            </div>
+
+                            <div class="inputField">
+                                <label>Observações:</label>
+                                <input type="text" id="observacao" name="observacao">
+                            </div>
+
+                            <div class="inputField">
+                                <label>Linha/Produto:</label>
+                                <select id="produto" name="produto">
+                                    <option value="null" disabled>Selecione</option>
+                                    @foreach($AllBundles as $bundle)
+                                        <option value="{{$bundle->bundle_id}}">{{$bundle->bundle}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                        <div class="BtnConfirmEdit">Concluir Edições</div>
+                        </form>
+                    </div>
                 </div>
+
+
+
+                <div id="ModalReferencia">
+                    <div class="content">
+                        <div class="Title">
+                            <svg width="23" height="23" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12.6931 7.46553H15.3069V10.0793H12.6931V7.46553ZM14 20.5345C14.7188 20.5345 15.3069 19.9464 15.3069 19.2276V14C15.3069 13.2812 14.7188 12.6931 14 12.6931C13.2812 12.6931 12.6931 13.2812 12.6931 14V19.2276C12.6931 19.9464 13.2812 20.5345 14 20.5345ZM14 0.93103C6.78594 0.93103 0.93103 6.78594 0.93103 14C0.93103 21.2141 6.78594 27.069 14 27.069C21.2141 27.069 27.069 21.2141 27.069 14C27.069 6.78594 21.2141 0.93103 14 0.93103ZM14 24.4552C8.2366 24.4552 3.54483 19.7635 3.54483 14C3.54483 8.2366 8.2366 3.54483 14 3.54483C19.7635 3.54483 24.4552 8.2366 24.4552 14C24.4552 19.7635 19.7635 24.4552 14 24.4552Z" fill="#0097EB"/>
+                            </svg>
+                            <h2>Referências selecionadas pela IA para respostas do requisito:</h2>
+                        </div>
+                        <div class="ListaReferencia">
+                            <div class="loading" style="background: #ffffffcf; position: relative; width: 100%; height: 100%; top: 0px; left: 0px;">
+                                <div id="lottie-container" style="width: 100px; height:100px; position: absolute; top: 50%; left: 50%; transform: translate(-75px, -35px);"></div>
+                            </div>
+                            <div class="listAll">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
             </div>
         </div>
     </div>
@@ -229,22 +296,42 @@
                         ListAnswers.forEach(resposta => {
                             AnwserOptions += `<option value="${resposta.id}" ${resposta.anwser === record.answers.aderencia_na_mesma_linha ? 'selected' : ''}>${resposta.anwser}</option>`;
                         });
-                        
-                        rows += `
-                            <tr class="listaTabela ${highlighted_error ? '' : 'highlighted_error'}" data-id="${record.id}" style="min-height:60px; max-height: 100%;">                                
-                                <td style="width:15%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.modulo ? record.answers.modulo : ''} </td>
-                                <td style="width:38%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.requisito} </td>
-                                <td style="width:20%; display: flex; align-items: center;">
-                                    <select name="classificacao_id"  style="border-radius: 8px; width:100%">
-                                      ${AnwserOptions}
-                                    </select>
-                                </td>
-                                 <td style="width:42%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.resposta ? record.answers.resposta : ''} </td>
-                                <td style="width:30%; font-size:12px; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.referencia ? record.answers.referencia : ''} </td>
-                                <td style="width:12%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #D2E4FF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #0E2ECF;"> ${record.answers.acuracidade_porcentagem ? record.answers.acuracidade_porcentagem : ''} </span> </td>
-                                <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #C7EBFF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #141824;"> ${record.rfp_bundles.bundle ? record.rfp_bundles.bundle : ''} </span></td>
-                                <td style="width:5%;  display: flex; align-items: center;">
-                                    <div class="btnEditRecord" style="margin: 0px; float:left; cursor:pointer;">
+
+                        let user_edit_record =  record.status == "user edit" ? false : true;
+
+
+                        if (record.status === 'user edit') {
+                            btnEdit = `<div class="btnEditRecord" style="margin: 0px; float:left; cursor:pointer;width:50%;">
+                                        <button type="submit" class="records_edit_user">
+                                             <svg width="23" height="23" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <g clip-path="url(#clip0_1034_1300)">
+                                                <path d="M22.813 10C23.122 10 23.414 9.857 23.603 9.613C23.792 9.369 23.858 9.051 23.782 8.752C23.471 7.535 22.837 6.423 21.949 5.535L18.464 2.05C17.142 0.728 15.384 0 13.514 0H8.999C6.243 0 4 2.243 4 5V16.5C4 19.257 5 22 8.999 23.5H10.5H12C12.5 23.5 13 23.552 13 23C13 22.448 12.552 22 12 22H9C7.346 22 6 20.654 6 19V5C6 3.346 7.346 2 9 2H13.515C13.678 2 13.84 2.008 14 2.023V7C14 8.654 15.346 10 17 10H22.813ZM16 7V2.659C16.379 2.877 16.732 3.147 17.05 3.465L20.535 6.95C20.849 7.264 21.118 7.618 21.338 8H17C16.449 8 16 7.551 16 7ZM27.122 11.879C25.988 10.745 24.012 10.745 22.879 11.879L16.172 18.586C15.417 19.341 15 20.346 15 21.415V23.001C15 23.553 15.448 24.001 16 24.001H17.586C18.655 24.001 19.659 23.584 20.414 22.829L27.121 16.122C27.688 15.555 28 14.802 28 14C28 13.198 27.688 12.445 27.122 11.879ZM25.707 14.707L18.999 21.414C18.622 21.792 18.12 22 17.585 22H16.999V21.414C16.999 20.88 17.207 20.378 17.585 20L24.293 13.293C24.67 12.915 25.329 12.915 25.707 13.293C25.896 13.481 26 13.732 26 14C26 14.268 25.896 14.518 25.707 14.707Z" fill="#8A94AD"/>
+                                                <g clip-path="url(#clip1_1034_1300)">
+                                                <path d="M14 21C14 24.8599 10.8599 28 7 28C3.14008 28 0 24.8599 0 21C0 17.1401 3.14008 14 7 14C10.8599 14 14 17.1401 14 21Z" fill="#2EE400"/>
+                                                <path d="M10.4671 19.9222L9.64807 19.0909L6.26007 22.4165L4.63082 20.8374L3.81824 21.6757L5.44107 23.2484C5.66915 23.4759 5.96899 23.5896 6.26707 23.5896C6.56515 23.5896 6.86207 23.477 7.08782 23.2513L10.4671 19.9222Z" fill="white"/>
+                                                </g>
+                                                </g>
+                                                <defs>
+                                                <clipPath id="clip0_1034_1300">
+                                                <rect width="28" height="28" fill="white"/>
+                                                </clipPath>
+                                                <clipPath id="clip1_1034_1300">
+                                                <rect width="14" height="14" fill="white" transform="translate(0 14)"/>
+                                                </clipPath>
+                                                </defs>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <div class="btnInfoRecord" style="margin: 0px; float:left; cursor:pointer; width:50%;">
+                                        <button type="submit" class="records_info">
+                                            <svg width="23" height="23" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12.6931 7.46553H15.3069V10.0793H12.6931V7.46553ZM14 20.5345C14.7188 20.5345 15.3069 19.9464 15.3069 19.2276V14C15.3069 13.2812 14.7188 12.6931 14 12.6931C13.2812 12.6931 12.6931 13.2812 12.6931 14V19.2276C12.6931 19.9464 13.2812 20.5345 14 20.5345ZM14 0.93103C6.78594 0.93103 0.93103 6.78594 0.93103 14C0.93103 21.2141 6.78594 27.069 14 27.069C21.2141 27.069 27.069 21.2141 27.069 14C27.069 6.78594 21.2141 0.93103 14 0.93103ZM14 24.4552C8.2366 24.4552 3.54483 19.7635 3.54483 14C3.54483 8.2366 8.2366 3.54483 14 3.54483C19.7635 3.54483 24.4552 8.2366 24.4552 14C24.4552 19.7635 19.7635 24.4552 14 24.4552Z" fill="#0097EB"/>
+                                            </svg>
+                                        </button>
+                                    </div>`;
+                        } else {
+                            btnEdit = `<div class="btnEditRecord" style="margin: 0px; float:left; cursor:pointer;width:50%;">
                                         <button type="submit" class="records_edit">
                                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <path d="M15.6775 8.33333C15.935 8.33333 16.1783 8.21417 16.3358 8.01083C16.4933 7.8075 16.5483 7.5425 16.485 7.29333C16.2258 6.27917 15.6975 5.3525 14.9575 4.6125L12.0533 1.70833C10.9517 0.606667 9.48667 0 7.92833 0H4.16583C1.86917 0 0 1.86917 0 4.16667V15.8333C0 18.1308 1.86917 20 4.16667 20H6.66667C7.12667 20 7.5 19.6267 7.5 19.1667C7.5 18.7067 7.12667 18.3333 6.66667 18.3333H4.16667C2.78833 18.3333 1.66667 17.2117 1.66667 15.8333V4.16667C1.66667 2.78833 2.78833 1.66667 4.16667 1.66667H7.92917C8.065 1.66667 8.2 1.67333 8.33333 1.68583V5.83333C8.33333 7.21167 9.455 8.33333 10.8333 8.33333H15.6775ZM10 5.83333V2.21583C10.3158 2.3975 10.61 2.6225 10.875 2.8875L13.7792 5.79167C14.0408 6.05333 14.265 6.34833 14.4483 6.66667H10.8333C10.3742 6.66667 10 6.2925 10 5.83333ZM19.2683 9.89917C18.3233 8.95417 16.6767 8.95417 15.7325 9.89917L10.1433 15.4883C9.51417 16.1175 9.16667 16.955 9.16667 17.8458V19.1675C9.16667 19.6275 9.54 20.0008 10 20.0008H11.3217C12.2125 20.0008 13.0492 19.6533 13.6783 19.0242L19.2675 13.435C19.74 12.9625 20 12.335 20 11.6667C20 10.9983 19.74 10.3708 19.2683 9.89917ZM18.0892 12.2558L12.4992 17.845C12.185 18.16 11.7667 18.3333 11.3208 18.3333H10.8325V17.845C10.8325 17.4 11.0058 16.9817 11.3208 16.6667L16.9108 11.0775C17.225 10.7625 17.7742 10.7625 18.0892 11.0775C18.2467 11.2342 18.3333 11.4433 18.3333 11.6667C18.3333 11.89 18.2467 12.0983 18.0892 12.2558Z" fill="#8A94AD"/>
@@ -252,6 +339,32 @@
                                             </svg>
                                         </button>
                                     </div>
+
+                                    <div class="btnInfoRecord" style="margin: 0px; float:left; cursor:pointer; width:50%;">
+                                        <button type="submit" class="records_info">
+                                            <svg width="23" height="23" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12.6931 7.46553H15.3069V10.0793H12.6931V7.46553ZM14 20.5345C14.7188 20.5345 15.3069 19.9464 15.3069 19.2276V14C15.3069 13.2812 14.7188 12.6931 14 12.6931C13.2812 12.6931 12.6931 13.2812 12.6931 14V19.2276C12.6931 19.9464 13.2812 20.5345 14 20.5345ZM14 0.93103C6.78594 0.93103 0.93103 6.78594 0.93103 14C0.93103 21.2141 6.78594 27.069 14 27.069C21.2141 27.069 27.069 21.2141 27.069 14C27.069 6.78594 21.2141 0.93103 14 0.93103ZM14 24.4552C8.2366 24.4552 3.54483 19.7635 3.54483 14C3.54483 8.2366 8.2366 3.54483 14 3.54483C19.7635 3.54483 24.4552 8.2366 24.4552 14C24.4552 19.7635 19.7635 24.4552 14 24.4552Z" fill="#0097EB"/>
+                                            </svg>
+                                        </button>
+                                    </div>`;
+                        }
+
+                        rows += `
+                            <tr class="listaTabela ${highlighted_error ? '' : 'highlighted_error'} ${user_edit_record ? '' : 'user_edit_record'}" data-id="${record.id}" style="min-height:60px; max-height: 100%;">                                
+                                <td style="width:15%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.processo ? record.processo : ''} </td>
+                                <td style="width:15%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.subprocesso ? record.subprocesso : ''} </td>
+                                <td style="width:38%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.requisito} </td>
+                                <td style="width:20%; display: flex; align-items: center;">
+                                    <select name="classificacao_id"  style="border-radius: 8px; width:100%" disabled>
+                                      ${AnwserOptions}
+                                    </select>
+                                </td>
+                                <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.modulo ? record.answers.modulo : ''} </td>
+                                <td style="width:42%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.resposta ? record.answers.resposta : ''} </td>
+                                <td style="width:12%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #D2E4FF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #0E2ECF;"> ${record.answers.acuracidade_porcentagem ? record.answers.acuracidade_porcentagem : ''} </span> </td>
+                                <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #C7EBFF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #141824;"> ${record.rfp_bundles.bundle ? record.rfp_bundles.bundle : ''} </span></td>
+                                <td style="width:10%;  display: flex; align-items: center;">
+                                    ${btnEdit}
                                 </td>
                             </tr>
                         `;
@@ -376,57 +489,200 @@
             }
         });
 
+        $(document).on('click', '.btnHistorico', function () {
+            $('#ModalEdit form').hide();
+            $('.ListaHistorico').show();
+        })
 
-        $(document).on('click', '.btnDeleteRecord', function () {
+
+        $(document).on('click', '.btnHistoricoBack', function () {
+            $('.ListaHistorico').hide();
+            $('#ModalEdit form').show();
+        })
+
+
+        $(document).on('click', '.btnEditRecord', function () {
             const IdRecord = $(this).parent().parent().data('id');
+            $('#ModalEdit form').hide();
+            $('.ListaHistorico').hide();
+            $('#ModalEdit .loading').show();
             if (IdRecord) {
-                let url = `{{ route('project.recordsFilterRemove', ':id') }}`.replace(':id', IdRecord);
-                $("#ModalDelete form").attr('action', url);
-                $("#ModalDelete form").attr('data-id', IdRecord);
-                $("#ModalDelete").show();
+                let url = `{{ route('project.records.detail', ':id') }}`.replace(':id', IdRecord);
+                let urlForm = `{{ route('project.records.history.update', ':id') }}`.replace(':id', IdRecord);
+                $("#ModalEdit form").attr('action', urlForm);
+                $("#ModalEdit form").attr('data-id', IdRecord);
+                $("#ModalEdit").show();
+
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    success: function (response) {
+                        console.log(response);
+
+                        $('#ModalEdit .loading').hide();
+                        $('#ModalEdit form').show();
+
+                        console.log(response.ProjectAnswer.aderencia_na_mesma_linha);
+
+                        $('#resposta').val(response.ProjectAnswer.answer_id);
+                        $('#modulo').val(response.ProjectAnswer.modulo);
+                        $('#observacao').val(response.ProjectAnswer.observacao);
+                        $('#produto').val(response.ProjectAnswer.bundle_id);
+
+                        // Atualizar tabela
+                        let rows = '';
+                        response.ProjectHistory.forEach(record => {
+                            console.log(record);
+                            const data = new Date(record.created_at);
+    
+                            // Formatando HH:MM
+                            const horas = String(data.getHours()).padStart(2, '0');
+                            const minutos = String(data.getMinutes()).padStart(2, '0');
+                            const horaFormatada = `${horas}:${minutos}`;
+                            
+                            // Formatando DD/MM/AAAA
+                            const dia = String(data.getDate()).padStart(2, '0');
+                            const mes = String(data.getMonth() + 1).padStart(2, '0'); // getMonth() retorna 0-11
+                            const ano = data.getFullYear();
+                            const dataFormatada = `${dia}/${mes}/${ano}`;
+
+
+                            rows += `
+                                    <div class="Referencia">
+                                        <h3>Responsável: <span class="idrequisito">${record.user.name}</span></h3>
+                                        <h4>Histórico de Edição:</h3>
+                                        <h2>Data: <span class="idrequisito">${dataFormatada}</span></h2>
+                                        <h2>Hora: <span class="idrequisito">${horaFormatada}</span></h2>
+                                        <div class="list">
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Resposta</div>
+                                                <div class="textoProcesso">${record.new_answer} </div>
+                                            </div>
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Módulo</div>
+                                                <div class="textoProcesso">${record.new_module} </div>
+                                            </div>
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Observações</div>
+                                                <div class="textoProcesso">${record.new_observation}</div>
+                                            </div>
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Linha/Produto</div>
+                                                <div class="textoProcesso">${record.new_bundle}</div>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                        });
+
+                        if(rows){
+                            $('.btnHistorico').show();
+                        }
+                        // Adiciona ou substitui os itens da tabela
+                        $('.ListaHistorico').html(rows);
+                        
+                    }
+                })
+
+
                 console.log(url);// Passa "true" para adicionar itens ao invés de substituir
             }
         });
 
         // Fechar MODAL
-        $(document).on('click', '#ModalDelete', function (event) { if (event.target === this) { $(this).hide(); }});
-        $(document).on('click', '.btnCancelDelete', function (event) {$('#ModalDelete').hide(); });
+        $(document).on('click', '#ModalEdit', function (event) { if (event.target === this) { $(this).hide(); }});
+        $(document).on('click', '.btnCancelDelete', function (event) {$('#ModalEdit').hide(); });
+
+
+
+        $(document).on('click', '.btnInfoRecord', function () {
+            const IdRecord = $(this).parent().parent().data('id');
+            $('.ListaReferencia .listAll').html('');
+            $('.ListaReferencia .loading').fadeIn();
+            if (IdRecord) {
+                let url = `{{ route('project.records.references', ':id') }}`.replace(':id', IdRecord);
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    success: function (response) {
+
+                        console.log(response);
+
+                        $('.ListaReferencia .loading').fadeOut();
+
+                        // Atualizar tabela
+                        let rows = '';
+                        response.ReferenciasBanco.forEach(record => {
+
+                            console.log(record);
+                            rows += `
+                                    <div class="Referencia">
+                                        <h2>ID REQUISITO: <span class="idrequisito">${record.id_record}</span></h2>
+                                        <div class="list">
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Processo</div>
+                                                <div class="textoProcesso">${record.processo} </div>
+                                            </div>
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Subprocesso</div>
+                                                <div class="textoProcesso">${record.subprocesso} </div>
+                                            </div>
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Descrição do Requisito</div>
+                                                <div class="textoProcesso">${record.requisito}</div>
+                                            </div>
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Resposta</div>
+                                                <div class="textoProcesso">${record.resposta}</div>
+                                            </div>
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Módulo</div>
+                                                <div class="textoProcesso">${record.modulo}</div>
+                                            </div>
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Observações</div>
+                                                <div class="textoProcesso">${record.observacao}</div>
+                                            </div>
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Produto</div>
+                                                <div class="textoProcesso">${record.rfp_bundles.bundle}</div>
+                                            </div> 
+                                        </div>
+                                    </div>`;
+                        });
+
+                        // Adiciona ou substitui os itens da tabela
+                        $('.ListaReferencia .listAll').html(rows);
+                        
+                    }
+                })
+
+                $("#ModalReferencia form").attr('action', url);
+                $("#ModalDelete form").attr('data-id', IdRecord);
+                $("#ModalReferencia").show();
+               
+                console.log(url);// Passa "true" para adicionar itens ao invés de substituir
+
+            }
+            
+        });
+
+        $(document).on('click', '#ModalReferencia', function (event) { if (event.target === this) { $(this).hide(); }});
+        $(document).on('click', '.btnCancelReferencia', function (event) {$('#ModalReferencia').hide(); });
+        
+
+
 
         
-        $(document).on('click', '.BtnConfirmDelete', function () {
+        $(document).on('click', '.BtnConfirmEdit', function () {
             $.ajax({
-                url: $('#ModalDelete form').attr('action'),
-                method: 'DELETE',
-                data: $('#ModalDelete form').serialize(),
+                url: $('#ModalEdit form').attr('action'),
+                method: 'POST',
+                data: $('#ModalEdit form').serialize(),
                 success: function (response) {
+                    showAlertBootstrap("success", "Alterado com Sucesso.");
                     console.log(response);
-                    if(response.status == "success"){
-                            const idRecord = $('#ModalDelete form').attr('data-id');
-                            console.log(idRecord);
-                            $(`.listaTabela[data-id='${idRecord}']`).fadeOut(300, function() {
-                            $(this).remove();
-
-                            // Criando o alerta dinamicamente
-                            $('body').append(`
-                                <div id="error-alert" class="bg-red-100 border-t-4 border-red-500 rounded-b text-red-900 px-4 py-3 shadow-md" role="alert" style="position: absolute; top: 10px; right: 10px; z-index:9;">
-                                    <div class="flex">
-                                        <div class="py-1"><svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
-                                        <div>
-                                        <p class="fonet-bold">Removido</p>
-                                        <p class="text-sm">${response.message}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            `);
-
-                            // Aguardar 5 segundos antes de remover o alerta
-                            setTimeout(function() {
-                                $('#error-alert').remove();
-                            }, 5000);
-                        });
-           
-                        $("#ModalDelete").hide();
-                    }
+                    $('#ModalEdit').fadeOut();
+                    
                 }
             })
         });

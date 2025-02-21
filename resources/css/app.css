@@ -532,6 +532,14 @@ table {
         fill: #5570F1;
     }
 
+    .records_info svg path{
+        fill: #0097EB;
+    }
+
+    .records_info:hover svg path{
+        fill: #0075b5;
+    }
+
 .records_delete{
     width: 17px;
     text-align: center;
@@ -777,6 +785,345 @@ table {
                 #ModalDelete .btns_Delete .btnCancelDelete:hover{
                     background-color: #d1d0d0;
                 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                #ModalReferencia{
+                    display: none;
+                }
+                
+                #ModalReferencia::before{
+                    content: " ";
+                    width: 100vw;
+                    height: 100vh;
+                    background-color: #00000085;
+                    position: fixed;
+                    top: 0px;
+                    left: 0px;
+                    right: 0px;
+                    z-index: 99999;
+                }
+            
+                #ModalReferencia .content{
+                    background-color: #FFF;
+                    min-width: 450px;
+                    height: 80vh;
+                    padding: 50px;
+                    max-height: 80vh;
+                    overflow: scroll;
+                    position: absolute;
+                    display: block;
+                    z-index: 9999999;
+                    border-radius: 10px;
+                    top: 50%;
+                    left: 50%;
+                    bottom: 50%;
+                    right: 50%;
+                    transform: translate(-50%, -50%);
+                }
+            
+                    #ModalReferencia .Title{
+                        display: inline-flex;
+                        text-align: left;
+                    }
+                    
+                    #ModalReferencia .Title svg{
+                        width: 32px;
+                    }
+
+                    #ModalReferencia .Title h2{
+                        color: #525B75;
+                        text-align: left;
+                        font-weight: 400;
+                        font-size: 17px;
+                        margin-bottom: 20px;
+                        margin-left: 8px;
+                        margin-top: 1px;
+                    }
+
+                    #ModalReferencia .ListaReferencia .Referencia{
+                        color: #525B75;
+                        text-align: left;
+                        font-weight: 400;
+                        font-size: 17px;
+                        margin-bottom: 20px;
+                        margin-left: 0px;
+                        margin-top: 1px;
+                    }
+
+
+                        #ModalReferencia .ListaReferencia .Referencia h2{
+                            color: #525B75;
+                            text-align: left;
+                            font-weight: 400;
+                            font-size: 14px;
+                            margin-bottom: 20px;
+                            margin-left: 0px;
+                            margin-top: 1px;
+                        }
+
+
+                        #ModalReferencia .ListaReferencia .Referencia .list .processoList{
+                            color: #525B75;
+                            text-align: left;
+                            font-weight: 400;
+                            font-size: 17px;
+                            margin-bottom: 20px;
+                            margin-left: 0px;
+                            margin-top: 1px;
+                        }
+    
+    
+                            #ModalReferencia .ListaReferencia .Referencia .list .processoList .labelProcesso{
+                                color: #8A94AD;
+                                text-align: left;
+                                font-weight: 400;
+                                font-size: 15px;
+                                margin-bottom: 10px;
+                            }
+
+                            #ModalReferencia .ListaReferencia .Referencia .list .processoList .TextoProcesso{
+                                color: #525B75;
+                                text-align: left;
+                                font-weight: 400;
+                                font-size: 17px;
+                                margin-bottom: 5px;
+                                background-color: #F9F9F9;
+                                padding: 5px 10px;
+                                border-radius: 5px;;
+                            }
+
+                    
+
+
+
+
+
+
+                            #ModalEdit{
+                                display: none;
+                            }
+                            
+                            #ModalEdit::before{
+                                content: " ";
+                                width: 100vw;
+                                height: 100vh;
+                                background-color: #00000085;
+                                position: fixed;
+                                top: 0px;
+                                left: 0px;
+                                right: 0px;
+                                z-index: 99999;
+                            }
+                        
+                            #ModalEdit .content{
+                                background-color: #FFF;
+                                min-width: 450px;
+                                height: 80vh;
+                                padding: 50px;
+                                max-height: 80vh;
+                                overflow: scroll;
+                                position: absolute;
+                                display: block;
+                                z-index: 9999999;
+                                border-radius: 10px;
+                                top: 50%;
+                                left: 50%;
+                                bottom: 50%;
+                                right: 50%;
+                                transform: translate(-50%, -50%);
+                            }
+                        
+                                #ModalEdit .Title{
+                                    display: block;
+                                    text-align: left;
+                                    border-bottom: 2px solid #D2E4FF;
+                                    margin-bottom: 20px;;
+                                }
+                                
+                                #ModalEdit .Title svg{
+                                    width: 32px;
+                                }
+            
+                                #ModalEdit .Title h2{
+                                    color: #0E2ECF;
+                                    text-align: left;
+                                    font-weight: 400;
+                                    font-size: 19px;
+                                    margin-bottom: 20px;
+                                    margin-left: 8px;
+                                    margin-top: 1px;
+                                }
+            
+                                #ModalEdit .Title .btnHistorico{
+                                    color: #525B75;
+                                    width: 113px;
+                                    text-align: left;
+                                    font-weight: 700;
+                                    font-size: 16px;
+                                    margin-bottom: 20px;
+                                    margin-left: 0px;
+                                    margin-top: 1px;
+                                    padding: 2px 7px;
+                                    border-bottom: 1px solid #525B75;
+                                    display: none;
+                                    cursor: pointer;
+                                }
+            
+            
+                                    #ModalEdit .inputField{
+                                        color: #525B75;
+                                        text-align: left;
+                                        font-weight: 400;
+                                        font-size: 16px;
+                                        margin-bottom: 20px;
+                                        margin-left: 0px;
+                                        margin-top: 1px;
+                                        display: inline-grid;
+                                        width: 100%;
+                                    }
+
+                                    #ModalEdit .inputField input{
+                                        background: #F9F9F9;
+                                        border: none;
+                                        border-radius: 8px;
+                                        height: 55px;
+                                        padding: 11px 15px;
+                                    }
+
+                                    #ModalEdit .inputField select{
+                                        width: 100%;
+                                        background-color: #F9F9F9;
+                                        border:1px solid;
+                                        border: none;
+                                        height: 55px;
+                                        padding: 15px;
+                                        color: #525b75;
+                                        border-radius: 8px;
+                                    }
+                                   
+
+                                    #ModalEdit .BtnConfirmEdit{
+                                        background-color: #5570F1;
+                                        border: 1px solid;
+                                        width: 185px;
+                                        font-weight: bolder;
+                                        margin: 20px auto;;
+                                        padding: 5px 25px;
+                                        color: #FFF;
+                                        font-size: 17px;
+                                        border-radius: 20px;
+                                        cursor: pointer;
+                                    }
+                                    
+
+                                    #ModalEdit .ListaHistorico .Referencia {
+                                        border-bottom: 2px solid #D2E4FF;
+                                        margin-bottom: 40px;
+                                    }
+                                    
+                                    #ModalEdit .ListaHistorico{
+                                        display: none;
+                                    }
+
+                                    #ModalEdit .ListaHistorico .Referencia .list .processoList{
+                                        color: #525B75;
+                                        text-align: left;
+                                        font-weight: 400;
+                                        font-size: 17px;
+                                        margin-bottom: 10px;
+                                        margin-left: 0px;
+                                        margin-top: 1px;
+                                    }
+
+
+                                        #ModalEdit .ListaHistorico h3{
+                                            color: #0E2ECF;
+                                            text-align: left;
+                                            font-weight: 400;
+                                            font-size: 15px;
+                                            margin-bottom: 10px;
+                                            margin-left: 0px;
+                                            margin-top: 1px;
+                                        }
+
+
+                                        #ModalEdit .ListaHistorico h4{
+                                            color: #141824;
+                                            text-align: left;
+                                            font-weight: 400;
+                                            font-size: 15px;
+                                            margin-bottom: 10px;
+                                            margin-left: 0px;
+                                            margin-top: 1px;
+                                        }
+
+
+                                        #ModalEdit .ListaHistorico h2{
+                                            color: #8A94AD;
+                                            text-align: left;
+                                            font-weight: 700;
+                                            font-size: 14px;
+                                            margin-bottom: 2px;
+                                            margin-left: 0px;
+                                            margin-top: 1px;
+                                        }
+                    
+
+                                        #ModalEdit .ListaHistorico .list{
+                                            margin-top: 10px;;
+                                        }
+                
+
+                
+                                        #ModalEdit .ListaHistorico .Referencia .list .processoList .labelProcesso{
+                                            color: #8A94AD;
+                                            text-align: left;
+                                            font-weight: 400;
+                                            font-size: 14px;
+                                            margin-bottom: 2px;
+                                        }
+            
+                                        #ModalEdit .ListaHistorico .Referencia .list .processoList .TextoProcesso{
+                                            color: #525B75;
+                                            text-align: left;
+                                            font-weight: 400;
+                                            font-size: 15px;
+                                            margin-bottom: 5px;
+                                            padding: 5px 10px;
+                                            border-radius: 5px;;
+                                        }
+
+                                    
+        .user_edit_record{
+            color: #0097EB;
+        }
+
+        .user_edit_record select{
+            background-color: #C7EBFF;
+            color: #141824;
+            border-color: #9ed8f8;
+        }
+            
+                                 
+
+
+
+                            
 
 
 label{

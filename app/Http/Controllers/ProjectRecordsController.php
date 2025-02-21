@@ -13,7 +13,9 @@ use App\Models\Module;
 use App\Imports\KnowledgeBaseImport;
 use App\Imports\KnowledgeBaseInfoImport;
 use App\Exports\KnowledgeBaseExport;
-
+use App\Models\KnowledgeRecord;
+use App\Models\ProjectAnswer;
+use App\Models\ProjectHistory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -433,11 +435,17 @@ class ProjectRecordsController extends Controller
                     $CountRecords++;
                 }
 
-                // $countIA = ProjectRecord::whereHas('answers', function ($query) {
-                //     $query->where('aderencia_na_mesma_linha', '!=', 'Desconhecido');
-                // })->count();
 
                 $countIA = ProjectRecord::where('project_file_id', $ProjectFile->id)
+                    ->where('status', 'respondido ia')
+                    ->whereHas('answers', function ($query) {
+                        $query->whereNotNull('id')
+                            ->where('aderencia_na_mesma_linha s', '!=', 'Desconhecido');
+                    })
+                    ->count();
+
+                $countUser = ProjectRecord::where('project_file_id', $ProjectFile->id)
+                ->where('status', 'user edit') 
                 ->whereHas('answers', function ($query) {
                     $query->whereNotNull('id'); // Garante que answer_id está preenchido
                 })
@@ -447,7 +455,7 @@ class ProjectRecordsController extends Controller
                 ->count();
 
                 
-                $registrosSemResposta = $CountRecords - $countIA;
+                $registrosSemResposta = $CountRecords - ($countIA + $countUser);
                 $porcentagemSemResposta = ($registrosSemResposta / $CountRecords) * 100;
 
                 $data = array(
@@ -462,7 +470,7 @@ class ProjectRecordsController extends Controller
                     'AllAnswers' => $AllAnswers,
                     'CountRequisitos' => $CountRecords,
                     'CountAnswerIA' => $countIA,
-                    'CountAnswerUser' => 0,
+                    'CountAnswerUser' => $countUser,
                     'progress' => $porcentagemSemResposta,
                     'registrosSemResposta' => $registrosSemResposta,
                     'CountCountRecordsResultado' => $CountRecords,
@@ -527,6 +535,121 @@ class ProjectRecordsController extends Controller
         }
     }
 
+
+
+
+    public function references(string $id)
+    { 
+        $Project = ProjectRecord::findOrFail($id);
+        if($Project->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){             
+            //$query = ProjectRecord::query()->with('rfp_bundles');
+
+            $ProjectAnswer = ProjectAnswer::where('id', '=', $Project->project_answer_id)->first();
+            $Referencia = $ProjectAnswer->referencia;
+
+            $linhas = array_map('trim', explode("\n", $Referencia));
+            $dados = [];
+
+            foreach($linhas as $linha) {
+                if(!empty($linha)) {
+                    $partes = explode(':', $linha, 2);
+                    if(count($partes) == 2) {
+                        $chave = trim($partes[0]);
+                        $valor = trim($partes[1]);
+                        $dados[$chave] = $valor;
+                    }
+                }
+            }
+            
+            $KnowledgeAll = KnowledgeRecord::with('rfp_bundles')->where('id_record', '=', $dados['ID Registro'])->get();
+            $KnowledgeRecords = [];
+            
+            foreach ($KnowledgeAll as $key => $Knowledge) {
+               $KnowledgeRecords[] = $Knowledge->toArray();               
+            }
+
+
+            $data = array(
+                'ReferenciasIA' => $dados,
+                'ReferenciasBanco' => $KnowledgeRecords,
+            );
+
+  
+            // Retornar dados em JSON
+            return response()->json($data);
+        }
+    }
+
+
+
+
+    public function detail(string $id)
+    { 
+        $Project = ProjectRecord::findOrFail($id);
+        if($Project->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){             
+            //$query = ProjectRecord::query()->with('rfp_bundles');
+            $ProjectAnswer = ProjectAnswer::where('id', '=', $Project->project_answer_id)->first()->toArray();
+
+            $RfpAnswer = RfpAnswer::where('anwser', '=', $ProjectAnswer['aderencia_na_mesma_linha'])->first();
+            //$RfpBundle = RfpBundle::where('bundle', '=', $ProjectAnswer->linha_produto)->first();
+
+            $ProjectAnswer['answer_id'] =  $RfpAnswer->id;
+            //$ProjectAnswer['bundle_id'] =  $RfpBundle->bundle_id;
+            
+            $ProjectHistory = ProjectHistory::where('answer_id', '=', $ProjectAnswer['id'])->with('user')->get();
+
+            $data = array(
+                'ProjectAnswer' => $ProjectAnswer,
+                'ProjectHistory' => $ProjectHistory,
+            );
+
+            // Retornar dados em JSON
+            return response()->json($data);
+        }
+    }
+
+
+
+
+    public function historyUpdate(Request $request, string $id)
+    { 
+            $Project = ProjectRecord::findOrFail($id);
+            $ProjectAnswer = ProjectAnswer::where('id', '=', $Project->project_answer_id)->first();
+
+            $Produto = RfpBundle::find($request->produto);
+            $Resposta = RfpAnswer::find($request->resposta);
+
+            $History = new ProjectHistory();          
+            $History->old_answer = $ProjectAnswer->aderencia_na_mesma_linha;
+            $History->new_answer = $Resposta->anwser;
+            $History->old_module = $ProjectAnswer->modulo;
+            $History->new_module = $request->modulo;
+            $History->old_observation = $ProjectAnswer->observacao;
+            $History->new_observation = $request->observacao;
+            $History->old_bundle = $ProjectAnswer->linha_produto;
+            $History->new_bundle = $Produto->bundle;
+            $History->user_id = Auth::id();
+            $History->answer_id = $ProjectAnswer->id;
+            $History->save();
+            
+            $Project->status = "user edit";
+            $Project->save();
+
+            $ProjectAnswer->aderencia_na_mesma_linha = $Resposta->anwser;
+            $ProjectAnswer->linha_produto = $Produto->bundle;
+            $ProjectAnswer->bundle_id = $Produto->bundle_id;
+            $ProjectAnswer->modulo = $request->modulo;
+            $ProjectAnswer->observacao = $request->observacao;
+            $ProjectAnswer->save();
+
+           
+            
+            // Retornar dados em JSON
+            return response()->json('save');
+        
+    }
+
+    
 
 
 }

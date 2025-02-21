@@ -19,11 +19,15 @@
 
     <link rel="icon" href="{{ asset('/storage/favicon.png') }}" type="image/png">
     <link rel="icon" href="{{ asset('/storage/favicon.svg') }}" type="image/svg+xml">
+    
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+
+    @stack('styles')
 </head>
 <body class="font-sans antialiased flex" style="overflow: hidden;">
-    
+    @stack('scripts')
     @if (session('success'))
         <div id="success-alert" class="bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md" role="alert" style="position: absolute; top: 10px; right: 10px; z-index:9;">
             <div class="flex">
