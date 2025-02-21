@@ -440,7 +440,7 @@ class ProjectRecordsController extends Controller
                     ->where('status', 'respondido ia')
                     ->whereHas('answers', function ($query) {
                         $query->whereNotNull('id')
-                            ->where('aderencia_na_mesma_linha s', '!=', 'Desconhecido');
+                            ->where('aderencia_na_mesma_linha', '!=', 'Desconhecido');
                     })
                     ->count();
 
