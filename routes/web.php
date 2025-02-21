@@ -34,6 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/knowledge', [KnowledgeController::class,'index'])->name('knowledge.list');
     Route::get('/knowledge/add', [KnowledgeController::class,'create'])->name('knowledge.create');
     Route::post('/knowledge/add', [KnowledgeController::class, 'upload'])->name('knowledge.upload_file');
+    Route::get('/knowledge/download/{id}', [KnowledgeController::class,'download'])->name('knowledge.download');
     Route::delete('/knowledge/remove/{id}', [KnowledgeController::class, 'destroy'])->name('knowledge.remove');
         //AJAX
         Route::get('/knowledge/filter', [KnowledgeController::class,'filter'])->name('knowledge.filter');
@@ -81,9 +82,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/project/records/processing/{id}', [ProjectRecordsController::class,'processing'])->name('project.records.processing');
         //AJAX
         Route::get('/project/records/filter/{id}', [ProjectRecordsController::class,'filter'])->name('project.recordsFilter');
+        Route::get('/project/records/references/{id}', [ProjectRecordsController::class,'references'])->name('project.records.references');
+        Route::get('/project/records/detail/{id}', [ProjectRecordsController::class,'detail'])->name('project.records.detail');
         Route::get('/project/answer/filter/{id}', [ProjectRecordsController::class,'filterAnswer'])->name('project.recordsFilterAnswer');
         Route::delete('/project/records/{id}', [ProjectRecordsController::class,'filterRemove'])->name('project.recordsFilterRemove');
         Route::post('/project/update-record/{id}', [ProjectRecordsController::class,'updateDetails'])->name('project.records.update');
+        Route::post('/project/update/history/record/{id}', [ProjectRecordsController::class,'historyUpdate'])->name('project.records.history.update');
         Route::get('/project/records-errors/filter/{id}', [ProjectRecordsController::class,'filterError'])->name('project.recordsFilterErrors');
 });
 
