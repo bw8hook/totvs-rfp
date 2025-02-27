@@ -180,8 +180,9 @@
                 url: url,
                 method: 'GET',
                 data: $('#filterForm').serialize(),
-                success: function (response) {
+                success: function (data) {
                     // Atualizar tabela
+                    let response = data.response;
                     let rows = '';
                     response.data.forEach(record => {
                         // Verifica se record.bundle_id está presente em ListProdutos
@@ -708,10 +709,10 @@
             locale: "pt"         // Define para português
         });
     });
-
-
-
-
-
 </script>
+
+
+
+
+
 

@@ -1782,3 +1782,56 @@ label{
     margin-top: 10px;
     font-weight: 100;;
 }
+
+
+
+
+.noUi-connect {
+    background: #0d6efd;
+}
+.noUi-handle {
+    border: 1px solid #0d6efd;
+    background: #fff;
+    border-radius: 50%;
+    width: 25px !important;
+    height: 25px !important;
+    right: -17px !important;
+    top: -8px !important;
+}
+.noUi-handle:before, .noUi-handle:after {
+    display: none;
+}
+.popover {
+    max-width: 300px;
+    min-width: 200px;
+}
+.popover-body{
+    padding-right: 1.5rem;
+}
+#slider {
+    margin-top: 10px;
+    margin-bottom: 20px;
+    height: 10px;;
+}
+
+.noUi-connect{
+    background-color: #5570F1;
+}
+
+.noUi-connects{
+    height: 8px;
+    
+}
+
+#acertividade-btn{
+    min-width: 140px;
+    border: 2px solid #CBD0DD;
+    color: #5E6470;
+    border-radius: 8px;
+    height: 56px;
+}
+
+.highlighted_record {
+    background-color: #ffff99; /* cor de destaque amarela */
+    font-weight: bold;
+}

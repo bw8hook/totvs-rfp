@@ -52,7 +52,40 @@
                 
                 @endif
 
+                <div class="bloco_info_filter_records">
+                    <div>
+                        <h2>Filtro de Pesquisa</h2>
+                        <h4>Use o campo abaixo para encontrar o que precisa. Digite uma palavra-chave e filtre os resultados rapidamente!</b></h4>
+                    </div>
+                        
+                    <form id="filterForm">
+                        @csrf    
+                        <div class="inputField">
+                            <label>Palavra Chave:</label>
+                            <input type="text" id="keyWord" name="keyWord">
+                        </div>
+                        
+                        <div class="inputField">
+                            <label>Selecione o Status:</label>
+                            <select name="product">
+                                <option value="null" selected>Selecione</opt>
+                                    
+                            </select>
+                        </div>
+
+                        
+                        <button type="submit">FILTRAR</button>
+                        <button id="btnLimpar" style=" border: 2px solid #CBD0DD; background: #FFF; color: #5E6470;" type="button">LIMPAR</button>
+                    </form> 
+
+                </div>
+
+
                 <div id="BlocoLista" class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+
+               
+
+
 
                     @if(!empty($ListFiles))
                         <table id="TableExcel" class="tabela">
@@ -149,20 +182,17 @@
                             btnEdit = ``;
 
                         } else if (record.status === 'processado') {
-                            btnEdit = `<a style="margin: 0px; float:left;">
+                            btnEdit = `<a href="knowledge/records/${record.id}" style="margin: 0px; float:left;">
                                             <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
                                                 <img src="{{ asset('icons/eye.svg') }}" alt="Edit Icon">
                                             </button>
                                         </a>
 
-                                        <a style="margin: 0px; float:left;">
+                                        <a href="knowledge/download/${record.id}"  style="margin: 0px; float:left;">
                                             <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
                                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="#8A94AD" xmlns="http://www.w3.org/2000/svg">
-                                                <g clip-path="url(#clip0_485_4256)">
-                                                <path d="M10.7812 17.0091V7.03125H9.21872V17.0091L7.97985 15.7702C7.67476 15.4651 7.1801 15.4651 6.87499 15.7701C6.56987 16.0752 6.56986 16.5699 6.87497 16.875L9.99997 20L13.125 16.875C13.4301 16.5699 13.4301 16.0752 13.125 15.7701C12.8198 15.4651 12.3252 15.4651 12.0201 15.7702L10.7812 17.0091Z" fill="#8A94AD"/>
-                                                <path d="M16.8598 4.90602C16.2368 2.07324 13.7393 0 10.7812 0C8.49715 0 6.43188 1.24695 5.33586 3.21422C3.69297 3.53738 2.41145 4.88215 2.21379 6.57777C0.816094 7.1893 0 8.59406 0 10.1562C0 12.3129 1.59051 14.0625 3.75 14.0625H6.875C7.30647 14.0625 7.65625 13.7127 7.65625 13.2812C7.65625 12.8498 7.30647 12.5 6.875 12.5H3.75C2.50293 12.5 1.5625 11.4924 1.5625 10.1562C1.5625 9.03242 2.19453 8.145 3.17266 7.89543L3.78137 7.74012C3.75828 7.1357 3.76566 7.10984 3.75023 6.99691C3.76734 5.78777 4.6891 4.80762 5.90773 4.71008L6.35922 4.67395L6.55219 4.26418C7.32516 2.62297 8.9852 1.5625 10.7812 1.5625C13.1118 1.5625 15.0991 3.31621 15.4039 5.64176L15.4777 6.20566L16.037 6.30863C17.4729 6.57289 18.4375 7.8052 18.4375 9.375C18.4375 11.1565 17.1612 12.5 15.4688 12.5H13.125C12.6935 12.5 12.3438 12.8498 12.3438 13.2812C12.3438 13.7127 12.6935 14.0625 13.125 14.0625H15.4688C18.0096 14.0625 20 12.0035 20 9.375C20 7.26086 18.734 5.49688 16.8598 4.90602Z" fill="#8A94AD"/>
-                                                </g>
-                                               
+                                                    <path d="M10.7812 17.0091V7.03125H9.21872V17.0091L7.97985 15.7702C7.67476 15.4651 7.1801 15.4651 6.87499 15.7701C6.56987 16.0752 6.56986 16.5699 6.87497 16.875L9.99997 20L13.125 16.875C13.4301 16.5699 13.4301 16.0752 13.125 15.7701C12.8198 15.4651 12.3252 15.4651 12.0201 15.7702L10.7812 17.0091Z" fill="#8A94AD"/>
+                                                    <path d="M16.8598 4.90602C16.2368 2.07324 13.7393 0 10.7812 0C8.49715 0 6.43188 1.24695 5.33586 3.21422C3.69297 3.53738 2.41145 4.88215 2.21379 6.57777C0.816094 7.1893 0 8.59406 0 10.1562C0 12.3129 1.59051 14.0625 3.75 14.0625H6.875C7.30647 14.0625 7.65625 13.7127 7.65625 13.2812C7.65625 12.8498 7.30647 12.5 6.875 12.5H3.75C2.50293 12.5 1.5625 11.4924 1.5625 10.1562C1.5625 9.03242 2.19453 8.145 3.17266 7.89543L3.78137 7.74012C3.75828 7.1357 3.76566 7.10984 3.75023 6.99691C3.76734 5.78777 4.6891 4.80762 5.90773 4.71008L6.35922 4.67395L6.55219 4.26418C7.32516 2.62297 8.9852 1.5625 10.7812 1.5625C13.1118 1.5625 15.0991 3.31621 15.4039 5.64176L15.4777 6.20566L16.037 6.30863C17.4729 6.57289 18.4375 7.8052 18.4375 9.375C18.4375 11.1565 17.1612 12.5 15.4688 12.5H13.125C12.6935 12.5 12.3438 12.8498 12.3438 13.2812C12.3438 13.7127 12.6935 14.0625 13.125 14.0625H15.4688C18.0096 14.0625 20 12.0035 20 9.375C20 7.26086 18.734 5.49688 16.8598 4.90602Z" fill="#8A94AD"/>
                                                 </svg>
                                             </button>
                                         </a>`;

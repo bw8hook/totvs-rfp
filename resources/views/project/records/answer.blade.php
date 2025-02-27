@@ -73,13 +73,39 @@
 
                         <div class="inputField" style="width: 300px;">
                             <label>Processo:</label>
-                            <select name="modulo">
+                            <select name="process">
                                 <option value="null" selected>Selecione</option>
                                 @foreach($ListClassificacao as $Classificacao)
                                     <option value="{{$Classificacao}}">{{$Classificacao}}</option>
                                 @endforeach
                             </select>
                         </div>
+
+
+                        <div class="inputField" style="width: 300px;">
+                            <label>Resposta:</label>
+                            <select name="answer">
+                                <option value="null" selected>Selecione</option>
+                                @foreach($ListRespostaRecebidas as $ListRespostaRecebida)
+                                    <option value="{{$ListRespostaRecebida}}">{{$ListRespostaRecebida}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+
+                        <div class="inputField" style="width: 300px;">
+                            <label>Acuracidade:</label>
+                            <div class="btn" id="acertividade-btn" data-bs-toggle="popover" data-trigger="focus" data-bs-placement="bottom" data-bs-html="true">
+                                <span id="min-value">0%</span> - <span id="max-value">100%</span>
+                            </div>
+                            <input type="hidden" name="min_percent" id="min_percent" value="0">
+                            <input type="hidden" name="max_percent" id="max_percent" value="100">
+                        </div>
+
+
+
+
+
                         
                         <button type="submit">FILTRAR</button>
                         <button id="btnLimpar" style=" border: 2px solid #CBD0DD; background: #FFF; color: #5E6470;" type="button">LIMPAR</button>
@@ -191,10 +217,12 @@
                     </div>
                 </div>
 
-
-
                 <div id="ModalReferencia">
                     <div class="content">
+                        <div class="loading" style="background: #ffffffcf; position: absolute; width: 100%; height: 100%; top: 0px; left: 0px;">
+                            <div id="lottie-container2" style="width: 100px; height:100px; position: absolute; top: 50%; left: 50%; transform: translate(-50px, -50px);"></div>
+                        </div>
+
                         <div class="Title">
                             <svg width="23" height="23" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12.6931 7.46553H15.3069V10.0793H12.6931V7.46553ZM14 20.5345C14.7188 20.5345 15.3069 19.9464 15.3069 19.2276V14C15.3069 13.2812 14.7188 12.6931 14 12.6931C13.2812 12.6931 12.6931 13.2812 12.6931 14V19.2276C12.6931 19.9464 13.2812 20.5345 14 20.5345ZM14 0.93103C6.78594 0.93103 0.93103 6.78594 0.93103 14C0.93103 21.2141 6.78594 27.069 14 27.069C21.2141 27.069 27.069 21.2141 27.069 14C27.069 6.78594 21.2141 0.93103 14 0.93103ZM14 24.4552C8.2366 24.4552 3.54483 19.7635 3.54483 14C3.54483 8.2366 8.2366 3.54483 14 3.54483C19.7635 3.54483 24.4552 8.2366 24.4552 14C24.4552 19.7635 19.7635 24.4552 14 24.4552Z" fill="#0097EB"/>
@@ -202,15 +230,25 @@
                             <h2>Referências selecionadas pela IA para respostas do requisito:</h2>
                         </div>
                         <div class="ListaReferencia">
-                            <div class="loading" style="background: #ffffffcf; position: relative; width: 100%; height: 100%; top: 0px; left: 0px;">
-                                <div id="lottie-container" style="width: 100px; height:100px; position: absolute; top: 50%; left: 50%; transform: translate(-75px, -35px);"></div>
-                            </div>
                             <div class="listAll">
 
                             </div>
                         </div>
                     </div>
                 </div>
+
+
+
+                <!-- Template para o conteúdo do Popover -->
+                <div id="popover-content" style="display: none;">
+                    <div id="slider" class="mb-3"></div>
+                    <div class="d-flex justify-content-between">
+                        <span id="slider-value-min" class="badge bg-secondary"></span>
+                        <span id="slider-value-max" class="badge bg-secondary"></span>
+                    </div>
+                </div>
+
+
 
 
             </div>
@@ -286,7 +324,6 @@
                     response.data.forEach(record => {
 
                         console.log(record);
-
 
                         // Verifica se record.resposta está presente em ListRespostas
                         let existsInList = ListAnswers.some(resposta => resposta.anwser === record.answers.aderencia_na_mesma_linha);
@@ -592,31 +629,30 @@
         $(document).on('click', '#ModalEdit', function (event) { if (event.target === this) { $(this).hide(); }});
         $(document).on('click', '.btnCancelDelete', function (event) {$('#ModalEdit').hide(); });
 
-
-
         $(document).on('click', '.btnInfoRecord', function () {
             const IdRecord = $(this).parent().parent().data('id');
             $('.ListaReferencia .listAll').html('');
-            $('.ListaReferencia .loading').fadeIn();
+            $('#ModalReferencia .loading').fadeIn();
             if (IdRecord) {
                 let url = `{{ route('project.records.references', ':id') }}`.replace(':id', IdRecord);
                 $.ajax({
                     url: url,
                     method: 'GET',
                     success: function (response) {
-
                         console.log(response);
 
-                        $('.ListaReferencia .loading').fadeOut();
+                        $('#ModalReferencia .loading').fadeOut();
 
                         // Atualizar tabela
                         let rows = '';
                         response.ReferenciasBanco.forEach(record => {
+                            let urlKnowledge = `{{ route('knowledge.records', ['id' => ':id', 'record_id' => ':record_id']) }}`.replace(':id', record.knowledge_base_id).replace(':record_id', record.id_record);
+
 
                             console.log(record);
                             rows += `
                                     <div class="Referencia">
-                                        <h2>ID REQUISITO: <span class="idrequisito">${record.id_record}</span></h2>
+                                        <h2>ID REQUISITO: <a href="${urlKnowledge}" target="_blank" class="idrequisito">${record.id_record}</a></h2>
                                         <div class="list">
                                             <div class="processoList">
                                                 <div class="labelProcesso">Processo</div>
@@ -624,7 +660,7 @@
                                             </div>
                                             <div class="processoList">
                                                 <div class="labelProcesso">Subprocesso</div>
-                                                <div class="textoProcesso">${record.subprocesso} </div>
+                                                 <div class="textoProcesso">${record.subprocesso ? record.subprocesso : '-'}</div>
                                             </div>
                                             <div class="processoList">
                                                 <div class="labelProcesso">Descrição do Requisito</div>
@@ -636,11 +672,11 @@
                                             </div>
                                             <div class="processoList">
                                                 <div class="labelProcesso">Módulo</div>
-                                                <div class="textoProcesso">${record.modulo}</div>
+                                                <div class="textoProcesso">${record.modulo ? record.modulo : '-'}</div>
                                             </div>
                                             <div class="processoList">
                                                 <div class="labelProcesso">Observações</div>
-                                                <div class="textoProcesso">${record.observacao}</div>
+                                                <div class="textoProcesso">${record.observacao ? record.observacao : '-'}</div>
                                             </div>
                                             <div class="processoList">
                                                 <div class="labelProcesso">Produto</div>
@@ -668,10 +704,7 @@
 
         $(document).on('click', '#ModalReferencia', function (event) { if (event.target === this) { $(this).hide(); }});
         $(document).on('click', '.btnCancelReferencia', function (event) {$('#ModalReferencia').hide(); });
-        
-
-
-
+    
         
         $(document).on('click', '.BtnConfirmEdit', function () {
             $.ajax({
@@ -798,14 +831,110 @@
             enableTime: false,    // Desativa a seleção de horário
             locale: "pt"         // Define para português
         });
+
     });
 
 
     document.getElementById('btnLimpar').addEventListener('click', function () {
         document.getElementById('filterForm').reset();
     });
-
-
-
 </script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    var minValue = document.getElementById('min-value');
+    var maxValue = document.getElementById('max-value');
+    var minPercentInput = document.getElementById('min_percent');
+    var maxPercentInput = document.getElementById('max_percent');
+    var acertividadeBtn = document.getElementById('acertividade-btn');
+
+    var popover = new bootstrap.Popover(acertividadeBtn, {
+        container: 'body',
+        content: document.getElementById('popover-content').innerHTML,
+        html: true,
+        sanitize: false,
+        trigger: 'manual' // Mudamos para 'manual' para controlar a exibição/ocultação
+    });
+
+    // Função para mostrar o popover
+    function showPopover() {
+        popover.show();
+        setTimeout(() => {
+            initializeSlider();
+            document.addEventListener('click', closePopoverOutside);
+        }, 0);
+    }
+
+    // Função para fechar o popover
+    function closePopover() {
+        popover.hide();
+        document.removeEventListener('click', closePopoverOutside);
+    }
+
+    // Função para fechar o popover quando clicar fora
+    function closePopoverOutside(event) {
+        var popoverElement = document.querySelector('.popover');
+        if (popoverElement && !popoverElement.contains(event.target) && event.target !== acertividadeBtn) {
+            closePopover();
+        }
+    }
+
+    // Mostrar popover ao clicar no botão
+    acertividadeBtn.addEventListener('click', function(event) {
+        event.stopPropagation();
+        if (document.querySelector('.popover')) {
+            closePopover();
+        } else {
+            showPopover();
+        }
+    });
+
+    function initializeSlider() {
+        var popoverBody = document.querySelector('.popover-body');
+        var slider = popoverBody.querySelector('#slider');
+        
+        if (slider.noUiSlider) {
+            slider.noUiSlider.destroy();
+        }
+
+        noUiSlider.create(slider, {
+            start: [Number(minPercentInput.value), Number(maxPercentInput.value)],
+            connect: true,
+            step: 1,
+            range: {
+                'min': 0,
+                'max': 100
+            },
+            format: {
+                to: function (value) {
+                    return Math.round(value) + '%';
+                },
+                from: function (value) {
+                    return Number(value.replace('%', ''));
+                }
+            }
+        });
+
+        var sliderValueMin = popoverBody.querySelector('#slider-value-min');
+        var sliderValueMax = popoverBody.querySelector('#slider-value-max');
+
+        slider.noUiSlider.on('update', function(values, handle) {
+            var value = values[handle];
+            if (handle) {
+                sliderValueMax.innerHTML = value;
+                maxPercentInput.value = value.replace('%', '');
+                maxValue.innerHTML = value;
+            } else {
+                sliderValueMin.innerHTML = value;
+                minPercentInput.value = value.replace('%', '');
+                minValue.innerHTML = value;
+            }
+        });
+    }
+
+});
+</script>
+
 

@@ -7,22 +7,14 @@ use App\Models\KnowledgeRecord;
 use App\Models\KnowledgeError;
 use App\Models\KnowledgeBaseExported;
 use App\Models\RfpBundle;
-use App\Models\RfpAnswer;
-use App\Models\UsersDepartaments;
 use App\Imports\KnowledgeBaseImport;
-use App\Imports\KnowledgeBaseInfoImport;
-use App\Exports\KnowledgeBaseExport;
-
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpKernel\Bundle\Bundle;
-use App\Exceptions\RDStationMentoria\RDStationMentoria;
-use Illuminate\Support\Str;
 use DateTime;
-
+use ZipArchive;
 
 
 class KnowledgeController extends Controller
@@ -272,6 +264,71 @@ class KnowledgeController extends Controller
         }
   }
 
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function download(string $id)
+    {
+        // Encontrar o usuário pelo ID
+        $Arquivo = KnowledgeBase::where('id', $id)->first();
+        if ($Arquivo['user_id'] == Auth::id() || Auth::user()->role->role_priority >= 90){
+            $ArquivosExportados = KnowledgeBaseExported::where('default_base_id', $id)->get();
+
+            // Lista de arquivos no S3 que você quer baixar
+            $s3Files = [];
+            foreach ($ArquivosExportados as $key => $ArquivoExportado) {
+               $s3Files[] = $ArquivoExportado->filepath;
+            }
+
+            // Crie um diretório temporário
+            $tempDir = storage_path('app/temp_' . uniqid());
+            if (!file_exists($tempDir)) {
+                mkdir($tempDir);
+            }
+
+            // Baixe os arquivos do S3 para o diretório temporário
+            foreach ($s3Files as $file) {
+                $contents = Storage::disk('s3')->get($file);
+                $localFilePath = $tempDir . '/' . basename($file);
+                file_put_contents($localFilePath, $contents);
+            }
+
+            // Crie um arquivo ZIP
+            $fileName = preg_replace('/[^\w\-_\.]/', '', $Arquivo['name']); // Substitui caracteres não permitidos por "_"
+            $fileName = trim($fileName, '_');
+
+            $zipFileName = 'arquivos_'.$fileName.'_'. date('Y-m-d_H-i-s') . '.zip';
+            $zipFilePath = storage_path('app/' . $zipFileName);
+
+            $zip = new ZipArchive();
+            if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+                $files = new \RecursiveIteratorIterator(
+                    new \RecursiveDirectoryIterator($tempDir),
+                    \RecursiveIteratorIterator::LEAVES_ONLY
+                );
+
+                foreach ($files as $name => $file) {
+                    if (!$file->isDir()) {
+                        $filePath = $file->getRealPath();
+                        $relativePath = substr($filePath, strlen($tempDir) + 1);
+                        $zip->addFile($filePath, $relativePath);
+                    }
+                }
+                $zip->close();
+            }
+
+            // Limpe os arquivos temporários
+            $this->deleteDirectory($tempDir);
+
+            // Ofereça o arquivo ZIP para download
+            return response()->download($zipFilePath)->deleteFileAfterSend(true);
+        } else {
+            return response()->json(['status' => 'error', 'message' => 'Usuário sem permissão para excluir']);
+        }
+    }
+
+
+
     
     /**
      * Remove the specified resource from storage.
@@ -320,11 +377,27 @@ class KnowledgeController extends Controller
         return false;
     }
 
+    private function deleteDirectory($dir) {
+        if (!file_exists($dir)) {
+            return true;
+        }
 
-    public function cron(Request $request) {
-        
+        if (!is_dir($dir)) {
+            return unlink($dir);
+        }
+
+        foreach (scandir($dir) as $item) {
+            if ($item == '.' || $item == '..') {
+                continue;
+            }
+
+            if (!$this->deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) {
+                return false;
+            }
+        }
+
+        return rmdir($dir);
     }
-
 
 
 }
