@@ -168,7 +168,131 @@ class ProjectRecordsController extends Controller
 
 
 
+     /**
+    * Valida as Informações Gerais de um REGISTRO ESPECIFICO
+    */
+    public function answerErrors(string $id)
+    {
+        $ProjectFile = ProjectFiles::with('rfp_bundles')->findOrFail($id);
+        if($ProjectFile->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
+            if($ProjectFile->status != "processando"){
+                $Project = Project::with('user')->findOrFail($ProjectFile->project_id);
+       
+                $ListClassificacaoRecebidas = ProjectRecord::where('project_file_id', $ProjectFile->id)->groupBy('processo')->pluck('processo');
+                
 
+                $ListRespostaRecebidas = ProjectAnswer::whereHas('requisito', function($query) use ($id) {
+                    $query->where('project_file_id', $id);
+                })
+                ->groupBy('aderencia_na_mesma_linha')
+                ->pluck('aderencia_na_mesma_linha');
+        
+                $UsersDepartaments = UsersDepartaments::where('departament_type', '!=', 'Admin')->orderBy('departament', 'asc')->get();
+
+
+                $AllAnswers = RfpAnswer::orderBy('order', 'asc')->get();
+                $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
+                $AllModules = Module::orderBy('module_name', 'asc')->get();
+
+                $ListProdutos = DB::table('project_records')
+                ->leftJoin('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
+                ->where('project_records.project_file_id', $ProjectFile->id)
+                ->groupBy('project_records.bundle_id')
+                ->select('project_records.bundle_id', 'rfp_bundles.bundle')
+                ->groupBy('rfp_bundles.bundle')
+                ->get();
+
+                $Records = ProjectRecord::where('project_file_id', $ProjectFile->id)->get();
+
+                $CountRecords = 0;
+
+                foreach ($Records as $key => $Record) {
+                    $CountRecords++;
+                }
+
+                $countIA = ProjectRecord::where('project_file_id', $ProjectFile->id)
+                    ->where('status', 'respondido ia')
+                    ->whereHas('answers', function ($query) {
+                        $query->whereNotNull('id')
+                            ->where('aderencia_na_mesma_linha', '!=', 'Desconhecido');
+                    })
+                    ->count();
+
+                $countUser = ProjectRecord::where('project_file_id', $ProjectFile->id)
+                ->where('status', 'user edit') 
+                ->whereHas('answers', function ($query) {
+                    $query->whereNotNull('id'); // Garante que answer_id está preenchido
+                })
+                ->whereHas('answers', function ($query) {
+                    $query->where('aderencia_na_mesma_linha', '!=', 'Desconhecido');
+                })
+                ->count();
+
+                
+                $registrosSemResposta = $CountRecords - ($countIA + $countUser);
+                $porcentagemSemResposta = ($registrosSemResposta / $CountRecords) * 100;
+
+                $data = array(
+                    'idProjectFile' => $id,
+                    'Project' => $Project,
+                    'ProjectFile' => $ProjectFile,
+                    'UsersDepartaments' => $UsersDepartaments,
+                    'ListClassificacao' => $ListClassificacaoRecebidas,
+                    'ListRespostaRecebidas' => $ListRespostaRecebidas,
+                    'ListProdutos' => $ListProdutos,
+                    'AllBundles' => $AllBundles,
+                    'AllModules' => $AllModules,
+                    'AllAnswers' => $AllAnswers,
+                    'CountRequisitos' => $CountRecords,
+                    'CountAnswerIA' => $countIA,
+                    'CountAnswerUser' => $countUser,
+                    'progress' => $porcentagemSemResposta,
+                    'registrosSemResposta' => $registrosSemResposta,
+                    'CountCountRecordsResultado' => $CountRecords,
+                );
+                
+                if($ProjectFile->status != "processando"){
+                    return view('project.records.erro_answer')->with($data);
+                }else{
+                    return view('project.records.erro_answer')->with($data);
+                }
+            }else{
+                // Caso a base esteja sendo processada não deixa fazer nada.
+                session(['error' => 'Esta Base de Conhecimento está em processamentoe não pode ser editada.']);
+                return redirect()->route('project.answer')->with('error', session('error'));
+            }
+        }
+    }
+
+
+    public function filterAnswerError(Request $request, string $id)
+    { 
+        $Project = ProjectFiles::findOrFail($id);
+        if($Project->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
+            //$query = ProjectAnswer::query()->with('rfp_bundles');
+
+            $query = ProjectRecord::query()
+            ->with(['rfp_bundles', 'answers'])
+            ->where('project_file_id', '=', $Project->id)
+            ->whereHas('answers', function($q) {
+                $q->where('aderencia_na_mesma_linha', '=', 'Desconhecido');
+            });
+
+                            
+            // Paginação
+            $records = $query->paginate(40);
+
+
+
+            // Retornar dados em JSON
+            return response()->json([
+                'data' => $records->items(),
+                'next_page_url' => $records->nextPageUrl(),
+            ]);
+
+            //return response()->json($records);
+        }
+    }
 
 
 
@@ -290,6 +414,38 @@ class ProjectRecordsController extends Controller
         }
     }
 
+
+
+    /**
+     * Página de Processamento da BASE
+     */
+    public function processingAnswer(Request $request, string $id)
+    {
+        $Project = ProjectFiles::findOrFail($id);
+        if($Project->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
+            
+            if($Project->status == "processado"){
+                $Project->status = "concluído";
+                $Project->save();
+
+                return view('project.records.processingAnswer');
+            }else{
+                if($Project->status == "em processamento"){
+                    session(['error' => 'Este Projeto já está em processamento.']);
+                }else if($Project->status == "processada" || $Project->status == "concluída"){
+                    session(['error' => 'Este Projeto já está processada e Concluída.']);
+                }
+                
+                // Redireciona para outra página, ou de volta com a mensagem
+                return redirect()->route('project.list')->with('error', session('error'));
+            }
+        }
+    }
+
+
+
+
+    
 
      /**
      * Remove the specified resource from storage.
@@ -487,7 +643,7 @@ class ProjectRecordsController extends Controller
                 );
                 
                 if($ProjectFile->status != "processando"){
-                    return view('project.records.answer')->with($data);
+                    return view('project.records.answerView')->with($data);
                 }else{
                     return view('project.records.answer')->with($data);
                 }
@@ -586,10 +742,12 @@ class ProjectRecordsController extends Controller
                     }
                 }
             }
+
+         
             
             $KnowledgeAll = KnowledgeRecord::with('rfp_bundles')->where('id_record', '=', $dados['ID Registro'])->get();
             $KnowledgeRecords = [];
-            
+                        
             foreach ($KnowledgeAll as $key => $Knowledge) {
                $KnowledgeRecords[] = $Knowledge->toArray();               
             }

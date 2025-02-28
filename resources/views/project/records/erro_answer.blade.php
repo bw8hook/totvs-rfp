@@ -313,7 +313,7 @@
         $(".side_menu_big").addClass("menu_hidden").removeClass("menu_visible");
         $(".side_menu_small").addClass("menu_visible").removeClass("menu_hidden");
 
-        function fetchUsers(url = "{{ route('project.recordsFilterAnswer', $idProjectFile) }}", append = false) {
+        function fetchUsers(url = "{{ route('project.answer.filter.errors', $idProjectFile) }}", append = false) {
             $.ajax({
                 url: url,
                 method: 'GET',
@@ -324,6 +324,7 @@
                     response.data.forEach(record => {
 
                         console.log(record);
+                        console.log(resposta);
 
                         // Verifica se record.resposta está presente em ListRespostas
                         let existsInList = ListAnswers.some(resposta => resposta.anwser === record.answers.aderencia_na_mesma_linha);
@@ -720,7 +721,6 @@
             })
         });
 
-
         // BTN Concluir e Enviar
         $(document).on('click', '.btn_finishSend', function () {
             const url = $(this).data('href'); // Obtém o valor do atributo data-href
@@ -746,8 +746,13 @@
                             console.log(response);
                             if (response.data.length === 0 && response.next_page_url === null) {
                                 let urlSuccess = `{{ route('project.answer.processing', ':id') }}`.replace(':id', IdRecord);
-                               // window.location.href = urlSuccess;
+                                window.location.href = urlSuccess;
                             } else {
+                                if (confirm("Você ainda tem alguns itens como Desconhecido, deseja mesmo concluir esse Projeto?")) {
+                                    let urlSuccess = `{{ route('project.answer.processing', ':id') }}`.replace(':id', IdRecord);
+                                    window.location.href = urlSuccess;
+                                }
+
                                 //window.location.href = url;
                             }
                         },
