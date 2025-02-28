@@ -727,9 +727,6 @@
             const IdRecord = $(this).data('id');
             console.log(url);
             if (url) {
-                let escopo = $("#escopo");
-                let time = $("#time");
-                let data = $("#data");
                 let isValid = true;
                 let firstError = null;
                 let alertContainer = $("#alert-container");
@@ -746,9 +743,9 @@
                             console.log(response);
                             if (response.data.length === 0 && response.next_page_url === null) {
                                 let urlSuccess = `{{ route('project.answer.processing', ':id') }}`.replace(':id', IdRecord);
-                               // window.location.href = urlSuccess;
+                               window.location.href = urlSuccess;
                             } else {
-                                //window.location.href = url;
+                                window.location.href = url;
                             }
                         },
                         error: function(error) {
