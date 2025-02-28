@@ -561,17 +561,8 @@ class ProjectController extends Controller
 
                         Lembre-se: Sua prioridade é fornecer informações precisas e úteis, considerando sempre tanto o requisito quanto o processo especificado. Baseie-se estritamente nas informações disponíveis na base de conhecimento fornecida, dando ênfase à relação entre o requisito e o processo mencionado.';
                                                 
-                        //$prompt = $Agent->prompt;
-                        $requisito = $Record->requisito;
-                        $processo = $Processo->process;
-
-                        $prompt2 = 'Você é uma IA avançada representando o time de engenharia da TOTVS. Seu objetivo é responder dúvidas técnicas sobre os sistemas ERP da TOTVS, com base em uma base de conhecimento consolidada e a tabela que pode acessar. Sua prioridade é fornecer respostas claras e precisas, indicando se o sistema atende plenamente, parcialmente ou não possui capacidade para atender a necessidade apresentada. Sempre mantenha um tom profissional e indique limitações ou a necessidade de suporte humano quando aplicável.
-
-O usuário irá perguntar sobre algum produto e se ele atende ou não a um requisito. 
-
-Você deve procurar na tabela algum requisito que atende ao produto, classificação e requisito que o usuário pedir.
-
-Você pode usar a coluna "DESCRIÇÃO DO REQUISITO" que tem requisitos, buscando de forma case-insensitive por algo adequado ao que o usuário pedir.';
+                        $requisito = 'É possível fazer modificação dos rótulos dos campos do sistema através de configuração na própria ferramenta, sem necessidade de codificação?';
+                        $processo = 'Configurações do sistema';
 
                         $body = [
                             'system' => $prompt,

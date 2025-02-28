@@ -26,4 +26,12 @@ class RfpBundle extends Model
     {
         return $this->hasMany(KnowledgeRecord::class, 'bundle_id', 'bundle_id');
     }
+
+
+    public function rfpProcesses()
+    {
+        return $this->belongsToMany(RfpProcess::class, 'rfp_process_bundle', 'rfp_bundle_id', 'rfp_process_id')
+            ->withTimestamps(); // se sua tabela pivot tem timestamps
+    }
+    
 }

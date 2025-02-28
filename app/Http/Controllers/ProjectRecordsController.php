@@ -413,7 +413,16 @@ class ProjectRecordsController extends Controller
                 $Project = Project::with('user')->findOrFail($ProjectFile->project_id);
        
                 $ListClassificacaoRecebidas = ProjectRecord::where('project_file_id', $ProjectFile->id)->groupBy('processo')->pluck('processo');
+                
+
+                $ListRespostaRecebidas = ProjectAnswer::whereHas('requisito', function($query) use ($id) {
+                    $query->where('project_file_id', $id);
+                })
+                ->groupBy('aderencia_na_mesma_linha')
+                ->pluck('aderencia_na_mesma_linha');
+        
                 $UsersDepartaments = UsersDepartaments::where('departament_type', '!=', 'Admin')->orderBy('departament', 'asc')->get();
+
 
                 $AllAnswers = RfpAnswer::orderBy('order', 'asc')->get();
                 $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
@@ -464,6 +473,7 @@ class ProjectRecordsController extends Controller
                     'ProjectFile' => $ProjectFile,
                     'UsersDepartaments' => $UsersDepartaments,
                     'ListClassificacao' => $ListClassificacaoRecebidas,
+                    'ListRespostaRecebidas' => $ListRespostaRecebidas,
                     'ListProdutos' => $ListProdutos,
                     'AllBundles' => $AllBundles,
                     'AllModules' => $AllModules,
@@ -513,22 +523,38 @@ class ProjectRecordsController extends Controller
                 });
             }
             
-            $classificacao1 = $request->classificacao1 === "null" ? null : $request->classificacao1;
-            if (filled($classificacao1)) {
-                $query->where('processo', 'like', '%' . $request->classificacao1 . '%');
+            $processo = $request->processo === "null" ? null : $request->processo;
+            if (filled($processo)) {
+                $query->where('processo', 'like', '%' . $request->processo . '%');
             }
              
-            $resposta = $request->resposta === "null" ? null : $request->resposta;
+            $resposta = $request->answer === "null" ? null : $request->answer;
             if (filled($resposta)) {
-                $query->where('resposta', 'like', '%' . $request->resposta . '%');
+                $query->whereHas('answers', function($q) use ($request) {
+                    $q->where('aderencia_na_mesma_linha', 'like', '%' . $request->answer . '%');
+                });
             }
 
             $product = $request->product === "null" ? null : $request->product;
             if (filled($product)) {
                 $query->where('bundle_old', 'like', '%' . $request->product . '%');
             }
+
+            // Validação e formatação do min_percent
+            if ($request->filled(['min_percent', 'max_percent'])) {
+                $minPercent = $request->min_percent;
+                $maxPercent = $request->max_percent;
+        
+                $query->whereHas('answers', function ($q) use ($minPercent, $maxPercent) {
+                    $q->whereRaw('CAST(REPLACE(acuracidade_porcentagem, "%", "") AS UNSIGNED) >= ?', [$minPercent])
+                      ->whereRaw('CAST(REPLACE(acuracidade_porcentagem, "%", "") AS UNSIGNED) <= ?', [$maxPercent]);
+                });
+            }
+        
+            //$results = $query->with('answers')->get();
+            
             // Paginação
-            $records = $query->paginate(100);
+            $records = $query->with('answers')->paginate(100);
 
             // Retornar dados em JSON
             return response()->json($records);

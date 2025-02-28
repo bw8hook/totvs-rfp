@@ -25,7 +25,7 @@ class KnowledgeRecordsController extends Controller
     /**
     * Valida as Informações Gerais de um REGISTRO ESPECIFICO
     */
-    public function index(string $id)
+    public function index(string $id, string $Record_id = null)
     {
         $KnowledgeBase = KnowledgeBase::findOrFail($id);
         if($KnowledgeBase->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
@@ -67,6 +67,7 @@ class KnowledgeRecordsController extends Controller
                     'AllAnswers' => $AllAnswers,
                     'AllProcess' => $AllProcess,
                     'CountCountRecordsResultado' => $CountRecords,
+                    'Record_id' => $Record_id
                 );
                 
                 if($KnowledgeBase->status == "não enviado"){
@@ -82,13 +83,13 @@ class KnowledgeRecordsController extends Controller
         }
     }
 
-
-
-
     public function filter(Request $request, string $id)
     { 
+        $Record_id = $request->record_id;
+        $perPage = 100; // Seu número de itens por página
         $KnowledgeBase = KnowledgeBase::findOrFail($id);
-        if($KnowledgeBase->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
+
+        if ($KnowledgeBase->user_id == Auth::id() || Auth::user()->role->role_priority >= 90) {   
             $query = KnowledgeRecord::query()->with('rfp_bundles');
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
@@ -98,12 +99,12 @@ class KnowledgeRecordsController extends Controller
             if ($request->has('keyWord') && !empty($request->keyWord)) {
                 $query->where(function ($q) use ($request) {
                     $q->where('requisito', 'like', '%' . $request->keyWord . '%')
-                      ->orWhere('observacao', 'like', '%' . $request->keyWord . '%')
-                      ->orWhere('processo', 'like', '%' . $request->keyWord . '%')
-                      ->orWhere('subprocesso', 'like', '%' . $request->keyWord . '%')
-                      ->orWhere('resposta', 'like', '%' . $request->keyWord . '%')
-                      ->orWhere('modulo', 'like', '%' . $request->keyWord . '%')
-                      ->orWhere('bundle_old', 'like', '%' . $request->keyWord . '%');
+                    ->orWhere('observacao', 'like', '%' . $request->keyWord . '%')
+                    ->orWhere('processo', 'like', '%' . $request->keyWord . '%')
+                    ->orWhere('subprocesso', 'like', '%' . $request->keyWord . '%')
+                    ->orWhere('resposta', 'like', '%' . $request->keyWord . '%')
+                    ->orWhere('modulo', 'like', '%' . $request->keyWord . '%')
+                    ->orWhere('bundle_old', 'like', '%' . $request->keyWord . '%');
                 });
             }
             
@@ -111,7 +112,7 @@ class KnowledgeRecordsController extends Controller
             if (filled($processo)) {
                 $query->where('processo', 'like', '%' . $request->processo . '%');
             }
-             
+            
             $resposta = $request->resposta === "null" ? null : $request->resposta;
             if (filled($resposta)) {
                 $query->where('resposta', 'like', '%' . $request->resposta . '%');
@@ -121,11 +122,39 @@ class KnowledgeRecordsController extends Controller
             if (filled($product)) {
                 $query->where('bundle_old', 'like', '%' . $request->product . '%');
             }
+
+            // Aplicar ordenação (substitua 'id_record' pelo campo que você usa para ordenar)
+            $query->orderBy('id_record', 'asc');
+
+            $page = null;
+            if ($Record_id) {
+                // Clone a query para calcular a posição
+                $positionQuery = clone $query;
+                
+                // Calcular a posição do registro
+                $position = $positionQuery->where('id_record', '<', $Record_id)->count();
+
+                // Calcular a página
+                $page = floor($position / $perPage) + 1;
+
+                // Definir a página na request para a paginação
+                $request->merge(['page' => $page]);
+            }
+
             // Paginação
-            $records = $query->paginate(100);
+            $records = $query->paginate($perPage);
+
+            $data = [
+                'response' => $records,
+            ];
+
+            if ($Record_id) {
+                $data['id'] = $Record_id;
+                $data['page'] = $page;
+            }
 
             // Retornar dados em JSON
-            return response()->json($records);
+            return response()->json($data);
         }
     }
 

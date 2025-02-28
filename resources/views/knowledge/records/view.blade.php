@@ -36,6 +36,9 @@
                         
                     <form id="filterForm">
                         @csrf    
+
+                        <input type="hidden" id="record_id" name="record_id" value="{{$Record_id}}">
+                        
                         <div class="inputField">
                             <label>Palavra Chave:</label>
                             <input type="text" id="keyWord" name="keyWord">
@@ -139,6 +142,7 @@
     const ListProdutos = @json($AllBundles);
     const ListRespostas = @json($AllAnswers);
     const ListProcessos = @json($AllProcess);
+    const Record_id = @json($Record_id);
 </script>
 
 <script>
@@ -151,8 +155,9 @@
                 url: url,
                 method: 'GET',
                 data: $('#filterForm').serialize(),
-                success: function (response) {
+                success: function (data) {
                     // Atualizar tabela
+                    let response = data.response;
                     let rows = '';
                     response.data.forEach(record => {
                         // Verifica se record.bundle_id está presente em ListProdutos
@@ -184,7 +189,7 @@
                         });
 
                         rows += `
-                            <tr class="listaTabela ${record.rfp_bundles ? '' : 'highlighted_error'}" data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
+                             <tr class="listaTabela ${record.rfp_bundles ? '' : 'highlighted_error'} ${record.id_record == Record_id ? 'highlighted_record' : ''}"  data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
                                 <td style="width:3%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
                                 <td style="width:11%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.processo ? record.processo : '-'}</td>
                                 <td style="width:11%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.subprocesso ? record.subprocesso : '-'}</td>
@@ -217,6 +222,9 @@
                         $('#TableExcel .body_table').html(rows);
                     }
 
+                    if(Record_id){
+                        scrollToHighlightedRecord();
+                    }
     
                     // Atualizar links de paginação
                     let pagination = '';
@@ -663,6 +671,19 @@
     });
 
 
+
+    function scrollToHighlightedRecord() {
+        // Espera um curto período para garantir que o DOM foi atualizado
+        setTimeout(() => {
+            const highlightedElement = document.querySelector('.highlighted_record');
+            if (highlightedElement) {
+                highlightedElement.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center'
+                });
+            }
+        }, 100);
+    }
 
 
 

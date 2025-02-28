@@ -8,13 +8,21 @@ import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import { Portuguese } from "flatpickr/dist/l10n/pt.js";
 
-
 import lottie from "lottie-web";
 
 // Inicializa a animação quando o DOM estiver carregado
 document.addEventListener("DOMContentLoaded", function () {
     lottie.loadAnimation({
         container: document.getElementById("lottie-container"),
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+        path: "/icons/lottie/loading.json", // Caminho gerado pelo Storage
+    });
+
+
+    lottie.loadAnimation({
+        container: document.getElementById("lottie-container2"),
         renderer: "svg",
         loop: true,
         autoplay: true,
