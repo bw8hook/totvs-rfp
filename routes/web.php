@@ -80,9 +80,11 @@ Route::middleware('auth')->group(function () {
 
     // REGISTROS DA BASE DE CONHECIMENTO
     Route::get('/project/answers/{id}', [ProjectRecordsController::class,'answer'])->name('project.answer');
+    Route::get('/project/answers-errors/{id}', [ProjectRecordsController::class,'answerErrors'])->name('project.answer.errors');
     Route::get('/project/records/{id}', [ProjectRecordsController::class,'index'])->name('project.records');
     Route::get('/project/records-errors/{id}', [ProjectRecordsController::class,'errors'])->name('project.recordsErrors');
     Route::get('/project/records/processing/{id}', [ProjectRecordsController::class,'processing'])->name('project.records.processing');
+    Route::get('/project/answers/processing/{id}', [ProjectRecordsController::class,'processingAnswer'])->name('project.answer.processing');
         //AJAX
         Route::get('/project/records/filter/{id}', [ProjectRecordsController::class,'filter'])->name('project.recordsFilter');
         Route::get('/project/records/references/{id}', [ProjectRecordsController::class,'references'])->name('project.records.references');
@@ -92,6 +94,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/project/update-record/{id}', [ProjectRecordsController::class,'updateDetails'])->name('project.records.update');
         Route::post('/project/update/history/record/{id}', [ProjectRecordsController::class,'historyUpdate'])->name('project.records.history.update');
         Route::get('/project/records-errors/filter/{id}', [ProjectRecordsController::class,'filterError'])->name('project.recordsFilterErrors');
+        Route::get('/project/answers-errors/filter/{id}', [ProjectRecordsController::class,'filterAnswerError'])->name('project.answer.filter.errors');
 });
 
 
