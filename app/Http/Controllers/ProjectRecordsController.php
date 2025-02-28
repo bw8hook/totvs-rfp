@@ -642,7 +642,7 @@ class ProjectRecordsController extends Controller
                     'CountCountRecordsResultado' => $CountRecords,
                 );
                 
-                if($ProjectFile->status != "processando"){
+                if($ProjectFile->status != "processado"){
                     return view('project.records.answerView')->with($data);
                 }else{
                     return view('project.records.answer')->with($data);
@@ -747,7 +747,7 @@ class ProjectRecordsController extends Controller
             
             $KnowledgeAll = KnowledgeRecord::with('rfp_bundles')->where('id_record', '=', $dados['ID Registro'])->get();
             $KnowledgeRecords = [];
-                        
+
             foreach ($KnowledgeAll as $key => $Knowledge) {
                $KnowledgeRecords[] = $Knowledge->toArray();               
             }
