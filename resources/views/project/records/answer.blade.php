@@ -730,11 +730,8 @@
                 let isValid = true;
                 let firstError = null;
                 let alertContainer = $("#alert-container");
-
                 $(".border-red").removeClass("border-red"); // Remove bordas vermelhas anteriores
-                
                     let urlFiltro = `{{ route('project.answer.filter.errors', ':id') }}`.replace(':id', IdRecord);
-            
                     // Envia ajax para validar se todos os campos estão preenchidos, caso contrario, direciona para a página de "error"
                     $.ajax({
                         url: urlFiltro,

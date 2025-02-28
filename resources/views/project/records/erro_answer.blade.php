@@ -83,17 +83,6 @@
 
 
                         <div class="inputField" style="width: 300px;">
-                            <label>Resposta:</label>
-                            <select name="answer">
-                                <option value="null" selected>Selecione</option>
-                                @foreach($ListRespostaRecebidas as $ListRespostaRecebida)
-                                    <option value="{{$ListRespostaRecebida}}">{{$ListRespostaRecebida}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        
-
-                        <div class="inputField" style="width: 300px;">
                             <label>Acuracidade:</label>
                             <div class="btn" id="acertividade-btn" data-bs-toggle="popover" data-trigger="focus" data-bs-placement="bottom" data-bs-html="true">
                                 <span id="min-value">0%</span> - <span id="max-value">100%</span>
@@ -101,11 +90,6 @@
                             <input type="hidden" name="min_percent" id="min_percent" value="0">
                             <input type="hidden" name="max_percent" id="max_percent" value="100">
                         </div>
-
-
-
-
-
                         
                         <button type="submit">FILTRAR</button>
                         <button id="btnLimpar" style=" border: 2px solid #CBD0DD; background: #FFF; color: #5E6470;" type="button">LIMPAR</button>
