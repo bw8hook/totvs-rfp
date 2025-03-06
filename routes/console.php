@@ -13,7 +13,10 @@ Artisan::command('inspire', function () {
 // Processa os registros enviados, separa em arquivos e sobe no AWS S3
 Schedule::command('knowledgebase:process')->everyMinute();
 
-// Pega os arquivos processados e envia para a BASE de CONHECIMENTO do  MENTORIA
+// Processa os registros enviados corrigidos, separa em arquivos e sobe no AWS S3
+Schedule::command('app:process-and-upload-expedition')->everyMinute();
+
+// Pega os arquivos processados e envia para a BASE de CONHECIMENTO do MENTORIA e do OPEN IA
 Schedule::command('app:upload-knowledge-base')->everyMinute();
 
 // Pega os requisitos recebidos e envia para o MENTORIA para responder
