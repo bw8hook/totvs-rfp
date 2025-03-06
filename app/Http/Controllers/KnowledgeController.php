@@ -1,6 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Exports\KnowledgeCorrectionExport;
+use App\Models\Agent;
+use App\Models\ProjectAnswer;
+use App\Models\ProjectFiles;
+use App\Models\ProjectHistory;
+use App\Models\ProjectRecord;
+use App\Models\RfpProcess;
 use Carbon\Carbon;
 use App\Models\KnowledgeBase;
 use App\Models\KnowledgeRecord;
@@ -8,13 +15,26 @@ use App\Models\KnowledgeError;
 use App\Models\KnowledgeBaseExported;
 use App\Models\RfpBundle;
 use App\Imports\KnowledgeBaseImport;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exceptions\RDStationMentoria\RDStationMentoria;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Psr7\MultipartStream;
 use DateTime;
 use ZipArchive;
+
+
+use GuzzleHttp\Pool;
+use GuzzleHttp\Psr7\Request as GuzzleRequest;
+use GuzzleHttp\Exception\RequestException;
+
+
 
 
 class KnowledgeController extends Controller
@@ -263,6 +283,312 @@ class KnowledgeController extends Controller
             ]);
         }
   }
+
+
+  public function cron(){
+        Log::info('Iniciando o processamento da base de conhecimento');
+        try {
+            $Bundles = RfpBundle::with('agent')->get();
+
+            foreach ($Bundles as $bundle) {
+                $Records = ProjectRecord::whereNotNull('project_records.bundle_id')
+                    ->where('project_records.bundle_id', $bundle->bundle_id)
+                    ->where('project_records.status', 'user edit')
+                    ->whereNull('project_records.retroalimentacao')
+                    ->get();
+
+                if (!$Records->isEmpty()) { 
+                    $filenamePrev = 'retroalimentacao_'.$bundle->bundle_id.'_'.uniqid();
+                    $fileName = preg_replace('/[^\w\-_\.]/', '', $filenamePrev);
+                    $fileName = trim($fileName, '_');
+                    $fileName = Str::slug($fileName).'.csv';
+
+                    $BundleName = preg_replace('/[^\w\-_\.]/', '', $bundle->bundle);
+                    $BundleName = trim($BundleName, '_');
+                    $BundleName = Str::slug($BundleName);
+
+                    $filePath = 'cdn/knowledge/base_exported_corrections/'.$BundleName.'/'.$fileName;
+
+                    // Cria um Registro de Arquivo Exportado
+                    $KnowledgeBaseExported = new KnowledgeBaseExported();
+                    // Por ser um campo obrigatório, deixamos fixo com o ID 1
+                    $KnowledgeBaseExported->user_id = 1;
+                    $KnowledgeBaseExported->bundle_id = 11;
+                    //$KnowledgeBaseExported->default_base_id = $item->id;
+                    $KnowledgeBaseExported->save();
+                    $KnowledgeBaseExportedid = $KnowledgeBaseExported->id;
+                    $KnowledgeBaseExported->filepath = $filePath;
+                    $KnowledgeBaseExported->filename = $fileName;
+
+                    $RecordsData = [];
+                    foreach ($Records as $key => $record) {
+                        $ProjectAnswer = ProjectAnswer::where('requisito_id', $record->id)->first();
+                        $RecordData = [];
+                        $RecordData['id_record'] = $record->id;
+                        $RecordData['processo'] = $record->processo;
+                        $RecordData['subprocesso'] = $record->subprocesso;
+                        $RecordData['requisito'] = $ProjectAnswer->requisito;
+                        //$RecordData['Resposta'] = ;
+                        $RecordData['modulo'] = $ProjectAnswer->modulo;
+                        $RecordData['observações'] = $ProjectAnswer->observacao;
+                        $RecordData['produto'] = $ProjectAnswer->linha_produto;
+                        $RecordsData[] = $RecordData;
+                    }
+
+                    // Envia os arquivos para a S3 e Pega a URL
+                    $export = new KnowledgeCorrectionExport(  1, $RecordsData, $KnowledgeBaseExportedid); 
+                    $Exports = Excel::store($export, $filePath, 's3');
+                    $fileUrl = Storage::disk('s3')->url($filePath);
+        
+                    if (!empty($fileUrl)) {
+                        // Atualiza com a URL
+                        $KnowledgeBaseExported->file_url = $fileUrl;
+                        $KnowledgeBaseExported->save();
+                        //$item->status = 'processado';
+                        //$item->save();
+                    }
+
+
+                } else {
+                    Log::error("Erro ao processar a base de conhecimento");
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error("Erro: " . $e->getMessage());
+        }
+          
+        Log::info('Finalizando o processamento da base de conhecimento'); // Adiciona log aqui
+    }
+
+
+  public function cron3(){
+    $client = new Client();
+    $Bundles = RfpBundle::with('agent')->get();
+    $RDStationMentoria = new RDStationMentoria();
+    $RDStationMentoria->classBases();
+    $UpdateBase = false;
+
+    $tempDir = storage_path('app/temp');
+    if (!file_exists($tempDir)) {
+        mkdir($tempDir, 0755, true);
+    }
+
+    // Pegar todas as respostas concluídas
+    $KnowledgeBase = KnowledgeBase::where('status', "processando")->get();
+    if ($KnowledgeBase->count() > 0) {
+        foreach ($KnowledgeBase as $item) {
+            try {
+                $Bundles = RfpBundle::with('agent')->get();
+
+                foreach ($Bundles as $bundle) {
+                    $Records = KnowledgeRecord::whereNotNull('knowledge_records.bundle_id')
+                        ->where('knowledge_base_id', $item->id)
+                        ->where('knowledge_records.bundle_id', $bundle->bundle_id)
+                        ->where('knowledge_records.status', 'aguardando')
+                        ->join('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id')
+                        ->select('knowledge_records.id_record', 'knowledge_records.processo', 'knowledge_records.subprocesso', 'knowledge_records.requisito', 'knowledge_records.resposta', 'knowledge_records.modulo', 'knowledge_records.observacao', 'rfp_bundles.bundle')
+                        ->get();
+                    
+                    if (!$Records->isEmpty()) {
+                        $filenamePrev = $item->id.'_'.$item->name.'_'.uniqid();
+                        $fileName = preg_replace('/[^\w\-_\.]/', '', $filenamePrev);
+                        $fileName = trim($fileName, '_');
+                        $fileName = Str::slug($fileName).'.csv';
+
+                        $BundleName = preg_replace('/[^\w\-_\.]/', '', $bundle->bundle);
+                        $BundleName = trim($BundleName, '_');
+                        $BundleName = Str::slug($BundleName);
+
+                        $filePath = 'cdn/knowledge/base_exported/'.$BundleName.'/'.$fileName;
+
+                        // Cria um Registro de Arquivo Exportado
+                        $KnowledgeBaseExported = new KnowledgeBaseExported();
+                        $KnowledgeBaseExported->user_id = $item->user_id;
+                        $KnowledgeBaseExported->bundle_id = $bundle->bundle_id;
+                        $KnowledgeBaseExported->default_base_id = $item->id;
+                        $KnowledgeBaseExported->save();
+                        $KnowledgeBaseExportedid = $KnowledgeBaseExported->id;
+                        $KnowledgeBaseExported->filepath = $filePath;
+                        $KnowledgeBaseExported->filename = $fileName;
+
+                        // Envia os arquivos para a S3 e Pega a URL
+                        $export = new KnowledgeBaseExport($item->id, $Records, $KnowledgeBaseExportedid);
+                        Excel::store($export, $filePath, 's3');
+                        $fileUrl = Storage::disk('s3')->url($filePath);
+
+                        if (!empty($fileUrl)) {
+                            // Atualiza com a URL
+                            $KnowledgeBaseExported->file_url = $fileUrl;
+                            $KnowledgeBaseExported->save();
+                            $item->status = 'processado';
+                            $item->save();
+                        }
+                    } else {
+                       Log::error("Erro ao processar a base de conhecimento");
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error("Erro: " . $e->getMessage());
+            }
+        }
+    } else {
+        Log::info('Nenhuma base de conhecimento com status "processando" encontrada');
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    foreach ($Bundles as $bundle) {
+        $gBaseById = $RDStationMentoria->Bases->getBaseById($bundle->agent->knowledge_id);
+        if (!empty($gBaseById['id'])) {
+            
+
+            $KnowledgeBaseExported = KnowledgeBaseExported::where('status', "aguardando")->where('bundle_id', $bundle->bundle_id)->get();
+            if ($KnowledgeBaseExported->count() > 0) {
+                foreach ($KnowledgeBaseExported as $item) {
+                    $UpdateBase = true;
+                    $Arquivo = array();
+                    $Arquivo['url'] = $item->file_url;
+                    $Arquivo['title'] = $item->filename;;
+                    $Arquivo['img'] = null;
+                    $Arquivo['description'] = $item->filename;
+                    $Arquivo['key'] = $item->filename;
+                    $Arquivo['ext'] = "text/csv";
+
+                    $gBaseById['sources'][] = ["type" => "file", "file" => $Arquivo];
+
+                    $fileContent = Storage::disk('s3')->get($item->filepath);
+                    $localFileName = uniqid('file-') . '.csv';
+                    Storage::disk('local')->put('temp/' . $item->filename, $fileContent);
+                    $localFilePath = storage_path('app/temp/' . $item->filename);
+
+                    try {
+                        $url = "https://lab.hook.app.br/v1/datasets/".$bundle->agent->knowledge_id_hook."/document/create-by-file";
+            
+                        // Preparar os dados multipart
+                        $multipart = [
+                            [
+                                'name' => 'data',
+                                'contents' => json_encode([
+                                    "indexing_technique" => "high_quality",
+                                    "process_rule" => [
+                                        "rules" => [
+                                            "pre_processing_rules" => [
+                                                ["id" => "remove_extra_spaces", "enabled" => true],
+                                                ["id" => "remove_urls_emails", "enabled" => true]
+                                            ],
+                                            "segmentation" => [
+                                                "separator" => "###",
+                                                "max_tokens" => 500
+                                            ]
+                                        ],
+                                        "mode" => "custom"
+                                    ]
+                                ]),
+                                'headers' => [
+                                    'Content-Type' => 'text/plain'
+                                ]
+                            ],
+                            [
+                                'name' => 'file',
+                                'contents' => fopen($localFilePath, 'r'),
+                                'filename' => basename($localFilePath),
+                                'headers' => [
+                                    'Content-Type' => mime_content_type($localFilePath)
+                                ]
+                            ]
+                        ];
+
+                        // Criar o stream multipart
+                        $multipartStream = new MultipartStream($multipart);
+
+                        // Fazer a requisição
+                        $response = $client->request('POST', $url, [
+                            'headers' => [
+                                'Authorization' => "Bearer dataset-XSIGaQdZXZdDLux237SDv7s9",
+                                'Content-Type' => 'multipart/form-data; boundary=' . $multipartStream->getBoundary()
+                            ],
+                            'body' => $multipartStream
+                        ]);
+
+                        $statusCode = $response->getStatusCode();
+                        $body = $response->getBody()->getContents();
+                    
+                    } catch (GuzzleException $e) {
+                        echo "Erro: " . $e->getMessage();
+                    }
+
+
+                    $item->status = "exportado";
+                    $item->save();
+                } 
+    
+                
+
+                if($UpdateBase){
+                    $updatedBase = $RDStationMentoria->Bases->updateBase($gBaseById['id'], $gBaseById);
+                    $UpdateBase = false;
+                    
+                }
+            }
+        }
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function fazerRequisicao($url, $metodo = 'GET', $dados = null, $headers = []) {
+    $client = new Client();
+    
+    $options = [
+        'headers' => $headers,
+    ];
+    
+    if ($metodo == 'POST' || $metodo == 'PUT') {
+        $options['json'] = $dados;
+    }
+    
+    try {
+        $response = $client->request($metodo, $url, $options);
+        return [
+            'body' => $response->getBody()->getContents(),
+            'status' => $response->getStatusCode()
+        ];
+    } catch (RequestException $e) {
+        if ($e->hasResponse()) {
+            return [
+                'body' => $e->getResponse()->getBody()->getContents(),
+                'status' => $e->getResponse()->getStatusCode()
+            ];
+        }
+        throw $e;
+    }
+}
+
+
+
 
     /**
      * Remove the specified resource from storage.

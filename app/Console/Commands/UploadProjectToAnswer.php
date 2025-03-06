@@ -64,7 +64,7 @@ class UploadProjectToAnswer extends Command
      *
      * @var string
      */
-    protected $description = 'Envia Projeto para respotas da IA';
+    protected $description = 'Envia Perguntas para RESPOSTA quando a ENGINE for MENTOR IA';
 
     /**
      * Execute the console command.
@@ -74,6 +74,8 @@ class UploadProjectToAnswer extends Command
         try {
             $ProjectFiles = ProjectFiles::where('status', "em processamento")->get();
     
+
+            
             $client = new Client([
                 'base_uri' => $this->baseUrl,
                 'timeout' => 30,
@@ -82,84 +84,52 @@ class UploadProjectToAnswer extends Command
                     'Accept' => 'application/json',
                 ],
             ]);
-
-    
+            
             $requests = function () use ($ProjectFiles, $client) {
                 foreach ($ProjectFiles as $File) {
-                    $Records = ProjectRecord::whereNotNull('project_records.bundle_id')
-                        ->where('project_records.project_file_id', $File->id)
-                        ->where('project_records.status', "processando")
-                        ->join('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
-                        ->get();
-            
-                    foreach ($Records as $Record) {
-                        $Agent = Agent::where('id', $Record->agent_id)->first();
-                        $Processo = RfpProcess::where('id', $Record->processo_id)->first();
-            
-                        $prompt = 'Você é uma IA avançada especializada em sistemas ERP da TOTVS, representando a equipe de engenharia da empresa. Seu objetivo é fornecer respostas técnicas precisas e claras sobre os produtos ERP da TOTVS, baseando-se na base de conhecimento fornecida.
+                    if($File->rfp_bundles->agent->search_engine == "Mentor IA"){
 
-                        Instruções de busca e resposta:
+                        $Records = ProjectRecord::whereNotNull('project_records.bundle_id')
+                            ->where('project_records.project_file_id', $File->id)
+                            ->where('project_records.status', "processando")
+                            ->join('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
+                            ->get();
+                
+                        foreach ($Records as $Record) {
+                            $Agent = Agent::where('id', $Record->agent_id)->first();
+                            $Processo = RfpProcess::where('id', $Record->processo_id)->first();
 
-                        1. Ao receber uma pergunta, identifique o produto, o processo, a classificação e o requisito mencionados pelo usuário.
-                        2. Realize a busca considerando tanto a coluna "DESCRIÇÃO DO REQUISITO" quanto a coluna "PROCESSO". Priorize correspondências que atendam tanto ao requisito quanto ao processo especificado.
-                        3. Use uma busca case-insensitive e considere sinônimos ou termos relacionados tanto para o requisito quanto para o processo.
-                        4. Se encontrar múltiplas correspondências, priorize as mais relevantes com base na similaridade com a pergunta do usuário e na correspondência do processo.
-                        5. Ao analisar a aderência do produto ao requisito, considere as seguintes categorias:
-                            - Atende: O produto atende completamente ao requisito no processo especificado.
-                            - Atende Parcial: O produto atende parte do requisito ou atende em um processo relacionado.
-                            - Customizável: O requisito pode ser atendido através de customizações para o processo específico.
-                            - Não Atende: O produto não atende ao requisito no processo especificado.
-                            - Desconhecido: Não há informações suficientes para determinar a aderência no processo especificado.
-                        6. Forneça uma análise detalhada justificando como o produto atende ou não ao requisito no contexto do processo especificado. Inclua considerações sobre complexidade e frequência de uso, se relevante.
-                        7. Se disponível, inclua informações da coluna OBSERVAÇÕES relacionadas ao requisito e processo encontrados.
-                        8. Quando não encontrar uma correspondência exata para o requisito e processo, forneça a informação mais próxima disponível, indicando claramente que é uma aproximação e explicando as diferenças.
-                        9. Se a pergunta for ambígua ou não houver informações suficientes na base de conhecimento sobre o requisito ou o processo, indique claramente essa limitação.
-                        10. Estime a acuracidade de sua resposta em porcentagem, considerando tanto a correspondência do requisito quanto do processo, e explique brevemente como chegou a essa estimativa.
-                        11. Mantenha sempre um tom profissional e técnico na resposta.
-                        12. Não divulgue informações confidenciais ou detalhes técnicos sensíveis que possam comprometer a segurança dos sistemas.
-                        13. Se necessário, sugira que o usuário entre em contato com o suporte técnico da TOTVS para informações mais detalhadas ou específicas sobre o requisito no contexto do processo mencionado.
-
-                        Lembre-se: Sua prioridade é fornecer informações precisas e úteis, considerando sempre tanto o requisito quanto o processo especificado. Baseie-se estritamente nas informações disponíveis na base de conhecimento fornecida, dando ênfase à relação entre o requisito e o processo mencionado.';
+                            $prompt = $Agent->prompt;
+                            $requisito = $Record->requisito;
+                            $processo = $Processo->process;
                                                 
-                        //$prompt = $Agent->prompt;
-                        $requisito = $Record->requisito;
-                        $processo = $Processo->process;
-
-
-                        $prompt2 = 'Você é uma IA avançada representando o time de engenharia da TOTVS. Seu objetivo é responder dúvidas técnicas sobre os sistemas ERP da TOTVS, com base em uma base de conhecimento consolidada e a tabela que pode acessar. Sua prioridade é fornecer respostas claras e precisas, indicando se o sistema atende plenamente, parcialmente ou não possui capacidade para atender a necessidade apresentada. Sempre mantenha um tom profissional e indique limitações ou a necessidade de suporte humano quando aplicável.
-
-O usuário irá perguntar sobre algum produto e se ele atende ou não a um requisito. 
-
-Você deve procurar na tabela algum requisito que atende ao produto, classificação e requisito que o usuário pedir.
-
-Você pode usar a coluna "DESCRIÇÃO DO REQUISITO" que tem requisitos, buscando de forma case-insensitive por algo adequado ao que o usuário pedir.';
-
-                        $body = [
-                            'system' => $prompt,
-                            'kbs' => [$Agent->knowledge_id],
-                            'messages' => [
-                                [
-                                    'role' => 'user',
-                                    'content' => json_encode([
-                                        'requisito' => $requisito,
-                                        'processo' => $processo
-                                    ])
+                            $body = [
+                                'system' => $prompt,
+                                'kbs' => [$Agent->knowledge_id],
+                                'messages' => [
+                                    [
+                                        'role' => 'user',
+                                        'content' => json_encode([
+                                            'requisito' => $requisito,
+                                            'processo' => $processo
+                                        ])
+                                    ]
+                                ],
+                                'responseFormat' => [
+                                    'type' => 'json_schema',
+                                    'schema' => $this->getSchema()
                                 ]
-                            ],
-                            'responseFormat' => [
-                                'type' => 'json_schema',
-                                'schema' => $this->getSchema()
-                            ]
-                        ];                      
-    
-                        yield function () use ($client, $body, $Record) {
-                            return $client->postAsync('/rest/completions', [
-                                'json' => $body,
-                                'headers' => ['Content-Type' => 'application/json'],
-                            ])->then(function ($response) use ($Record) {
-                                return ['response' => $response, 'record' => $Record];
-                            });
-                        };
+                            ];                      
+        
+                            yield function () use ($client, $body, $Record) {
+                                return $client->postAsync('/rest/completions', [
+                                    'json' => $body,
+                                    'headers' => ['Content-Type' => 'application/json'],
+                                ])->then(function ($response) use ($Record) {
+                                    return ['response' => $response, 'record' => $Record];
+                                });
+                            };
+                        }
                     }
                 }
             };
