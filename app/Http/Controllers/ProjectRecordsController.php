@@ -774,10 +774,12 @@ class ProjectRecordsController extends Controller
             //$query = ProjectRecord::query()->with('rfp_bundles');
             $ProjectAnswer = ProjectAnswer::where('id', '=', $Project->project_answer_id)->first()->toArray();
 
-            $RfpAnswer = RfpAnswer::where('anwser', '=', $ProjectAnswer['aderencia_na_mesma_linha'])->first();
-            //$RfpBundle = RfpBundle::where('bundle', '=', $ProjectAnswer->linha_produto)->first();
-
-            $ProjectAnswer['answer_id'] =  $RfpAnswer->id;
+            if($ProjectAnswer['aderencia_na_mesma_linha'] != 'Desconhecido'){
+                $RfpAnswer = RfpAnswer::where('anwser', '=', $ProjectAnswer['aderencia_na_mesma_linha'])->first();
+                $ProjectAnswer['answer_id'] =  $RfpAnswer->id;            
+            }
+           
+            //$RfpBundle = RfpBundle::where('bundle', '=', $ProjectAnswer->linha_produto)->first();         
             //$ProjectAnswer['bundle_id'] =  $RfpBundle->bundle_id;
             
             $ProjectHistory = ProjectHistory::where('answer_id', '=', $ProjectAnswer['id'])->with('user')->get();
@@ -797,7 +799,7 @@ class ProjectRecordsController extends Controller
 
     public function historyUpdate(Request $request, string $id)
     { 
-            $Project = ProjectRecord::findOrFail($id);
+            $Project = ProjectRecord::find($id);
             $ProjectAnswer = ProjectAnswer::where('id', '=', $Project->project_answer_id)->first();
 
             $Produto = RfpBundle::find($request->produto);

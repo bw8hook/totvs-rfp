@@ -19,6 +19,9 @@ Schedule::command('app:upload-knowledge-base')->everyMinute();
 // Pega os requisitos recebidos e envia para o MENTORIA para responder
 Schedule::command('app:upload-project-to-answer')->everyMinute();
 
+// Pega os requisitos recebidos e envia para o OPEN IA para responder
+Schedule::command('app:upload-project-to-answer-hook')->everyMinute();
+
 // Valida se todos foram respondidos, e atualiza o status do projeto.
 Schedule::command('app:update-processed-project')->everyThreeMinutes();
 

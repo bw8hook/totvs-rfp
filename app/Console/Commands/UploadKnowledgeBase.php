@@ -12,6 +12,10 @@ use App\Models\RfpBundle;
 use App\Exports\KnowledgeBaseExport;
 use App\Exceptions\RDStationMentoria\RDStationMentoria;
 use Illuminate\Support\Str;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Psr7\MultipartStream;
+
 
 
 class UploadKnowledgeBase extends Command
@@ -34,14 +38,23 @@ class UploadKnowledgeBase extends Command
     {
         Log::info('Iniciando o processamento da base de conhecimento'); // Adiciona log aqui
         
+        $client = new Client();
         $Bundles = RfpBundle::with('agent')->get();
         $RDStationMentoria = new RDStationMentoria();
         $RDStationMentoria->classBases();
         $UpdateBase = false;
+
+        $tempDir = storage_path('app/temp');
+        if (!file_exists($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+
+
         foreach ($Bundles as $bundle) {
             $gBaseById = $RDStationMentoria->Bases->getBaseById($bundle->agent->knowledge_id);
-            
             if (!empty($gBaseById['id'])) {
+                
+
                 $KnowledgeBaseExported = KnowledgeBaseExported::where('status', "aguardando")->where('bundle_id', $bundle->bundle_id)->get();
                 if ($KnowledgeBaseExported->count() > 0) {
                     foreach ($KnowledgeBaseExported as $item) {
@@ -56,23 +69,80 @@ class UploadKnowledgeBase extends Command
 
                         $gBaseById['sources'][] = ["type" => "file", "file" => $Arquivo];
 
+                        $fileContent = Storage::disk('s3')->get($item->filepath);
+                        $localFileName = uniqid('file-') . '.csv';
+                        Storage::disk('local')->put('temp/' . $item->filename, $fileContent);
+                        $localFilePath = storage_path('app/temp/' . $item->filename);
+
+                        try {
+                            $url = "https://totvs-ia.hook.app.br/v1/datasets/".$bundle->agent->knowledge_id_hook."/document/create-by-file";
+                
+                            // Preparar os dados multipart
+                            $multipart = [
+                                [
+                                    'name' => 'data',
+                                    'contents' => json_encode([
+                                        "indexing_technique" => "high_quality",
+                                        "process_rule" => [
+                                            "rules" => [
+                                                "pre_processing_rules" => [
+                                                    ["id" => "remove_extra_spaces", "enabled" => true],
+                                                    ["id" => "remove_urls_emails", "enabled" => true]
+                                                ],
+                                                "segmentation" => [
+                                                    "separator" => "###",
+                                                    "max_tokens" => 500
+                                                ]
+                                            ],
+                                            "mode" => "custom"
+                                        ]
+                                    ]),
+                                    'headers' => [
+                                        'Content-Type' => 'text/plain'
+                                    ]
+                                ],
+                                [
+                                    'name' => 'file',
+                                    'contents' => fopen($localFilePath, 'r'),
+                                    'filename' => basename($localFilePath),
+                                    'headers' => [
+                                        'Content-Type' => mime_content_type($localFilePath)
+                                    ]
+                                ]
+                            ];
+
+                            // Criar o stream multipart
+                            $multipartStream = new MultipartStream($multipart);
+
+                            // Fazer a requisição
+                            $response = $client->request('POST', $url, [
+                                'headers' => [
+                                    'Authorization' => "Bearer dataset-XSIGaQdZXZdDLux237SDv7s9",
+                                    'Content-Type' => 'multipart/form-data; boundary=' . $multipartStream->getBoundary()
+                                ],
+                                'body' => $multipartStream
+                            ]);
+
+                            $statusCode = $response->getStatusCode();
+                            $body = $response->getBody()->getContents();
+                        
+                        } catch (GuzzleException $e) {
+                            //echo "Erro: " . $e->getMessage();
+                        }
+
                         $item->status = "exportado";
                         $item->save();
                     } 
-                }
-                if($UpdateBase){
-                    $updatedBase = $RDStationMentoria->Bases->updateBase($gBaseById['id'], $gBaseById);
-                    $UpdateBase = false;
-                    
+        
+                    if($UpdateBase){
+                        $updatedBase = $RDStationMentoria->Bases->updateBase($gBaseById['id'], $gBaseById);
+                        $UpdateBase = false;
+                        
+                    }
                 }
             }
-
         }
-
-       
-
        
         Log::info('Finalizando o processamento da base de conhecimento'); // Adiciona log aqui
     }
-
 }
