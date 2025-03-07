@@ -752,13 +752,11 @@ class ProjectRecordsController extends Controller
             $KnowledgeAll = KnowledgeRecord::with('rfp_bundles')->where('id_record', '=', $dados['ID Registro'])->get();
             $KnowledgeRecords = [];
 
-            if(!empty($KnowledgeAll->resposta)){
+            if(count($KnowledgeAll) >= 1 ){
                 foreach ($KnowledgeAll as $key => $Knowledge) {
-                $KnowledgeRecords[] = $Knowledge->toArray();               
+                    $KnowledgeRecords[] = $Knowledge->toArray();  
                 }
-            }
-
-            if(empty($KnowledgeAll->resposta)){
+            }else{
                 $KnowledgeAll = ProjectRecord::with('rfp_bundles')->where('id', '=', $dados['ID Registro'])->get();
                 foreach ($KnowledgeAll as $key => $Knowledge) {
                     $KnowledgeRecords[] = $Knowledge->toArray();               
