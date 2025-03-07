@@ -729,7 +729,12 @@ class ProjectRecordsController extends Controller
             $ProjectAnswer = ProjectAnswer::where('id', '=', $Project->project_answer_id)->first();
             $Referencia = $ProjectAnswer->referencia;
 
-            $linhas = array_map('trim', explode("\n", $Referencia));
+            //$linhas = array_map('trim', explode("\n", $Referencia));
+
+            $linhas = preg_split('/[\n;]+/', $Referencia, -1, PREG_SPLIT_NO_EMPTY);
+            $linhas = array_map('trim', $linhas);
+
+
             $dados = [];
 
             foreach($linhas as $linha) {
@@ -741,16 +746,26 @@ class ProjectRecordsController extends Controller
                         $dados[$chave] = $valor;
                     }
                 }
-            }
-
-         
+            }         
+            
             
             $KnowledgeAll = KnowledgeRecord::with('rfp_bundles')->where('id_record', '=', $dados['ID Registro'])->get();
             $KnowledgeRecords = [];
 
-            foreach ($KnowledgeAll as $key => $Knowledge) {
-               $KnowledgeRecords[] = $Knowledge->toArray();               
+            if(!empty($KnowledgeAll->resposta)){
+                foreach ($KnowledgeAll as $key => $Knowledge) {
+                $KnowledgeRecords[] = $Knowledge->toArray();               
+                }
             }
+
+            if(empty($KnowledgeAll->resposta)){
+                $KnowledgeAll = ProjectRecord::with('rfp_bundles')->where('id', '=', $dados['ID Registro'])->get();
+                foreach ($KnowledgeAll as $key => $Knowledge) {
+                    $KnowledgeRecords[] = $Knowledge->toArray();               
+                }
+            }
+
+
 
 
             $data = array(
