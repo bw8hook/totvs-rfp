@@ -77,7 +77,7 @@ class ProcessAndUploadExpedition extends Command
                         $RecordData['processo'] = $record->processo;
                         $RecordData['subprocesso'] = $record->subprocesso;
                         $RecordData['requisito'] = $ProjectAnswer->requisito;
-                        //$RecordData['Resposta'] = ;
+                        $RecordData['resposta'] = $ProjectAnswer->aderencia_na_mesma_linha;
                         $RecordData['modulo'] = $ProjectAnswer->modulo;
                         $RecordData['observações'] = $ProjectAnswer->observacao;
                         $RecordData['produto'] = $ProjectAnswer->linha_produto;
