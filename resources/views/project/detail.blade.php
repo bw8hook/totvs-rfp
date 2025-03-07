@@ -262,7 +262,10 @@
                                             <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
                                                 <img src="{{ asset('icons/eye.svg') }}" alt="Edit Icon">
                                             </button>
-                                        </a>`;
+                                        </a>
+
+                                        <div style="margin-top: 5px; float:left; width: 50px;"></div>
+                                        `;
                         } else if (record.status === 'concluído') {
                             btnEdit = `<a href="${projectAnswer}" style="margin-top: 5px; float:left;">
                                             <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
@@ -284,7 +287,6 @@
 
                             status = '<div style="background: #25B102; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #FFF; width: auto; padding: 5px 20px; position: relative; display: inline-block;">'+record.status+'</div>';
                         }
-
 
 
                         // DADOS DE CADA LINHA
