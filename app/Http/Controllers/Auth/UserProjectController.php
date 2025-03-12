@@ -9,42 +9,64 @@ use App\Models\UserRole;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+
+use App\Mail\NewUserEmail;
+use Illuminate\Support\Facades\Mail;
+
+
 
 
 class UserProjectController extends Controller
 {
-
     public function filter(Request $request)
     {
-        $query = User::query()->with('departament')->with(relations: 'role');
+        // Iniciar a query
+         $query = User::query()->with(['departament']);
 
         // Aplicar filtros
-        if ($request->has('filter')) {
-            foreach ($request->filter as $field => $value) {
-                if (!empty($value)) {
-                    $query->where($field, 'like', '%' . $value . '%');
-                }
-            }
+        if ($request->has('nome') && !empty($request->nome)) {
+            $query->where('name', 'like', '%' . $request->nome . '%');
         }
 
-        // Aplicar ordenação
-        if ($request->has('sort_by') && $request->has('sort_order')) {
-            $sortBy = $request->sort_by;
-            $sortOrder = $request->sort_order;
-
-            if (in_array($sortBy, ['name', 'id', 'gestor','email', 'account_type', 'status', 'created_at']) && in_array($sortOrder, ['asc', 'desc'])) {
-                $query->orderBy($sortBy, $sortOrder);
-            }
+        if ($request->has('id_totvs') && !empty($request->id_totvs)) {
+            $query->where('idtotvs', 'like', '%' . $request->id_totvs . '%');
         }
 
-        // Paginação
-        $users = $query->paginate(40);
+        if ($request->has('position') && !empty($request->position)) {
+            $query->where('position', 'like', '%' . $request->position . '%');
+        }
+
+        if ($request->has('departament') && $request->departament != "null") {
+            $query->where('departament_id', 'like', '%' . $request->departament . '%');
+        }
+
+        $query->where('status', 'like', '%' . $request->user_active . '%');
         
+        if ($request->has('role') && $request->role != "null") {
+
+            $query->whereHas('roles', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->role . '%');
+            });
+        }
+
+
+        // Paginação e execução da query
+        $users = $query->paginate(40);
+
+        // Adicionar role_names após a paginação
+        $users->through(function ($user) {
+            $user->role_names = $user->getRoleNames();
+            return $user;
+        });
+
         // Retornar dados em JSON
         return response()->json($users);
     }
@@ -54,27 +76,33 @@ class UserProjectController extends Controller
     {
           $AllUsers = User::all();
           $ListUsers = array();
+          $permissionNames = Auth::user()->getPermissionsViaRoles();
+          $AllRoles = Role::with('permissions')->get();
+          $AllDepartaments = UsersDepartaments::all();
+
 
           foreach ($AllUsers as $key => $User) {
                 $user = User::find($User->id);
+                $roles = $user->getRoleNames();
 
                 $ListUser = array();
                 $ListUser['id'] = $User->id;
                 $ListUser['nome'] = $User->name;
                 $ListUser['email'] = $User->email;
                 $ListUser['idtotvs'] = $User->idtotvs;
-                $ListUser['perfil'] = $User->role->description;
                 $ListUser['departamento'] = $user->departament->departament;;
                 $ListUser['status'] = $User->status;
+                $ListUser['roles'] = $roles;
                 $ListUser['updated_at'] = $User->updated_at;
                 $ListUser['created_at'] = date("d/m/Y", strtotime($User->created_at));
 
                 $ListUsers[] = $ListUser;
           }
 
-
           $data = array(
               'ListUsers' => $ListUsers,
+              'AllRoles' => $AllRoles,
+              'AllDepartaments' => $AllDepartaments
           );
   
           //return view('auth.register')->with($data);
@@ -90,20 +118,16 @@ class UserProjectController extends Controller
      */
     public function create(): View
     {
-        $UsersDepartaments = UsersDepartaments::where('departament_type', 'Geral')->get();
-
-        $UsersRoles = UserRole::where('status', 'view')->get();
+        $userDepartaments = UsersDepartaments::all();
+        $roles = Role::with('permissions')->get();
 
         $data = array(
-            'title' => 'Todos Arquivos',
-            'UsersDepartaments' => $UsersDepartaments,
-            'UsersRoles' => $UsersRoles,
+            'userDepartaments' => $userDepartaments,
+            'roles' => $roles,
         );
-
-
-        //return view('auth.register')->with($data);
-
-       return view('usersProject.register')->with($data);
+            
+        return view('usersProject.register')->with($data);
+            
     }
 
 
@@ -113,16 +137,19 @@ class UserProjectController extends Controller
     public function edit($id): View
     {
         $userDepartaments = UsersDepartaments::all();
+        $roles = Role::with('permissions')->get();
 
-        if(Auth::user()->role->role_priority >= 90 || Auth::user()->id == $id){
+        if(Auth::user()->can('users.manage')){
             $user = User::findOrFail($id);
+            $role = $user->getRoleNames();
 
             if ($user) {
                 $data = array(
                     'user' => $user,
                     'userDepartaments' => $userDepartaments,
+                    'roles' => $roles,
+                    'user_role' => $role,
                 );
-
                 return view('usersProject.edit')->with($data);
                 //return view('usersProject.edit')->with($user);
             } else {
@@ -161,23 +188,22 @@ class UserProjectController extends Controller
         $request->validate([
             'profile_picture' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-
+        
         // Verifica se o arquivo foi enviado
         if ($request->hasFile('profile_picture')) {
             $image = $request->file('profile_picture');
-            $filename = time() . '.' . $image->getClientOriginalExtension();
-            $path = $image->storeAs('public/uploads/profile', $filename);
-            $relativePath = str_replace('public/', '', $path);
+            $filePath = 'cdn/profile';
+            $UploadedFile = Storage::disk('s3')->put($filePath, $image);
+            $relativePath = Storage::disk('s3')->url($UploadedFile);
 
             $userUpdate = ([
                 'profile_picture' => $relativePath,
                 'name' => $request->name,
                 'email' => $request->email,
                 'idtotvs' => $request->idtotvs,
+                'position' => $request->position,
                 'departament' => $request->departament[0],
                 //'password' => Hash::make($request->password),
-                'status' => "ativo",
-                'account_type' => $request->account_type[0],
             ]);
         }else{
             $userUpdate = ([
@@ -186,23 +212,21 @@ class UserProjectController extends Controller
                 'email' => $request->email,
                 'idtotvs' => $request->idtotvs,
                 'departament' => $request->departament[0],
+                'position' => $request->position,
                 //'password' => Hash::make($request->password),
-                'status' => "ativo",
-                'account_type' => $request->account_type[0],
             ]);
         }
 
-
-        
-
+        $user->syncRoles([$request->account_type[0]]);
         // Atualize os dados do registro
+
         $user->update($userUpdate);
        
         // event(new Registered($user));
         // Auth::login($user);
 
         if($user){
-            return redirect(route('listUsers', absolute: false))->with('success', 'Usuário Editado com sucesso.');
+            return redirect(route('users.list', absolute: false))->with('success', 'Usuário Editado com sucesso.');
         } else {
             return redirect()->back()->with('error', 'Erro ao criar usuário.');
         }
@@ -243,23 +267,39 @@ class UserProjectController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        $HashPassword = Str::random(12);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'agent' => $request->agent,
-            'base' => $request->base,
-            'role' => "user",
+            'password' => Hash::make($HashPassword),
+            'idtotvs' => $request->idtotvs,
+            'departament_id' => $request->departament[0],
+            'user_role_id' => 1,
         ]);
 
-        event(new Registered($user));
+        $user->syncRoles([$request->account_type[0]]);
 
-        Auth::login($user);
 
-        return redirect(route('knowledge.list', absolute: false));
+        if($user){
+            $data = [
+                'name' => $request->name,
+                'message' => 'Sua senha de acesso é '.$HashPassword
+            ];
+        
+            Mail::to($request->email)->send(new NewUserEmail($data));
+
+            return redirect(route('users.list', absolute: false));
+        }
+
+        
+
+       // event(new Registered($user));
+       // Auth::login($user);
+
+       
     }
 
     public function store2(Request $request): RedirectResponse

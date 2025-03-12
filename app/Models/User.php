@@ -5,15 +5,18 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+
+
 
 use App\Models\UsersDepartaments;
 
 
 class User extends Authenticatable
 {
-    use HasFactory, HasApiTokens, HasFactory, Notifiable; // Adicione o HasApiTokens aqui
+    use HasRoles, HasFactory, HasApiTokens, HasFactory, Notifiable; // Adicione o HasApiTokens aqui
     
     /**
      * The attributes that are mass assignable.
@@ -26,10 +29,11 @@ class User extends Authenticatable
         'email',
         'idtotvs',
         'password',
+        'position',
         'departament_id',
+        'user_role_id',
         'status',
         'corporate_phone',
-        'user_role_id',
     ];
 
     /**
@@ -69,11 +73,6 @@ class User extends Authenticatable
      // Relacionamento com UsersDepartaments
     public function departament(){
         return $this->belongsTo(UsersDepartaments::class, 'departament_id');
-    }
-
-    public function role()
-    {
-        return $this->belongsTo(UserRole::class, 'user_role_id', 'id');
     }
 
     public function userPosition(){

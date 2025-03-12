@@ -25,7 +25,7 @@
              <!-- Foto de perfil do Usuário -->
             <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 1px solid #ccc;">
                 @if (isset(Auth::user()->profile_picture))
-                    <img src="{{ asset('storage/' .Auth::user()->profile_picture) }}" alt="">
+                    <img src="{{ Auth::user()->profile_picture }}" alt="">
                 @else
                     <img src="{{ asset('icons/default-photo.png') }}"/>
                 @endif
