@@ -15,7 +15,8 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\UserProjectController;
 use App\Http\Controllers\BundlesController;
-use App\Http\Controllers\UserRoleController;
+use App\Http\Controllers\RolesController;
+use App\Http\Controllers\PermissionsController;
 use App\Http\Controllers\MentoriaController;
 
 
@@ -113,6 +114,7 @@ Route::get('/base/{bundle}/{userid}/{filename?}', [FileController::class, 'getFi
 Route::get('/users/filter', [UserProjectController::class, 'filter'])->middleware(['auth', 'verified'])->name('users.filter');
 Route::get('/users', [UserProjectController::class,'listUsers'])->middleware(['auth', 'verified'])->name('users.list');
 Route::get('/users/new', [UserProjectController::class, 'create'])->middleware(['auth', 'verified'])->name('users.register');
+Route::post('/users/new', [UserProjectController::class, 'store'])->middleware(['auth', 'verified'])->name('users.store');
 Route::post('/users/edit', [UserProjectController::class, 'update'])->middleware(['auth', 'verified'])->name('user.edit');
 Route::get('/users/edit/{id}', [UserProjectController::class, 'edit'])->middleware(['auth', 'verified'])->name('users.edit');
 Route::delete('/users/remove/{id}', [UserProjectController::class, 'remove'])->middleware(['auth', 'verified'])->name('users.remove');
@@ -145,12 +147,26 @@ Route::middleware('auth')->group(function () {
 });
 
 
-
 // CONTROLE DE PERFIS
-Route::get('/users-role', [UserRoleController::class,'index'])->middleware(['auth', 'verified'])->name('roles.list');
-Route::post('/users-role', [UserRoleController::class, 'update'])->middleware(['auth', 'verified'])->name('roles.update');
-Route::put('/users-role/{id}', [UserRoleController::class, 'edit'])->middleware(['auth', 'verified'])->name('roles.edit');
-Route::delete('/users-role/{id}', [UserRoleController::class, 'remove'])->middleware(['auth', 'verified'])->name('roles.remove');
+Route::get('/roles', [RolesController::class,'index'])->middleware(['auth', 'verified'])->name('roles.list');
+Route::get('/roles/filter', [RolesController::class, 'filter'])->name('roles.filter');
+Route::get('/roles/new', [RolesController::class,'new'])->middleware(['auth', 'verified'])->name('roles.new');
+Route::post('/roles/new', [RolesController::class, 'store'])->middleware(['auth', 'verified'])->name('roles.store');
+Route::put('/roles/{id}', [RolesController::class, 'edit'])->middleware(['auth', 'verified'])->name('roles.update');
+Route::delete('/roles/{id}', [RolesController::class, 'remove'])->middleware(['auth', 'verified'])->name('roles.remove');
+
+// CONTROLE DE PERMISSÕES
+Route::get('/permissions', [PermissionsController::class,'index'])->middleware(['auth', 'verified'])->name('permissions.list');
+Route::post('/permissions', [PermissionsController::class, 'update'])->middleware(['auth', 'verified'])->name('permissions.insert');
+Route::put('/permissions/{id}', [PermissionsController::class, 'edit'])->middleware(['auth', 'verified'])->name('permissions.update');
+Route::delete('/permissions/{id}', [PermissionsController::class, 'remove'])->middleware(['auth', 'verified'])->name('permissions.remove');
+
+
+// // CONTROLE DE PERFIS
+// Route::get('/users-role', [UserRoleController::class,'index'])->middleware(['auth', 'verified'])->name('roles.list');
+// Route::post('/users-role', [UserRoleController::class, 'update'])->middleware(['auth', 'verified'])->name('roles.update');
+// Route::put('/users-role/{id}', [UserRoleController::class, 'edit'])->middleware(['auth', 'verified'])->name('roles.edit');
+// Route::delete('/users-role/{id}', [UserRoleController::class, 'remove'])->middleware(['auth', 'verified'])->name('roles.remove');
 
 
 Route::get('/csrf-token', function () {

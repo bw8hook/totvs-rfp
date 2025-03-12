@@ -2,7 +2,7 @@
     <div class="flex flex-col">
         <div class="py-4" style=" padding-bottom: 130px;">
 
-        <div id="titleComponent_KnowledgeBase" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative" style="height:100px;">
+        <div id="titleComponent_KnowledgeBase" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative" style="height:100px; background:#F9F9F9; box-shadow: 0px 4px 44px 0px #0000000D;">
                 <div class="AlignTitleLeft" style="width: 80%;">
                     <div class="flex" style="width: 100%;">
                         <svg width="39" height="22" viewBox="0 0 29 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -13,33 +13,67 @@
                 </div>
                
                 <a href="{{route('users.register')}}" type="button" class="btn flex items-center justify-center  py-3 rounded-lg font-semibold transition mb-6 bg-#5570F1" style="box-shadow: 0px 19px 34px -20px #43BBED; background-color: #5570F1; color: white; padding: 0px 24px; height: 45px; font-size: 15px; text-transform: uppercase; letter-spacing: 0px; margin-top: 28px; border-radius: 8px;">
-                    <img src="{{ asset('icons/btn_nova_base.svg') }}" alt="Upload Icon" style="height: 22px; padding-right: 18px;">    
-                    Criar Novo Usuário
+                    Cadastrar Usuário
                 </a>
             </div>
 
-            <div id="BlocoLista" class="p-4 sm:p-8">
-                <!-- <div class="bloco_info_details_header">
-                    <form id="filterForm">
-                        <span>Filtragem rápida:</span>
-                        <select name="sort_by" style="height: 40px; padding: 0px 14px;">
-                            <option value="bundle">Pacote</option>
-                            <option value="bundle_id">Id do Pacote</option>
-                            <option value="created_at">Data de Cadastro</option>
-                        </select>
-                        <select name="sort_order" style="height: 40px; padding: 0px 14px;">
-                            <option value="asc">Ascendente</option>
-                            <option value="desc">Descendente</option>
-                        </select>
-                        <button type="submit">Filtrar</button>
-                    </form> 
+            <div id="BlocoLista" class="p-4 sm:p-8" style="background:#FFF;">
+                <div class="bloco_info_details_header" style="height: 80px; margin-top: 20px;">
+                    <form id="filterFormList" style="display: grid;">
+                        <span style="font-style: normal; font-weight: 700; font-size: 12px; line-height: 150%; color: #5E6470;">Filtragem rápida:</span>
+                        <div style="display: inline-flex ;">
+                            <div class="inputField">
+                                <input type="text" id="nome" name="nome" placeholder="Nome">
+                            </div>
 
-                    <div id="bloco_info_found">
-                        <div class="info_details_total">
-                            Total Encontrados: <span>0</span>
+                            <div class="inputField">
+                                <input type="text" id="id_totvs" name="id_totvs" placeholder="Código Totvs">
+                            </div>
+
+                            <div class="inputField">
+                                <input type="text" id="position" name="position" placeholder="Cargo">
+                            </div>
+
+                            <div class="inputField">
+                                <select name="departament">
+                                    <option value="null" selected>Setor</option>
+                                    @foreach ($AllDepartaments as $departament)
+                                    <option value="{{ $departament->id }}">{{ $departament->departament }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="inputField">
+                                <select name="role">
+                                    <option value="null" selected>Perfil</option>
+                                    @foreach ($AllRoles as $Role)
+                                        <option value="{{$Role->name}}">{{ $Role->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+
+                            <div class="toggle-container">
+                                <span class="toggle-label">Usuário ativo?</span>
+                                <div class="toggle-wrapper">
+                                    <span class="toggle-option">Não</span>
+                                    <label class="toggle-switch">
+                                    <input type="checkbox" id="toggleSwitch" checked>
+                                    <span class="slider"></span>
+                                    </label>
+                                    <span class="toggle-option">Sim</span>
+                                </div>
+                            </div>
+
+                                                    
+                           
+
+                            <button type="submit">Filtrar</button>
+
                         </div>
-                    </div>
-                </div> -->
+
+                    </form> 
+                </div>
                
 
                 <table id="userTable" class="tabela">
@@ -47,11 +81,12 @@
                         <tr>
                             <th style="width:12%;">Nome:</th>
                             <th style="width:11%; text-align:center;" >ID TOTVS:</th>
+                            <th style="width:11%; text-align:center;">Cargo</th>
                             <th style="width:12%; text-align:center;">Setor</th>
                             <!-- <th style="width:12%">Produtos/Skills</th> -->
                             <th style="width:20%; text-align:center;">Contato</th>
                             <th style="width:10%; text-align:center;">Data do Cadastro</th>
-                            <th style="width:15%; text-align:center;">Tipo de Cadastro</th>
+                            <th style="width:15%; text-align:center;">Perfil</th>
                             <th style="width:10%; text-align:center;">Ações</th>
                         </tr>
                     </thead>
@@ -70,10 +105,14 @@
 <script>
     $(document).ready(function () {
         function fetchUsers(url = "{{ route('users.filter') }}") {
+            var formData = $("#filterFormList").serialize();
+            var isActive = $('#toggleSwitch').is(':checked') ? 'ativo' : 'inativo';
+            formData += '&user_active=' + isActive;
+            
             $.ajax({
                 url: url,
                 method: 'GET',
-                data: $('#filterForm').serialize(),
+                data: formData,
                 success: function (response) {
                     // Atualizar tabela
                     let rows = '';
@@ -85,14 +124,17 @@
                         const month = String(date.getMonth() + 1).padStart(2, '0'); // `getMonth()` retorna 0 para janeiro
                         const year = date.getFullYear();
                         const formattedDate = `${day}/${month}/${year}`;
+
+
                         rows += `
                             <tr class="listaTabela">
                                 <td style="width: 28%; text-align: left;">${user.name}</td>
                                 <td style="width: 24%; text-align: center;">${user.idtotvs ? user.idtotvs : '-'}</td>
+                                 <td style="width: 32%; text-align: center;">${user.position ? user.position : '-'}</td>
                                 <td style="width: 32%; text-align: center;">${user.departament.departament}</td>
                                 <td style="width: 42%; text-align: center;">${user.email}</td>
                                 <td style="width: 32%; text-align: center;">${formattedDate}</td>
-                                <td style="width: 30%; text-align: center;"> <div class="tipo_cadastro" style="width:auto;">${user.role.name}</div></td>
+                                <td style="width: 30%; text-align: center;"> <div class="tipo_cadastro" style="width:auto;">${user.role_names}</div></td>
                                 <td style="width:12%; margin-left:3%; text-align:center; position:relative; display:flex;">
                                     <a href="/users/edit/${user.id}" class="btn_edit_row">
                                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -107,16 +149,13 @@
                                         </svg>
                                     </a>
 
-                                    <div class="btn_delete_row">
-                                        <form action="users/remove/${user.id}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este produto?');" style="margin: 0px;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit">
-                                                <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M5.70786 1.62227L5.45714 2.125H2.11429C1.49795 2.125 1 2.62773 1 3.25C1 3.87227 1.49795 4.375 2.11429 4.375H15.4857C16.1021 4.375 16.6 3.87227 16.6 3.25C16.6 2.62773 16.1021 2.125 15.4857 2.125H12.1429L11.8921 1.62227C11.7041 1.23906 11.3176 1 10.8963 1H6.70375C6.28241 1 5.89589 1.23906 5.70786 1.62227ZM15.4857 5.5H2.11429L2.8525 17.418C2.90821 18.3074 3.63946 19 4.52045 19H13.0796C13.9605 19 14.6918 18.3074 14.7475 17.418L15.4857 5.5Z" fill="#C8C8C8"/>
-                                                </svg>
-                                            </button>
-                                        </form>
+                                    <div class="btn_edit_row">
+                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M8.25 9.43332C7.44899 9.43332 6.66596 9.19579 5.99994 8.75077C5.33392 8.30575 4.81482 7.67322 4.50829 6.93318C4.20175 6.19314 4.12155 5.37882 4.27782 4.5932C4.43409 3.80758 4.81981 3.08593 5.38622 2.51953C5.95262 1.95313 6.67426 1.5674 7.45988 1.41113C8.24551 1.25486 9.05983 1.33507 9.79987 1.6416C10.5399 1.94814 11.1724 2.46724 11.6175 3.13326C12.0625 3.79927 12.3 4.5823 12.3 5.38332C12.2988 6.45708 11.8717 7.48652 11.1125 8.24578C10.3532 9.00505 9.32376 9.43213 8.25 9.43332ZM8.25 3.13332C7.80499 3.13332 7.36998 3.26528 6.99997 3.51251C6.62996 3.75974 6.34157 4.11114 6.17127 4.52228C6.00097 4.93341 5.95642 5.38581 6.04323 5.82227C6.13005 6.25873 6.34434 6.65964 6.65901 6.97431C6.97368 7.28897 7.37459 7.50327 7.81105 7.59008C8.2475 7.6769 8.6999 7.63234 9.11104 7.46204C9.52217 7.29175 9.87357 7.00336 10.1208 6.63335C10.368 6.26334 10.5 5.82832 10.5 5.38332C10.5 4.78658 10.2629 4.21428 9.84099 3.79233C9.41903 3.37037 8.84674 3.13332 8.25 3.13332ZM15 18.4333V17.9833C15 16.1931 14.2888 14.4762 13.023 13.2103C11.7571 11.9445 10.0402 11.2333 8.25 11.2333C6.45979 11.2333 4.7429 11.9445 3.47703 13.2103C2.21116 14.4762 1.5 16.1931 1.5 17.9833L1.5 18.4333C1.5 18.672 1.59482 18.9009 1.7636 19.0697C1.93239 19.2385 2.16131 19.3333 2.4 19.3333C2.63869 19.3333 2.86761 19.2385 3.0364 19.0697C3.20518 18.9009 3.3 18.672 3.3 18.4333V17.9833C3.3 16.6705 3.82152 15.4114 4.74982 14.4831C5.67813 13.5548 6.93718 13.0333 8.25 13.0333C9.56282 13.0333 10.8219 13.5548 11.7502 14.4831C12.6785 15.4114 13.2 16.6705 13.2 17.9833V18.4333C13.2 18.672 13.2948 18.9009 13.4636 19.0697C13.6324 19.2385 13.8613 19.3333 14.1 19.3333C14.3387 19.3333 14.5676 19.2385 14.7364 19.0697C14.9052 18.9009 15 18.672 15 18.4333Z" fill="#0097EB"/>
+                                            <path d="M19 15.5C19 17.9814 16.9814 20 14.5 20C12.0186 20 10 17.9814 10 15.5C10 13.0186 12.0186 11 14.5 11C16.9814 11 19 13.0186 19 15.5Z" fill="#0097EB"/>
+                                            <path d="M12 16L14 17.5L17 14" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+
                                     </div>
                                     
                                 </td>
@@ -132,7 +171,7 @@
                     let pagination = '';
                     if (response.links) {
                         pagination = response.links
-                            .filter(link => !["&laquo; Anterior", "Próximo &raquo;"].includes(link.label)) // Remove "Anterior" e "Próximo"
+                            .filter(link => !["&laquo; Anterior", "Próximo &raquo;", "&laquo; Previous" , "Next &raquo;"].includes(link.label)) // Remove "Anterior" e "Próximo"
                             .map(link =>
                                 `<a href="${link.url}" class="pagination-link ${link.active ? 'active' : ''}">${link.label}</a>`
                             ).join('');
@@ -143,7 +182,7 @@
         }
 
         // Submeter filtros
-        $('#filterForm').on('submit', function (e) {
+        $('#filterFormList').on('submit', function (e) {
             e.preventDefault();
             fetchUsers();
         });
@@ -162,6 +201,7 @@
         // Carregar lista inicial
         fetchUsers();
     });
+
     </script>
 </body>
 </html>

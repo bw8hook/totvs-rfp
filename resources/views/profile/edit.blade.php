@@ -1,11 +1,24 @@
 <x-app-layout>
-    <div class="py-4" style=" padding-bottom: 130px;">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            
-            <x-title-component :showButton="false" componentType="edit" titleDescription="Confirme as informações:">Editar minhas informações</x-title-component>
-            
-            <div class="list-form" style="margin-top: 21px;">
-                <form method="POST" action="{{ route('user.edit') }}" enctype="multipart/form-data" style=" margin: auto; width: 50%; min-width: 450px;">
+    <div style=" padding-bottom: 130px;">
+        <div class="max-w-7xl mx-auto space-y-6">
+    
+
+            <div class="list-form" style="padding-top:0px;">
+                  
+                <div id="titleComponentForm" class=" flex items-center justify-between px-4 space-x-2 relative">
+                    <div class="flex items-center space-x-2" style="display: block; margin-left: 30px;">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline; margin-top: 3px; width: 27px; margin-right: 1px;">
+                            <path d="M30.4707 1.53065C29.5642 0.62558 28.3356 0.117233 27.0547 0.117233C25.7737 0.117233 24.5451 0.62558 23.6387 1.53065L1.95335 23.216C1.33236 23.8335 0.83997 24.568 0.504684 25.377C0.169399 26.1861 -0.00213064 27.0536 1.9975e-05 27.9293V30.6666C1.9975e-05 31.0203 0.140496 31.3594 0.390544 31.6095C0.640593 31.8595 0.979731 32 1.33335 32H4.07069C4.94637 32.0025 5.81385 31.8312 6.62289 31.4961C7.43194 31.1611 8.16649 30.6689 8.78402 30.048L30.4707 8.36132C31.3754 7.45491 31.8834 6.2266 31.8834 4.94598C31.8834 3.66536 31.3754 2.43706 30.4707 1.53065ZM6.89869 28.1626C6.14669 28.9096 5.13064 29.3303 4.07069 29.3333H2.66669V27.9293C2.66534 27.4039 2.76823 26.8833 2.9694 26.3979C3.17058 25.9125 3.46604 25.4718 3.83869 25.1013L20.296 8.64398L23.3627 11.7107L6.89869 28.1626ZM28.584 6.47598L25.2427 9.81865L22.176 6.75865L25.5187 3.41598C25.72 3.21506 25.959 3.05577 26.2219 2.9472C26.4849 2.83863 26.7666 2.7829 27.051 2.78321C27.3355 2.78352 27.6171 2.83986 27.8798 2.949C28.1425 3.05814 28.3811 3.21796 28.582 3.41932C28.7829 3.62068 28.9422 3.85964 29.0508 4.12256C29.1594 4.38549 29.2151 4.66722 29.2148 4.95167C29.2145 5.23613 29.1581 5.51774 29.049 5.78043C28.9399 6.04311 28.78 6.28173 28.5787 6.48265L28.584 6.47598Z" fill="#5570F1"/>
+                        </svg>
+
+                        <div style="display: inline-grid;">
+                            <span style="color: #141824; font-size: 22px; font-weight: 600; line-height: 28.6px; text-align: left;">Edição de dados do usuário</span>
+                            <div style="color:#8A94AD; font-size: 16px; font-weight: 400; line-height: 28.6px; text-align: left;">Edite o tipo de cadastro do usuário e confirme as alterações para concluir.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ route('user.edit') }}" enctype="multipart/form-data" style=" margin: auto; width: 65%; min-width: 450px; background: #FFF; box-shadow: 0px 4px 28px rgba(0, 0, 0, 0.1); border-radius: 15px; padding: 50px 15%;">
                 @csrf
 
                 <x-text-input id="id" type="hidden" name="id" value="{{ old('name', $user->id) }}" required />
@@ -19,12 +32,12 @@
                     </svg>
 
                     <div class="preview">
-                        <img src="{{ asset('storage/' .$user->profile_picture) }}" alt="">
+                        <img src="{{$user->profile_picture}}" alt="">
                     </div>
+
+                    <span class="preview_chamada">Editar imagem</span>
                 </div>
                 
-
-
                 <!-- Name -->
                 <div>
                     <x-input-label for="name" :value="__('Nome')" />
@@ -35,7 +48,7 @@
                 <!-- Email Address -->
                 <div class="mt-4">
                     <x-input-label for="email" :value="__('Email')" />
-                    <x-text-input id="email" class="block mt-1 w-full" type="email" name="email"  value="{{ old('name', $user->email) }}" required  />
+                    <x-text-input id="email" class="block mt-1 w-full" type="email" name="email"  value="{{ old('name', $user->email) }}" required disabled style="color:#a2a2a2"/>
                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                 </div>
                 
@@ -46,9 +59,17 @@
                     <x-input-error :messages="$errors->get('idtotvs')" class="mt-2" />
                 </div>
 
+
+                <!-- ID TOTVS -->
+                <div class="mt-4">
+                    <x-input-label for="position" :value="__('Cargo')" />
+                    <x-text-input id="position" class="block mt-1 w-full" type="text" name="position"  value="{{ old('Cargo', $user->position) }}" />
+                    <x-input-error :messages="$errors->get('position')" class="mt-2" />
+                </div>
+
                 <!-- SETOR -->
                 <div class="mt-4">
-                    <x-input-label for="departament_id" :value="__('Departamento')" />
+                    <x-input-label for="departament_id" :value="__('Setor')" />
                     <select name="departament[]"  class="form-control">
                         <option selected disabled>Selecione um Setor</option>
                         @foreach($userDepartaments as $userDepartament)
@@ -61,81 +82,19 @@
                     </select>
                     <x-input-error :messages="$errors->get('departament')" class="mt-2" />
                 </div>
-                
-               
+            
 
-                <!-- SKILLS -->
-                <div class="mt-4">
-                    <x-input-label for="idtotvs" :value="__('Skills')" />
-                    <div class="dropdown">
-                        <label class="dropdown-label">Selecione as skills</label>
-                
-                        <div class="dropdown-list">
-                            <div class="checkbox">
-                                <input type="checkbox" name="dropdown-group" class="check checkbox-custom" id="checkbox-custom_01"/>
-                                <label for="checkbox-custom_01" class="checkbox-custom-label">Protheus</label>
-                            </div>
-                            
-                            <div class="checkbox">
-                                <input type="checkbox" name="dropdown-group" class="check checkbox-custom" id="checkbox-custom_02"/>
-                                <label for="checkbox-custom_02" class="checkbox-custom-label">Whintor</label>
-                            </div>
-                            
-                            <div class="checkbox">
-                                <input type="checkbox" name="dropdown-group" class="check checkbox-custom" id="checkbox-custom_03"/>
-                                <label for="checkbox-custom_03" class="checkbox-custom-label">Datasul</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-  
-               <!-- TIPO DE CONTA -->
-               <div class="mt-4">
-                    <x-input-label for="account_type" :value="__('Tipo de Conta')" />
-                    <select name="account_type[]"  class="form-control">
-                        @if (empty($user->account_type))
-                            <option selected disabled>Tipo de Conta</option>
-                        @else
-                            <option disabled>Tipo de Conta</option>
-                        @endif 
-                        
+                <div class="flex items-center justify-end mt-3">
+                    <button type="submit" class=" inline-flex items-center rounded-md font-semibold text-xs text-white btn_enviar" style="height: 46px; display: inline;">
+                        <span>Confirmar alterações</span>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline;">
+                            <path d="M13.5817 6.90667L14.7517 8.09417L9.92417 12.85C9.60167 13.1725 9.1775 13.3333 8.75167 13.3333C8.32583 13.3333 7.8975 13.1708 7.57167 12.8458L5.25333 10.5992L6.41417 9.40167L8.74167 11.6575L13.5817 6.90667ZM20 10C20 15.5142 15.5142 20 10 20C4.48583 20 0 15.5142 0 10C0 4.48583 4.48583 0 10 0C15.5142 0 20 4.48583 20 10ZM18.3333 10C18.3333 5.405 14.595 1.66667 10 1.66667C5.405 1.66667 1.66667 5.405 1.66667 10C1.66667 14.595 5.405 18.3333 10 18.3333C14.595 18.3333 18.3333 14.595 18.3333 10Z" fill="white"/>
+                        </svg>
 
-                        @if ($user->account_type == "admin")
-                            <option value="admin" selected>Administrador Master</option>
-                        @else
-                            <option value="admin">Administrador Master</option>
-                        @endif 
-
-                        @if ($user->account_type == "gestor")
-                            <option value="gestor" selected>Gestor</option>
-                        @else
-                            <option value="gestor">Gestor</option>
-                        @endif 
-
-                        @if ($user->account_type == "especialista")
-                            <option value="especialista" selected>Especialista Totvs</option>
-                        @else
-                            <option value="especialista">Especialista Totvs</option>
-                        @endif 
-
-                        @if ($user->account_type == "executivo")
-                            <option value="executivo" selected>Executivo de Vendas</option>
-                        @else
-                            <option value="executivo">Executivo de Vendas</option>
-                        @endif 
-
-                    </select>
-                    <x-input-error :messages="$errors->get('account_type')" class="mt-2" />
-                </div>
-          
-                <div class="flex items-center justify-end mt-4">
-
-                    <x-primary-button class="ms-4 btn_enviar">
-                        {{ __('Confirmar alterações') }}
-                    </x-primary-button>
+                    </button>
                 </div>
 
-
+                <a href="{{ route('users.list') }}" class="btn_voltar">Voltar</a>
 
             </form>
         </div>
