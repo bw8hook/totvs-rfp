@@ -134,12 +134,12 @@ class UserProjectController extends Controller
     /**
      * Display the registration view.
      */
-    public function edit($id): View
+    public function edit($id): View|RedirectResponse
     {
         $userDepartaments = UsersDepartaments::all();
         $roles = Role::with('permissions')->get();
 
-        if(Auth::user()->can('users.manage')){
+        //if(Auth::user()->can('users.manage')){
             $user = User::findOrFail($id);
             $role = $user->getRoleNames();
 
@@ -153,11 +153,11 @@ class UserProjectController extends Controller
                 return view('usersProject.edit')->with($data);
                 //return view('usersProject.edit')->with($user);
             } else {
-                return redirect()->back()->with('error', 'Usuário não encontrado.');
+                return redirect(route('users.list', absolute: false))->with('error', 'Usuário sem permissão para editar.');
             }
-        }else{
-            return redirect()->back()->with('error', 'Usuário sem permissão para editar.');
-        }
+        //}else{
+        //    return redirect(route('users.list', absolute: false))->with('error', 'Usuário sem permissão para editar.');
+        //}
     }
     
 
