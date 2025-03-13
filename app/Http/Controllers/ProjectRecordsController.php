@@ -36,7 +36,7 @@ class ProjectRecordsController extends Controller
     public function index(string $id)
     {
         $ProjectFile = ProjectFiles::with('rfp_bundles')->findOrFail($id);
-        if($ProjectFile->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
+        if (Auth::user()->hasRole('Administrador')) {  
             if($ProjectFile->status != "processando"){
                 $Project = Project::with('user')->findOrFail($ProjectFile->project_id);
        
@@ -94,7 +94,7 @@ class ProjectRecordsController extends Controller
     public function filter(Request $request, string $id)
     { 
         $Project = ProjectFiles::findOrFail($id);
-        if($Project->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){             
+        if (Auth::user()->hasRole('Administrador')) {            
             $query = ProjectRecord::query()->with('rfp_bundles');
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
@@ -174,7 +174,7 @@ class ProjectRecordsController extends Controller
     public function answerErrors(string $id)
     {
         $ProjectFile = ProjectFiles::with('rfp_bundles')->findOrFail($id);
-        if($ProjectFile->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
+        if (Auth::user()->hasRole('Administrador')) {  
             if($ProjectFile->status != "processando"){
                 $Project = Project::with('user')->findOrFail($ProjectFile->project_id);
        
@@ -268,7 +268,7 @@ class ProjectRecordsController extends Controller
     public function filterAnswerError(Request $request, string $id)
     { 
         $Project = ProjectFiles::findOrFail($id);
-        if($Project->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
+        if (Auth::user()->hasRole('Administrador')) {  
             //$query = ProjectAnswer::query()->with('rfp_bundles');
 
             $query = ProjectRecord::query()
@@ -302,7 +302,7 @@ class ProjectRecordsController extends Controller
     public function errors(string $id)
     {
         $ProjectFile = ProjectFiles::findOrFail($id);
-        if($ProjectFile->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
+        if (Auth::user()->hasRole('Administrador')) {  
             $Project = Project::findOrFail($ProjectFile->project_id);
 
             $ListClassificacaoRecebidas = ProjectRecord::where('project_file_id', $ProjectFile->id)->groupBy('processo')->pluck('processo');
@@ -347,7 +347,7 @@ class ProjectRecordsController extends Controller
     public function filterError(Request $request, string $id)
     { 
         $Project = ProjectFiles::findOrFail($id);
-        if($Project->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
+        if (Auth::user()->hasRole('Administrador')) {  
             $query = ProjectRecord::query()->with('rfp_bundles');
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
@@ -387,7 +387,7 @@ class ProjectRecordsController extends Controller
     public function processing(Request $request, string $id)
     {
         $Project = ProjectFiles::findOrFail($id);
-        if($Project->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
+        if (Auth::user()->hasRole('Administrador')) {  
             
             if($Project->status == "não enviado"){
                 $Project->status = "em processamento";
@@ -422,7 +422,7 @@ class ProjectRecordsController extends Controller
     public function processingAnswer(Request $request, string $id)
     {
         $Project = ProjectFiles::findOrFail($id);
-        if($Project->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
+        if (Auth::user()->hasRole('Administrador')) {  
             
             if($Project->status == "processado"){
                 $Project->status = "concluído";
@@ -454,7 +454,7 @@ class ProjectRecordsController extends Controller
     {
         // Encontrar o usuário pelo ID
         $Record = ProjectRecord::where('id_record', $id)->first();
-        if (Auth::user()->role->role_priority >= 90){
+       if (Auth::user()->hasRole('Administrador')) {
             try {
                 $RecordRemove = ProjectRecord::where('id_record', $id)->delete();
 
@@ -564,7 +564,7 @@ class ProjectRecordsController extends Controller
     public function answer(string $id)
     {
         $ProjectFile = ProjectFiles::with('rfp_bundles')->findOrFail($id);
-        if($ProjectFile->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
+        if (Auth::user()->hasRole('Administrador')) {  
             if($ProjectFile->status != "processando"){
                 $Project = Project::with('user')->findOrFail($ProjectFile->project_id);
        
@@ -723,7 +723,7 @@ class ProjectRecordsController extends Controller
     public function references(string $id)
     { 
         $Project = ProjectRecord::findOrFail($id);
-        if($Project->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){             
+        if (Auth::user()->hasRole('Administrador')) {            
             //$query = ProjectRecord::query()->with('rfp_bundles');
 
             $ProjectAnswer = ProjectAnswer::where('id', '=', $Project->project_answer_id)->first();
@@ -783,7 +783,7 @@ class ProjectRecordsController extends Controller
     public function detail(string $id)
     { 
         $Project = ProjectRecord::findOrFail($id);
-        if($Project->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){             
+        if (Auth::user()->hasRole('Administrador')) {            
             //$query = ProjectRecord::query()->with('rfp_bundles');
             $ProjectAnswer = ProjectAnswer::where('id', '=', $Project->project_answer_id)->first()->toArray();
 

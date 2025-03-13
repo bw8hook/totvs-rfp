@@ -173,7 +173,7 @@ class ProjectController extends Controller
     public function detail(string $id)
     { 
         $Detail = Project::with('user')->find($id);
-        if(Auth::user()->role->role_priority >= 90 || $Detail->iduser_responsable == Auth::id()){  
+        if (Auth::user()->hasRole('Administrador')) {
             $AllFiles = ProjectFiles::where('project_id', $id)->withCount('records')->get();
 
             $lastUpdated = ProjectFiles::where('user_id', Auth::id())->orderBy('updated_at', 'desc')->first();
@@ -357,7 +357,7 @@ class ProjectController extends Controller
     {
         $Project = Project::findOrFail($id);
         if($Project){
-            if ($Project['iduser_responsable'] == Auth::id() || Auth::user()->role->role_priority >= 90){
+            if (Auth::user()->hasRole('Administrador')) {
                 $Bundles = RfpBundle::all();
                 $data = [ 'Project' => $Project, 'bundles' => $Bundles, 'userId' => Auth::id() ];            
                 return view('project.files')->with($data);
@@ -442,7 +442,7 @@ class ProjectController extends Controller
     {
         // Encontrar o usuário pelo ID
         $Arquivo = KnowledgeBase::where('knowledge_base_id', $id)->first();
-        if ($Arquivo['user_id'] == Auth::id() || Auth::user()->role->role_priority >= 90){
+        if (Auth::user()->hasRole('Administrador')) {
             if (Storage::exists($Arquivo->filepath)){
                 if (Storage::delete($Arquivo->filepath)){
                     KnowledgeRecord::where('knowledge_base_id', $id)->delete();// 
