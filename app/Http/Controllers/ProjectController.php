@@ -58,7 +58,7 @@ class ProjectController extends Controller
     public function index()
     { 
         // Validação se mostra Tudo ou apenas do usuário
-        if(Auth::user()->role->role_priority >= 90){  
+        if (Auth::user()->hasRole('Administrador')) {  
             $AllProject = Project::withCount('records')->get();
             $AllFiles = ProjectFiles::withCount('records')->get();
 
@@ -135,7 +135,7 @@ class ProjectController extends Controller
     public function filter(Request $request)
     { 
         // Valida a Permissão do usuário
-        if(Auth::user()->role->role_priority >= 90){       
+        if (Auth::user()->hasRole('Administrador')) {       
             $query = Project::query()->with('user')->withCount(relations: 'records');
         }else{
             $query = Project::query()->with('user')->withCount(relations: 'records')->where('iduser_responsable', Auth::id());
@@ -241,7 +241,7 @@ class ProjectController extends Controller
         // Valida a Permissão do usuário
         
 
-        if(Auth::user()->role->role_priority >= 90){    
+        if (Auth::user()->hasRole('Administrador')) {    
             //$query = ProjectFiles::query()->with('user')->with('rfp_bundles')->withCount('projectRecords')->where('project_id', $request->id);
             
             $query = ProjectFiles::query()
@@ -290,7 +290,7 @@ class ProjectController extends Controller
     public function updateInfos(Request $request, string $id)
     { 
         // Valida a Permissão do usuário
-        if(Auth::user()->role->role_priority >= 90){          
+        if (Auth::user()->hasRole('Administrador')) {          
             $data = htmlspecialchars(trim($request->rfp_date)); // Sanitiza o input
             $resultado = $this->validarEConverterData($data);
 

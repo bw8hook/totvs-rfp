@@ -102,7 +102,7 @@ class ProcessController extends Controller
      */
     public function edit($id): View
     {
-        if(Auth::user()->role->role_priority >= 90){
+        if (Auth::user()->hasRole('Administrador')) {
             $Process = RfpProcess::find($id);
             $Bundles = RfpBundle::all();
 
@@ -134,7 +134,7 @@ class ProcessController extends Controller
      */
     public function remove($id)
     {
-        if(Auth::user()->role->role_priority >= 90){
+        if (Auth::user()->hasRole('Administrador')) {
             // Encontrar o usuário pelo ID
             $Process = RfpProcess::find($id);
 
@@ -156,7 +156,7 @@ class ProcessController extends Controller
      */
     public function register(Request $request)
     {
-        if(Auth::user()->role->role_priority >= 90){
+        if (Auth::user()->hasRole('Administrador')) {
             // Validação dos dados
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255'
@@ -200,7 +200,7 @@ class ProcessController extends Controller
      */
     public function update(Request $request)
     {
-        if(Auth::user()->role->role_priority >= 90){
+        if (Auth::user()->hasRole('Administrador')) {
             // Validação dos dados
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',

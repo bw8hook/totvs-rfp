@@ -57,8 +57,6 @@ class RolesController extends Controller
     }
     
 
-
-
     public function new()
     {
         // Exemplo: Recuperar todos os registros
@@ -88,8 +86,19 @@ class RolesController extends Controller
 
     public function show($id)
     {
-        $role = UserRole::findOrFail($id);
-        return response()->json($role);
+        $role = Role::findById($id);
+
+         // Exemplo: Recuperar todos os registros
+         $roles = Role::with('permissions')->get();
+         $permissions = Permission::all();
+
+         $data = array(
+            'role' => $role,
+            'permissions' => $permissions,
+            'id' => $id,
+        );
+
+        return view('roles.edit')->with($data);
     }
 
     public function update(Request $request, $id)

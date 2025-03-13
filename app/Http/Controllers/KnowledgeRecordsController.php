@@ -162,7 +162,7 @@ class KnowledgeRecordsController extends Controller
     public function updateDetails(Request $request, string $id)
     { 
         // Valida a Permissão do usuário
-        if(Auth::user()->role->role_priority >= 90){     
+        if (Auth::user()->hasRole('Administrador')) {     
             $KnowledgeRecords = KnowledgeRecord::findOrFail($id);
             if($request->resposta){
                 $KnowledgeRecords->resposta = $request->resposta;
@@ -261,7 +261,7 @@ class KnowledgeRecordsController extends Controller
 
     public function filterError(Request $request, string $id)
     { 
-        if(Auth::user()->role->role_priority >= 90){       
+        if (Auth::user()->hasRole('Administrador')) {       
             $KnowledgeBase = KnowledgeBase::findOrFail($id);
             $query = KnowledgeRecord::query()->with('rfp_bundles');
 
@@ -299,7 +299,7 @@ class KnowledgeRecordsController extends Controller
      */
     public function processing(Request $request, string $id)
     {
-        if(Auth::user()->role->role_priority >= 90){     
+        if (Auth::user()->hasRole('Administrador')) {     
             $KnowledgeBase = KnowledgeBase::findOrFail($id);
             if($KnowledgeBase->status == "não enviado"){
                 $KnowledgeBase->status = "processando";

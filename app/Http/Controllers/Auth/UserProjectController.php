@@ -241,7 +241,7 @@ class UserProjectController extends Controller
     public function remove($id)
     {
 
-        if(Auth::user()->role->role_priority >= 90){
+        if (Auth::user()->hasRole('Administrador')) {
             // Encontrar o usuário pelo ID
             $user = User::find($id);
 

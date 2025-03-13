@@ -46,7 +46,7 @@ class KnowledgeController extends Controller
      */
     public function index()
     { 
-        if(Auth::user()->role->role_priority >= 90){  
+        if (Auth::user()->hasRole('Administrador')) {  
             $AllFiles = KnowledgeBase::withCount('knowledgeRecords')->get();
 
             // Último atualizado
@@ -117,7 +117,7 @@ class KnowledgeController extends Controller
     public function filter(Request $request)
     { 
         // Valida a Permissão do usuário
-        if(Auth::user()->role->role_priority >= 90){       
+        if (Auth::user()->hasRole('Administrador')) {       
             $query = KnowledgeBase::query()->with('user')->withCount('knowledgeRecords');;
             
             // Aplicar filtros
@@ -151,7 +151,7 @@ class KnowledgeController extends Controller
     public function updateInfos(Request $request, string $id)
     { 
         // Valida a Permissão do usuário
-        if(Auth::user()->role->role_priority >= 90){    
+        if (Auth::user()->hasRole('Administrador')) {    
 
             $KnowledgeBase = KnowledgeBase::findOrFail($id);
             $KnowledgeBase->project = $request->project;

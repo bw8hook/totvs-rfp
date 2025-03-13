@@ -108,7 +108,7 @@ class BundlesController extends Controller
      */
     public function edit($id): View
     {
-        if(Auth::user()->role->role_priority >= 90){
+        if (Auth::user()->hasRole('Administrador')) {
             $Bundle = RfpBundle::where('bundle_id', $id)->firstOrFail();
             $AgentSelected = Agent::where('id', $Bundle->agent_id)->first();
             $agents = Agent::all();
@@ -135,7 +135,7 @@ class BundlesController extends Controller
      */
     public function remove($id)
     {
-        if(Auth::user()->role->role_priority >= 90){
+        if (Auth::user()->hasRole('Administrador')) {
             // Encontrar o usuário pelo ID
             $user = RfpBundle::find($id);
 
@@ -156,7 +156,7 @@ class BundlesController extends Controller
      */
     public function register(Request $request)
     {
-        if(Auth::user()->role->role_priority >= 90){
+        if (Auth::user()->hasRole('Administrador')) {
             // Validação dos dados
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255'
@@ -183,7 +183,7 @@ class BundlesController extends Controller
      */
     public function update(Request $request)
     {
-        if(Auth::user()->role->role_priority >= 90){
+        if (Auth::user()->hasRole('Administrador')) {
             // Validação dos dados
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
