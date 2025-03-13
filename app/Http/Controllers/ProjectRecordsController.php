@@ -136,7 +136,7 @@ class ProjectRecordsController extends Controller
     public function updateDetails(Request $request, string $id)
     { 
         // Valida a Permissão do usuário
-        if(Auth::user()->role->role_priority >= 90){     
+        if (Auth::user()->hasRole('Administrador')) {     
             $ProjectRecord = ProjectRecord::findOrFail($id);
             if($request->resposta){
                 $ProjectRecord->resposta = $request->resposta;
@@ -483,7 +483,7 @@ class ProjectRecordsController extends Controller
      */
     public function index3()
     { 
-        if(Auth::user()->role->role_priority >= 90){  
+        if (Auth::user()->hasRole('Administrador')) {  
             $AllFiles = Project::withCount('projectRecords')->get();
 
             // Último atualizado
@@ -659,7 +659,7 @@ class ProjectRecordsController extends Controller
     
     public function filterAnswer(Request $request, string $id)
     { 
-        if(Auth::user()->role->role_priority >= 90){       
+        if (Auth::user()->hasRole('Administrador')) {       
             $Project = ProjectFiles::findOrFail($id);
             $query = ProjectRecord::query()->with('rfp_bundles')->with('answers');
 

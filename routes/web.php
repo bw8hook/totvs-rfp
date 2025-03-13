@@ -152,15 +152,13 @@ Route::get('/roles', [RolesController::class,'index'])->middleware(['auth', 'ver
 Route::get('/roles/filter', [RolesController::class, 'filter'])->name('roles.filter');
 Route::get('/roles/new', [RolesController::class,'new'])->middleware(['auth', 'verified'])->name('roles.new');
 Route::post('/roles/new', [RolesController::class, 'store'])->middleware(['auth', 'verified'])->name('roles.store');
+Route::get('/roles/{id}', [RolesController::class, 'show'])->middleware(['auth', 'verified'])->name('roles.show');
 Route::put('/roles/{id}', [RolesController::class, 'edit'])->middleware(['auth', 'verified'])->name('roles.update');
 Route::delete('/roles/{id}', [RolesController::class, 'remove'])->middleware(['auth', 'verified'])->name('roles.remove');
+Route::get('/roles', [RolesController::class,'index'])->middleware(['auth', 'verified'])->name('roles.list');
 
-// CONTROLE DE PERMISSÕES
-Route::get('/permissions', [PermissionsController::class,'index'])->middleware(['auth', 'verified'])->name('permissions.list');
-Route::post('/permissions', [PermissionsController::class, 'update'])->middleware(['auth', 'verified'])->name('permissions.insert');
-Route::put('/permissions/{id}', [PermissionsController::class, 'edit'])->middleware(['auth', 'verified'])->name('permissions.update');
-Route::delete('/permissions/{id}', [PermissionsController::class, 'remove'])->middleware(['auth', 'verified'])->name('permissions.remove');
-
+// CADASTRO DE PERMISSÕES
+Route::post('/permissions', [PermissionsController::class,'index'])->middleware(['auth', 'verified'])->name('permissions.list');
 
 // // CONTROLE DE PERFIS
 // Route::get('/users-role', [UserRoleController::class,'index'])->middleware(['auth', 'verified'])->name('roles.list');

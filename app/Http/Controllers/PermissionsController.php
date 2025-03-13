@@ -4,50 +4,43 @@ namespace App\Http\Controllers;
 
 use App\Models\UserRole;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+
 
 class PermissionsController extends Controller
 {
     public function index()
     {
-        $roles = UserRole::all();
-        return response()->json($roles);
+        $permissions = [
+            'knowledge.manage',
+            'knowledge.create',
+            'knowledge.edit',
+            'knowledge.delete',
+            'projects.all.manage',
+            'projects.all.create',
+            'projects.all.edit',
+            'projects.all.delete',
+            'projects.my.manage',
+            'projects.my.create',
+            'projects.my.edit',
+            'projects.my.delete',
+            'users.manage',
+            'users.create',
+            'users.edit',
+            'users.delete',
+            'config.manage',
+            'roles.manage',
+            'bundles.manage',
+            'agents.manage',
+            'answers.manage',
+            'process.manage'
+        ];
+        
+        foreach ($permissions as $permission) {
+            Permission::findOrCreate($permission, 'web');
+        }
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|unique:users_role|max:255',
-            'description' => 'nullable|string|max:500',
-            'role_priority' => 'nullable|string|max:500',
-        ]);
 
-        $role = UserRole::create($validated);
-        return response()->json($role, 201);
-    }
-
-    public function show($id)
-    {
-        $role = UserRole::findOrFail($id);
-        return response()->json($role);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $role = UserRole::findOrFail($id);
-
-        $validated = $request->validate([
-            'name' => 'required|unique:users_role,name,' . $id . '|max:255',
-            'description' => 'nullable|string|max:500',
-        ]);
-
-        $role->update($validated);
-        return response()->json($role);
-    }
-
-    public function destroy($id)
-    {
-        $role = UserRole::findOrFail($id);
-        $role->delete();
-        return response()->json(['message' => 'Role deletada com sucesso.']);
-    }
 }
