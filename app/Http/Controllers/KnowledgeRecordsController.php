@@ -28,7 +28,7 @@ class KnowledgeRecordsController extends Controller
     public function index(string $id, string $Record_id = null)
     {
         $KnowledgeBase = KnowledgeBase::findOrFail($id);
-        if($KnowledgeBase->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){   
+       if (Auth::user()->hasRole('Administrador')) {
             if($KnowledgeBase->status != "processando"){
                 $ListClassificacaoRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('processo')->pluck('processo');
                 $ListRespostaRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('resposta')->pluck('resposta');
@@ -204,7 +204,7 @@ class KnowledgeRecordsController extends Controller
     public function errors(string $id)
     {
         $KnowledgeBase = KnowledgeBase::findOrFail($id);
-        if($KnowledgeBase->user_id == Auth::id() || Auth::user()->role->role_priority >= 90){  
+        if (Auth::user()->hasRole('Administrador')) {
             
             $ListClassificacaoRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('processo')->pluck('processo');
             $ListRespostaRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('resposta')->pluck('resposta');
@@ -327,7 +327,7 @@ class KnowledgeRecordsController extends Controller
     {
         // Encontrar o usuário pelo ID
         $Record = KnowledgeRecord::where('id_record', $id)->first();
-        if (Auth::user()->role->role_priority >= 90){
+        if (Auth::user()->hasRole('Administrador')) {
             try {
                 $RecordRemove = KnowledgeRecord::where('id_record', $id)->delete();
 

@@ -597,7 +597,7 @@ function fazerRequisicao($url, $metodo = 'GET', $dados = null, $headers = []) {
     {
         // Encontrar o usuário pelo ID
         $Arquivo = KnowledgeBase::where('id', $id)->first();
-        if ($Arquivo['user_id'] == Auth::id() || Auth::user()->role->role_priority >= 90){
+        if (Auth::user()->hasRole('Administrador')) {
             $ArquivosExportados = KnowledgeBaseExported::where('default_base_id', $id)->get();
 
             // Lista de arquivos no S3 que você quer baixar
@@ -663,7 +663,7 @@ function fazerRequisicao($url, $metodo = 'GET', $dados = null, $headers = []) {
     {
         // Encontrar o usuário pelo ID
         $Arquivo = KnowledgeBase::where('id', $id)->first();
-        if ($Arquivo['user_id'] == Auth::id() || Auth::user()->role->role_priority >= 90){
+        if (Auth::user()->hasRole('Administrador')) {
 
             if (Storage::disk('s3')->exists($Arquivo->filepath)) {
                 $fullPath = Storage::disk('s3')->url($Arquivo->filepath);                
