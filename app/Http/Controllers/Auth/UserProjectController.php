@@ -240,7 +240,6 @@ class UserProjectController extends Controller
      */
     public function remove($id)
     {
-
         if (Auth::user()->hasRole('Administrador')) {
             // Encontrar o usuário pelo ID
             $user = User::find($id);
@@ -255,6 +254,31 @@ class UserProjectController extends Controller
             return redirect()->back()->with('error', 'Usuário sem permissão para editar.');
         }
     }
+
+
+    public function status($id, Request $request): RedirectResponse
+    {
+        if (Auth::user()->hasRole('Administrador')) {
+        
+            // Encontrar o usuário pelo ID
+            $user = User::find($id);
+            
+
+            if ($user) {
+                $user->status = $request->status;
+                $user->update();
+                return redirect()->back()->with('success', 'Usuário atualizado com sucesso.');
+            } else {
+                return redirect()->back()->with('error', 'Usuário não encontrado.');
+            }
+        }else{
+            return redirect()->back()->with('error', 'Usuário sem permissão para editar.');
+        }
+    }
+
+
+
+    
 
 
     /**
@@ -286,9 +310,12 @@ class UserProjectController extends Controller
         if($user){
             $data = [
                 'name' => $request->name,
-                'message' => 'Sua senha de acesso é '.$HashPassword
+                'data' =>  date('d/m/y \à\s H:i'),
+                'email' => $request->email,
+                'senha' => $HashPassword,
+                'url' => 'https://totvs.bw8.tech/'
             ];
-        
+
             Mail::to($request->email)->send(new NewUserEmail($data));
 
             return redirect(route('users.list', absolute: false));

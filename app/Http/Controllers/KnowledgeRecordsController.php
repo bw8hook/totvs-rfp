@@ -89,7 +89,7 @@ class KnowledgeRecordsController extends Controller
         $perPage = 100; // Seu número de itens por página
         $KnowledgeBase = KnowledgeBase::findOrFail($id);
 
-        if ($KnowledgeBase->user_id == Auth::id() || Auth::user()->role->role_priority >= 90) {   
+        if (Auth::user()->hasRole('Administrador')) {   
             $query = KnowledgeRecord::query()->with('rfp_bundles');
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
