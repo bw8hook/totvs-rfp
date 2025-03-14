@@ -119,6 +119,8 @@ Route::post('/users/edit', [UserProjectController::class, 'update'])->middleware
 Route::get('/users/edit/{id}', [UserProjectController::class, 'edit'])->middleware(['auth', 'verified'])->name('users.edit');
 Route::delete('/users/remove/{id}', [UserProjectController::class, 'remove'])->middleware(['auth', 'verified'])->name('users.remove');
 Route::get('/users/new-password/{id}', [UserProjectController::class, 'newpassword'])->middleware(['auth', 'verified'])->name('users.newpassword');
+Route::post('/users/status/{id}', [UserProjectController::class, 'status'])->middleware(['auth', 'verified'])->name('users.status');
+
 
 Route::get('/import/{id}', [ImportController::class, 'listRecords'])->name('import.listRecords');
 Route::get('/import/erro/{id}', [ImportController::class, 'listErroRecords'])->name('import.listErroRecords');
@@ -159,6 +161,9 @@ Route::get('/roles', [RolesController::class,'index'])->middleware(['auth', 'ver
 
 // CADASTRO DE PERMISSÕES
 Route::post('/permissions', [PermissionsController::class,'index'])->middleware(['auth', 'verified'])->name('permissions.list');
+
+Route::get('/teste-email', [PermissionsController::class,'new_email'])->middleware(['auth', 'verified'])->name('new_email');
+
 
 // // CONTROLE DE PERFIS
 // Route::get('/users-role', [UserRoleController::class,'index'])->middleware(['auth', 'verified'])->name('roles.list');

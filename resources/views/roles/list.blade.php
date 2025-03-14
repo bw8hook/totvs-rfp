@@ -75,6 +75,7 @@
                             PermissionsList += `<div style="font-size: 13px; background: #f1f1f1; float: left; padding: 5px; margin-right: 5px; margin-bottom:2px; margin-top:2px; border-radius: 4px;">${permissions.show_name}</div>`;
                         });
 
+                        
                         rows += `
                             <tr class="listaTabela" style=" min-height: 60px; max-height: 100%; ">
                               <td style="width:5%; display: flex;">#${role.id}</td>
