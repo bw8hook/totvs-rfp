@@ -46,7 +46,7 @@ class KnowledgeController extends Controller
      */
     public function index()
     { 
-        if (Auth::user()->hasRole('Administrador')) {  
+        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
             $AllFiles = KnowledgeBase::withCount('knowledgeRecords')->get();
 
             // Último atualizado
@@ -108,6 +108,8 @@ class KnowledgeController extends Controller
             );
     
             return view('knowledge.list')->with($data);
+        }else{
+            return redirect()->route('profile.edit')->with('error', 'Você não tem permissão para acessa essa página.');
         }
 
     }
@@ -117,7 +119,7 @@ class KnowledgeController extends Controller
     public function filter(Request $request)
     { 
         // Valida a Permissão do usuário
-        if (Auth::user()->hasRole('Administrador')) {       
+       if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
             $query = KnowledgeBase::query()->with('user')->withCount('knowledgeRecords');;
             
             // Aplicar filtros
@@ -144,6 +146,8 @@ class KnowledgeController extends Controller
             
             // Retornar dados em JSON
             return response()->json($data);
+        }else{
+            return redirect()->route('profile.edit')->with('error', 'Você não tem permissão para acessa essa página.');
         }
     }
 
@@ -151,7 +155,7 @@ class KnowledgeController extends Controller
     public function updateInfos(Request $request, string $id)
     { 
         // Valida a Permissão do usuário
-        if (Auth::user()->hasRole('Administrador')) {    
+       if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.edit'])) {
 
             $KnowledgeBase = KnowledgeBase::findOrFail($id);
             $KnowledgeBase->project = $request->project;
@@ -175,9 +179,9 @@ class KnowledgeController extends Controller
             } catch (\Exception $e) {
                 $CatchError = json_decode($e->getMessage());
             }
-                
-                
                          
+        }else{
+            return redirect()->route('knowledge.list')->with('error', 'Você não tem permissão para acessa essa página.');
         }
     }
 
@@ -187,29 +191,34 @@ class KnowledgeController extends Controller
      */
     public function create()
     {
+        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add'])) {
 
-        $rfpBundles = RfpBundle::all();
-        $ListBundles = array();
+            $rfpBundles = RfpBundle::all();
+            $ListBundles = array();
 
-        //$AgentId = Auth::user()->id;
+            //$AgentId = Auth::user()->id;
 
-        foreach ($rfpBundles as $key => $User) {
-              $ListBundle = array();
-              $ListBundle['id'] = $User->bundle_id;
-              $ListBundle['bundle'] = $User->bundle;
-              $ListBundle['type'] = $User->type_bundle;
-              $ListBundles[] = $ListBundle;
+            foreach ($rfpBundles as $key => $User) {
+                $ListBundle = array();
+                $ListBundle['id'] = $User->bundle_id;
+                $ListBundle['bundle'] = $User->bundle;
+                $ListBundle['type'] = $User->type_bundle;
+                $ListBundles[] = $ListBundle;
+            }
+
+            //return view('auth.register')->with($data);
+        
+            $userId = auth()->user()->id;
+            $data = [
+                'userId' => $userId,
+                'ListBundles' => $ListBundles
+            ];
+        
+            return view('knowledge.create')->with($data);
+
+        }else{
+            return redirect()->route('knowledge.list')->with('error', 'Você não tem permissão para acessa essa página.');
         }
-
-        //return view('auth.register')->with($data);
-       
-        $userId = auth()->user()->id;
-        $data = [
-            'userId' => $userId,
-            'ListBundles' => $ListBundles
-        ];
-    
-        return view('knowledge.create')->with($data);
     
     }
 
@@ -217,6 +226,7 @@ class KnowledgeController extends Controller
      * UPLOAD - Do arquivo da base de conhecimento
      */
     public function upload(Request $request) {
+        
         $TotvsERP = 0;
     
         // Faz o upload para o S3 (Para BACKUP)
@@ -661,9 +671,10 @@ function fazerRequisicao($url, $metodo = 'GET', $dados = null, $headers = []) {
      */
     public function destroy(string $id)
     {
+
         // Encontrar o usuário pelo ID
         $Arquivo = KnowledgeBase::where('id', $id)->first();
-        if (Auth::user()->hasRole('Administrador')) {
+        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.delete'])) {
 
             if (Storage::disk('s3')->exists($Arquivo->filepath)) {
                 $fullPath = Storage::disk('s3')->url($Arquivo->filepath);                

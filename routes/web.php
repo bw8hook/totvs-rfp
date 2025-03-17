@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\ConfigController;
+use App\Http\Controllers\LineOfProductController;
 use App\Http\Controllers\NewProjectController;
 use App\Http\Controllers\ProcessController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\FileController;
@@ -155,7 +158,7 @@ Route::get('/roles/filter', [RolesController::class, 'filter'])->name('roles.fil
 Route::get('/roles/new', [RolesController::class,'new'])->middleware(['auth', 'verified'])->name('roles.new');
 Route::post('/roles/new', [RolesController::class, 'store'])->middleware(['auth', 'verified'])->name('roles.store');
 Route::get('/roles/{id}', [RolesController::class, 'show'])->middleware(['auth', 'verified'])->name('roles.show');
-Route::put('/roles/{id}', [RolesController::class, 'edit'])->middleware(['auth', 'verified'])->name('roles.update');
+Route::post('/roles/{id}', [RolesController::class, 'edit'])->middleware(['auth', 'verified'])->name('roles.update');
 Route::delete('/roles/{id}', [RolesController::class, 'remove'])->middleware(['auth', 'verified'])->name('roles.remove');
 Route::get('/roles', [RolesController::class,'index'])->middleware(['auth', 'verified'])->name('roles.list');
 
@@ -165,11 +168,33 @@ Route::post('/permissions', [PermissionsController::class,'index'])->middleware(
 Route::get('/teste-email', [PermissionsController::class,'new_email'])->middleware(['auth', 'verified'])->name('new_email');
 
 
-// // CONTROLE DE PERFIS
-// Route::get('/users-role', [UserRoleController::class,'index'])->middleware(['auth', 'verified'])->name('roles.list');
-// Route::post('/users-role', [UserRoleController::class, 'update'])->middleware(['auth', 'verified'])->name('roles.update');
-// Route::put('/users-role/{id}', [UserRoleController::class, 'edit'])->middleware(['auth', 'verified'])->name('roles.edit');
-// Route::delete('/users-role/{id}', [UserRoleController::class, 'remove'])->middleware(['auth', 'verified'])->name('roles.remove');
+
+// Cadastro de Configurações
+Route::get('/config', [ConfigController::class,'index'])->middleware(['auth', 'verified'])->name('config.index');
+
+
+// Listar todos os produtos
+Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+
+// Listar todos os produtos
+Route::get('/line-of-products', [LineOfProductController::class, 'index'])->name('line-of-products.index');
+Route::get('/line-of-products/filter', [LineOfProductController::class, 'filter'])->name('line-of-products.filter');
+Route::get('/line-of-products/create', [LineOfProductController::class, 'create'])->name('line-of-products.create');
+Route::post('/line-of-products', [LineOfProductController::class, 'store'])->name('line-of-products.store');
+Route::get('/line-of-products/{product}', [LineOfProductController::class, 'show'])->name('line-of-products.show');
+Route::get('/line-of-products/{product}/edit', [LineOfProductController::class, 'edit'])->name('line-of-products.edit');
+Route::put('/line-of-products/{product}', [LineOfProductController::class, 'update'])->name('line-of-products.update');
+Route::delete('/line-of-products/{product}', [LineOfProductController::class, 'destroy'])->name('line-of-products.destroy');
+
+
+
 
 
 Route::get('/csrf-token', function () {

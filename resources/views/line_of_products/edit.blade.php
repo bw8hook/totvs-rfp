@@ -2,10 +2,10 @@
     <div class="flex items-center justify-center  flex-col">
         <div class="w-full justify-center items-center flex flex-column" style="width: 100%; max-width: 80%;">
 
-            <x-title-component :showButton="false">Editar Perfil</x-title-component>
+            <x-title-component :showButton="false">Novo Perfil</x-title-component>
             
             <div class="list-form" style="margin-top: 21px;">
-                <form method="POST" action="{{ route('roles.update', $id) }}" style=" margin: auto; width: 40%; min-width: 450px;">
+                <form method="POST" action="{{ route('roles.store') }}" style=" margin: auto; width: 40%; min-width: 450px;">
                 @csrf
 
                 <!-- Name -->
@@ -33,7 +33,7 @@
                 <div class="flex items-center justify-end mt-4">
 
                     <x-primary-button class="ms-4 btn_enviar">
-                        {{ __('Editar Perfil') }}
+                        {{ __('Adicionar novo Perfil') }}
                     </x-primary-button>
                 </div>
 

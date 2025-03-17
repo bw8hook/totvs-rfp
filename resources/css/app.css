@@ -1259,6 +1259,21 @@ label{
     }
 
 
+    .btn_ativar{
+        width: 100%;
+        background: #ffdbd6;
+        border-radius: 10px;
+        font-style: normal;
+        font-weight: 700;
+        font-size: 16px;
+        line-height: 290%;
+        text-align: center;
+        color: #F44336;
+        height: 46px;
+        margin: 0px !important;
+        cursor: pointer;
+    }
+
     .btn_desativar{
         width: 100%;
         background: #EFF2F6;
@@ -1266,11 +1281,77 @@ label{
         font-style: normal;
         font-weight: 700;
         font-size: 16px;
-        line-height: 140%;
+        line-height: 290%;
         text-align: center;
         color: #FA3B1E;
         height: 46px;
         margin: 0px !important;
+        cursor: pointer;
+    }
+
+    .btn_desativar:hover{
+        background-color: #ffe7e3;
+        
+    }
+
+    .bloco_config{
+        background-color: #FFF;
+        border-radius: 8px;
+        padding: 30px;
+        display: inline-flex;
+    }
+
+    .btnConfig{
+        width: 200px;
+        height: 100px;
+        margin: 10px;;
+        background-color: rgb(238 245 255);
+        text-align: center;
+        color: #5570F1;
+        border-radius: 5px;;
+    }
+
+    .btn_titleComponent{
+        box-shadow: 0px 19px 34px -20px #43BBED;
+        background-color: #5570F1;
+        color: white;
+        padding: 0px 24px;
+        height: 45px;
+        margin-top: 0px;
+        border-radius: 10px;
+        font-style: normal;
+        font-weight: 700;
+        font-size: 16px;
+        line-height: 45px;
+        text-align: center;
+        color: #FFFFFF;
+    }
+
+        .btn_titleComponent:hover{
+            background-color: #C7EBFF;
+            color: #0E2ECF;
+        }
+
+
+       #filterFormCrud select{
+            background-color: #FFF;
+            padding:  14px;
+            min-width: 140px;
+            border: transparent;
+            font-size: 14px;
+            font-weight: 400;
+            color: #5E6470;
+            border-radius: 8px;
+
+
+       }
+
+
+    .btnConfig svg{
+        margin: auto;
+        margin-top: 25px;
+        margin-bottom: 5px;
+        color: #5570F1;
     }
 
     .btn_voltar{
@@ -1286,7 +1367,65 @@ label{
         font-weight: 600;
     }
 
+    
 
+    #overlay {
+        position: fixed;
+        top: -24px;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+    }
+
+    #confirmPopup {
+        width: 500px;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 50px 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        text-align: center;
+        z-index: 10000;
+    }
+    
+    #confirmPopup p {
+        margin-bottom: 20px;
+        font-size: 19px;
+    }
+    
+    #confirmPopup button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        height: 42px;
+        width: 200px;
+        border-radius: 50px;
+        font-style: normal;
+        font-weight: 700;
+        font-size: 16px;
+        line-height: 140%;
+        text-align: center;
+    }
+    
+    #confirmDesativar {
+        background-color: #FFD9D3;
+        color: #FA3B1E;
+        margin-right: 10px;
+    }
+    
+    #cancelDesativar {
+        background-color: #5570F1;
+        color: white;
+    }
+
+    
+    
 
 
 
