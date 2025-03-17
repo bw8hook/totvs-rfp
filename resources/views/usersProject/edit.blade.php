@@ -102,12 +102,21 @@
                     <x-input-error :messages="$errors->get('account_type')" class="mt-2" />
                 </div>
           
-                <div class="flex items-center justify-end mt-4">
-                    <button class="ms-4 btn_desativar">
-                        Desativar acesso
-                    </button>
-                </div>
+                @if ($user->status == "ativo")
+                  <div class="flex items-center justify-end mt-4">
+                      <div class="ms-4 btn_desativar" data-id="{{ $user->id }}">
+                          Desativar acesso
+                      </div>
+                  </div>
+                @else
+                  <div class="flex items-center justify-end mt-4">
+                      <div class="ms-4 btn_ativar" data-id="{{ $user->id }}">
+                          Ativar acesso
+                      </div>
+                  </div>
+                @endif
 
+                
                 <div class="flex items-center justify-end mt-3">
                     <button type="submit" class=" inline-flex items-center rounded-md font-semibold text-xs text-white btn_enviar" style="height: 46px; display: inline;">
                         <span>Confirmar alterações</span>
@@ -122,6 +131,33 @@
 
             </form>
         </div>
+
+
+
+      <!-- Popup -->
+      <div id="overlay" style="display:none;"></div>
+      <div id="confirmPopup" style="display:none;">
+          @if ($user->status == "ativo")
+            <p>Tem certeza que deseja desativar o acesso desse usuário?</p>
+            <button id="confirmDesativar">Sim, desativar</button>
+          @else
+            <p>Tem certeza que deseja ativar o acesso desse usuário?</p>
+            <button id="confirmDesativar">Sim, ativar</button>
+          @endif
+          <button id="cancelDesativar">Não, cancelar</button>
+      </div>
+
+      <!-- Formulário oculto -->
+      <form id="desativarForm" method="POST" action="{{ route('users.status', $user->id) }}" style="display:none;">
+          @csrf
+          @if ($user->status == "ativo")
+            <input type="hidden" name="status" value="inativo">
+          @else
+            <input type="hidden" name="status" value="ativo">
+          @endif
+         
+      </form>
+
 
 
            
@@ -203,6 +239,23 @@ function checkboxDropdown(el) {
 };
 
 checkboxDropdown('.dropdown');
+
+
+$(document).ready(function() {
+    $('.btn_desativar , .btn_ativar').click(function() {
+        $('#overlay, #confirmPopup').show();
+    });
+
+    $('#confirmDesativar').click(function() {
+        $('#desativarForm').submit();
+    });
+
+    $('#cancelDesativar, #overlay').click(function() {
+        $('#overlay, #confirmPopup').hide();
+    });
+});
+
+
 
 
 </script>

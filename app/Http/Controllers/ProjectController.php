@@ -57,89 +57,93 @@ class ProjectController extends Controller
      */
     public function index()
     { 
-        // Validação se mostra Tudo ou apenas do usuário
-        if (Auth::user()->hasRole('Administrador')) {  
-            $AllProject = Project::withCount('records')->get();
-            $AllFiles = ProjectFiles::withCount('records')->get();
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
+            // Validação se mostra Tudo ou apenas do usuário
+            if (Auth::user()->hasAnyPermission(['projects.all', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete'])) {
 
-            // Último atualizado
-            $lastUpdated = ProjectFiles::orderBy('updated_at', 'desc')->first();
-            if ($lastUpdated) {
-                $lastUpdatedDate = Carbon::parse($lastUpdated->updated_at)->format('d/m/Y');
-                $lastUpdatedTime = Carbon::parse($lastUpdated->updated_at)->format('H\hi');
-            } else {
-                $lastUpdatedDate = null;
-                $lastUpdatedTime = null;
-            }
-        }else{
-            $AllProject = Project::withCount('records')->where('iduser_responsable', Auth::id())->get();
-            $AllFiles = ProjectFiles::withCount('records')->where('user_id', Auth::id())->get();
+                $AllProject = Project::withCount('records')->get();
+                $AllFiles = ProjectFiles::withCount('records')->get();
 
-            // Último atualizado
-            $lastUpdated = ProjectFiles::where('user_id', Auth::id())->orderBy('updated_at', 'desc')->first();
-            if ($lastUpdated) {
-                $lastUpdatedDate = Carbon::parse($lastUpdated->updated_at)->format('d/m/Y');
-                $lastUpdatedTime = Carbon::parse($lastUpdated->updated_at)->format('H\hi');
-            } else {
-                $lastUpdatedDate = null;
-                $lastUpdatedTime = null;
-            }
-        }
+                // Último atualizado
+                $lastUpdated = ProjectFiles::orderBy('updated_at', 'desc')->first();
+                if ($lastUpdated) {
+                    $lastUpdatedDate = Carbon::parse($lastUpdated->updated_at)->format('d/m/Y');
+                    $lastUpdatedTime = Carbon::parse($lastUpdated->updated_at)->format('H\hi');
+                } else {
+                    $lastUpdatedDate = null;
+                    $lastUpdatedTime = null;
+                }
+            }else if (Auth::user()->hasAnyPermission(['projects.my', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
+                $AllProject = Project::withCount('records')->where('iduser_responsable', Auth::id())->get();
+                $AllFiles = ProjectFiles::withCount('records')->where('user_id', Auth::id())->get();
 
-            $ListFiles = array();
-            $CountRFPs = 0;
-            $CountRequisitos = 0;
-            $CountNotAnswer = 0;
-            $CountAnswerUser = 0;
-            $CountAnswerIA = 0;
-
-            foreach ($AllFiles as $key => $File) {
-                $CountRFPs++;
-                $ListFile = array();
-                $ListFile['project_file_id'] = $File->id;
-                $ListFile['bundle'] = RfpBundle::firstWhere('bundle_id', $File->bundle_id);
-                $ListFile['filepath'] = $File->filepath;
-                $ListFile['filename_original'] = $File->filename_original;
-                $ListFile['filename'] = $File->filename;
-                $ListFile['file_extension'] = $File->file_extension;
-                $ListFile['status'] = $File->status;
-                $ListFile['created_at'] = date("d/m/Y", strtotime($File->created_at));;
-                $ListFiles[] = $ListFile;
-
-                $CountRequisitos += $File->records_count;
-                $CountNotAnswer += $File->records->where('status', 'aguardando')->count();
-                $CountAnswerUser += $File->records->where('status', 'user edit')->count();
-                $CountAnswerIA += $File->records->where('status', 'respondido ia')->count();
+                // Último atualizado
+                $lastUpdated = ProjectFiles::where('user_id', Auth::id())->orderBy('updated_at', 'desc')->first();
+                if ($lastUpdated) {
+                    $lastUpdatedDate = Carbon::parse($lastUpdated->updated_at)->format('d/m/Y');
+                    $lastUpdatedTime = Carbon::parse($lastUpdated->updated_at)->format('H\hi');
+                } else {
+                    $lastUpdatedDate = null;
+                    $lastUpdatedTime = null;
+                }
             }
 
-            $data = array(
-                'title' => 'Todos Arquivos',
-                'lastUpdated' => $lastUpdated,
-                'lastUpdatedDate' => $lastUpdatedDate,
-                'lastUpdatedTime' => $lastUpdatedTime,
-                'ListFiles' => $ListFiles,
-                'CountProject' => $AllProject->count(),
-                'CountRFPs' => $CountRFPs,
-                'CountRequisitos' => $CountRequisitos,
-                'CountNotAnswer' => $CountNotAnswer,
-                'CountAnswerUser' => $CountAnswerUser,
-                'CountAnswerIA' =>  $CountAnswerIA,
-            );
-    
-            return view('project.list')->with($data);
+                $ListFiles = array();
+                $CountRFPs = 0;
+                $CountRequisitos = 0;
+                $CountNotAnswer = 0;
+                $CountAnswerUser = 0;
+                $CountAnswerIA = 0;
+
+                foreach ($AllFiles as $key => $File) {
+                    $CountRFPs++;
+                    $ListFile = array();
+                    $ListFile['project_file_id'] = $File->id;
+                    $ListFile['bundle'] = RfpBundle::firstWhere('bundle_id', $File->bundle_id);
+                    $ListFile['filepath'] = $File->filepath;
+                    $ListFile['filename_original'] = $File->filename_original;
+                    $ListFile['filename'] = $File->filename;
+                    $ListFile['file_extension'] = $File->file_extension;
+                    $ListFile['status'] = $File->status;
+                    $ListFile['created_at'] = date("d/m/Y", strtotime($File->created_at));;
+                    $ListFiles[] = $ListFile;
+
+                    $CountRequisitos += $File->records_count;
+                    $CountNotAnswer += $File->records->where('status', 'aguardando')->count();
+                    $CountAnswerUser += $File->records->where('status', 'user edit')->count();
+                    $CountAnswerIA += $File->records->where('status', 'respondido ia')->count();
+                }
+
+                $data = array(
+                    'title' => 'Todos Arquivos',
+                    'lastUpdated' => $lastUpdated,
+                    'lastUpdatedDate' => $lastUpdatedDate,
+                    'lastUpdatedTime' => $lastUpdatedTime,
+                    'ListFiles' => $ListFiles,
+                    'CountProject' => $AllProject->count(),
+                    'CountRFPs' => $CountRFPs,
+                    'CountRequisitos' => $CountRequisitos,
+                    'CountNotAnswer' => $CountNotAnswer,
+                    'CountAnswerUser' => $CountAnswerUser,
+                    'CountAnswerIA' =>  $CountAnswerIA,
+                );
         
-
+                return view('project.list')->with($data);
+        }else{
+            return redirect()->back()->with('error', 'Você não tem permissão para acessar essa página.');
+        }
     }
 
 
     public function filter(Request $request)
     { 
-        // Valida a Permissão do usuário
-        if (Auth::user()->hasRole('Administrador')) {       
-            $query = Project::query()->with('user')->withCount(relations: 'records');
-        }else{
-            $query = Project::query()->with('user')->withCount(relations: 'records')->where('iduser_responsable', Auth::id());
-        }
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
+            // Validação se mostra Tudo ou apenas do usuário
+            if (Auth::user()->hasAnyPermission(['projects.all', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete'])) { 
+                $query = Project::query()->with('user')->withCount(relations: 'records');
+            }else{
+                $query = Project::query()->with('user')->withCount(relations: 'records')->where('iduser_responsable', Auth::id());
+            }
 
             // Aplicar filtros
             if ($request->has('filter')) {
@@ -165,7 +169,9 @@ class ProjectController extends Controller
             
             // Retornar dados em JSON
             return response()->json($data);
-        
+        }else{
+            return redirect()->back()->with('error', 'Você não tem permissão para acessar essa página.');
+        }
     }
 
 
@@ -173,7 +179,7 @@ class ProjectController extends Controller
     public function detail(string $id)
     { 
         $Detail = Project::with('user')->find($id);
-        if (Auth::user()->hasRole('Administrador')) {
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             $AllFiles = ProjectFiles::where('project_id', $id)->withCount('records')->get();
 
             $lastUpdated = ProjectFiles::where('user_id', Auth::id())->orderBy('updated_at', 'desc')->first();
@@ -231,6 +237,8 @@ class ProjectController extends Controller
             );
     
             return view('project.detail')->with($data);
+        }else{
+            return redirect()->back()->with('error', 'Você não tem permissão para acessar essa página.');
         }
 
     }
@@ -239,9 +247,7 @@ class ProjectController extends Controller
     public function filterDetail(Request $request)
     { 
         // Valida a Permissão do usuário
-        
-
-        if (Auth::user()->hasRole('Administrador')) {    
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             //$query = ProjectFiles::query()->with('user')->with('rfp_bundles')->withCount('projectRecords')->where('project_id', $request->id);
             
             $query = ProjectFiles::query()
@@ -283,6 +289,8 @@ class ProjectController extends Controller
 
             // Retornar dados em JSON
             return response()->json($data);
+        }else{
+            return redirect()->back()->with('error', 'Você não tem permissão para acessar essa página.');
         }
     }
 
@@ -290,7 +298,7 @@ class ProjectController extends Controller
     public function updateInfos(Request $request, string $id)
     { 
         // Valida a Permissão do usuário
-        if (Auth::user()->hasRole('Administrador')) {          
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage', 'projects.all.edit', 'projects.my.manage', 'projects.my.edit'])) {     
             $data = htmlspecialchars(trim($request->rfp_date)); // Sanitiza o input
             $resultado = $this->validarEConverterData($data);
 
@@ -314,6 +322,8 @@ class ProjectController extends Controller
                     'message' => 'Data Inválida!',
                 ], 422);
             }                
+        }else{
+            return redirect()->back()->with('error', 'Você não tem permissão para acessar essa página.');
         }
     }
 
@@ -322,13 +332,15 @@ class ProjectController extends Controller
      * Show the form for creating a new resource.
      */
     public function add()
-    {
-
-        $userId = auth()->user()->id;
-        $data = [ 'userId' => $userId,];
-    
-        return view('project.create')->with($data);
-    
+    {   
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage', 'projects.all.add', 'projects.my.manage', 'projects.my.add'])) {     
+            $userId = Auth::id();
+            $data = [ 'userId' => $userId];
+        
+            return view('project.create')->with($data);
+        }else{
+            return redirect()->back()->with('error', 'Você não tem permissão para acessar essa página.');
+        }
     }
 
 
@@ -336,17 +348,20 @@ class ProjectController extends Controller
      * Show the form for creating a new resource.
      */
     public function create(Request $request){    
-        try {
-            $NewProject = new Project();
-            $NewProject->name = $request->name;
-            $NewProject->iduser_responsable = Auth::id();
-            $NewProject->project_date = now();
-            $NewProject->save();
-            return redirect()->route('project.file', ['id' => $NewProject->id]);
-        } catch (\Exception $e) {
-            dd($e);
-            return redirect()->back()->with('error', 'Ocorreu um erro ao processar a requisição!');
-        }    
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage', 'projects.all.add', 'projects.my.manage', 'projects.my.add'])) {     
+            try {
+                $NewProject = new Project();
+                $NewProject->name = $request->name;
+                $NewProject->iduser_responsable = Auth::id();
+                $NewProject->project_date = now();
+                $NewProject->save();
+                return redirect()->route('project.file', ['id' => $NewProject->id]);
+            } catch (\Exception $e) {
+                return redirect()->back()->with('error', 'Ocorreu um erro ao processar a requisição!');
+            }  
+        }else{
+            return redirect()->back()->with('error', 'Você não tem permissão para acessar essa página.');
+        }  
     }
 
 
@@ -357,7 +372,7 @@ class ProjectController extends Controller
     {
         $Project = Project::findOrFail($id);
         if($Project){
-            if (Auth::user()->hasRole('Administrador')) {
+            if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage', 'projects.all.add', 'projects.my.manage', 'projects.my.add'])) {     
                 $Bundles = RfpBundle::all();
                 $data = [ 'Project' => $Project, 'bundles' => $Bundles, 'userId' => Auth::id() ];            
                 return view('project.files')->with($data);
@@ -442,7 +457,7 @@ class ProjectController extends Controller
     {
         // Encontrar o usuário pelo ID
         $Arquivo = KnowledgeBase::where('knowledge_base_id', $id)->first();
-        if (Auth::user()->hasRole('Administrador')) {
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage', 'projects.all.delete', 'projects.my.manage', 'projects.my.delete'])) {     
             if (Storage::exists($Arquivo->filepath)){
                 if (Storage::delete($Arquivo->filepath)){
                     KnowledgeRecord::where('knowledge_base_id', $id)->delete();// 

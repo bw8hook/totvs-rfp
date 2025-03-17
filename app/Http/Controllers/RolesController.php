@@ -103,15 +103,25 @@ class RolesController extends Controller
 
     public function update(Request $request, $id)
     {
-        $role = UserRole::findOrFail($id);
+        dd($request);
+        
+        //$role = UserRole::findOrFail($id);
+        $role = Role::findById($id);
 
         $validated = $request->validate([
-            'name' => 'required|unique:users_role,name,' . $id . '|max:255',
-            'description' => 'nullable|string|max:500',
+            'name' => 'required|unique:roles,name',
+            'permissions' => 'array'
         ]);
 
+        dd($request);
+
+        if($request->has('permissions')) {
+            $role->givePermissionTo($request->permissions);
+        }
+        
+
         $role->update($validated);
-        return response()->json($role);
+        return redirect()->route('roles.list')->with('success', 'Role ATUALIZADA com sucesso!');
     }
 
     public function destroy($id)
