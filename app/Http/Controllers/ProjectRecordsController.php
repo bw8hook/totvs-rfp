@@ -36,7 +36,7 @@ class ProjectRecordsController extends Controller
     public function index(string $id)
     {
         $ProjectFile = ProjectFiles::with('rfp_bundles')->findOrFail($id);
-        if (Auth::user()->hasRole('Administrador')) {  
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             if($ProjectFile->status != "processando"){
                 $Project = Project::with('user')->findOrFail($ProjectFile->project_id);
        
@@ -94,7 +94,7 @@ class ProjectRecordsController extends Controller
     public function filter(Request $request, string $id)
     { 
         $Project = ProjectFiles::findOrFail($id);
-        if (Auth::user()->hasRole('Administrador')) {            
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {   
             $query = ProjectRecord::query()->with('rfp_bundles');
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
@@ -136,7 +136,7 @@ class ProjectRecordsController extends Controller
     public function updateDetails(Request $request, string $id)
     { 
         // Valida a Permissão do usuário
-        if (Auth::user()->hasRole('Administrador')) {     
+        if (Auth::user()->hasAnyPermission(['projects.all.manage', 'projects.all.edit', 'projects.my.manage', 'projects.my.edit'])) {
             $ProjectRecord = ProjectRecord::findOrFail($id);
             if($request->resposta){
                 $ProjectRecord->resposta = $request->resposta;
@@ -174,7 +174,7 @@ class ProjectRecordsController extends Controller
     public function answerErrors(string $id)
     {
         $ProjectFile = ProjectFiles::with('rfp_bundles')->findOrFail($id);
-        if (Auth::user()->hasRole('Administrador')) {  
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             if($ProjectFile->status != "processando"){
                 $Project = Project::with('user')->findOrFail($ProjectFile->project_id);
        
@@ -268,7 +268,7 @@ class ProjectRecordsController extends Controller
     public function filterAnswerError(Request $request, string $id)
     { 
         $Project = ProjectFiles::findOrFail($id);
-        if (Auth::user()->hasRole('Administrador')) {  
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             //$query = ProjectAnswer::query()->with('rfp_bundles');
 
             $query = ProjectRecord::query()
@@ -302,7 +302,7 @@ class ProjectRecordsController extends Controller
     public function errors(string $id)
     {
         $ProjectFile = ProjectFiles::findOrFail($id);
-        if (Auth::user()->hasRole('Administrador')) {  
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             $Project = Project::findOrFail($ProjectFile->project_id);
 
             $ListClassificacaoRecebidas = ProjectRecord::where('project_file_id', $ProjectFile->id)->groupBy('processo')->pluck('processo');
@@ -347,7 +347,7 @@ class ProjectRecordsController extends Controller
     public function filterError(Request $request, string $id)
     { 
         $Project = ProjectFiles::findOrFail($id);
-        if (Auth::user()->hasRole('Administrador')) {  
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             $query = ProjectRecord::query()->with('rfp_bundles');
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
@@ -387,7 +387,7 @@ class ProjectRecordsController extends Controller
     public function processing(Request $request, string $id)
     {
         $Project = ProjectFiles::findOrFail($id);
-        if (Auth::user()->hasRole('Administrador')) {  
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             
             if($Project->status == "não enviado"){
                 $Project->status = "em processamento";
@@ -422,7 +422,7 @@ class ProjectRecordsController extends Controller
     public function processingAnswer(Request $request, string $id)
     {
         $Project = ProjectFiles::findOrFail($id);
-        if (Auth::user()->hasRole('Administrador')) {  
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             
             if($Project->status == "processado"){
                 $Project->status = "concluído";
@@ -454,7 +454,7 @@ class ProjectRecordsController extends Controller
     {
         // Encontrar o usuário pelo ID
         $Record = ProjectRecord::where('id_record', $id)->first();
-       if (Auth::user()->hasRole('Administrador')) {
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             try {
                 $RecordRemove = ProjectRecord::where('id_record', $id)->delete();
 
@@ -483,7 +483,7 @@ class ProjectRecordsController extends Controller
      */
     public function index3()
     { 
-        if (Auth::user()->hasRole('Administrador')) {  
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             $AllFiles = Project::withCount('projectRecords')->get();
 
             // Último atualizado
@@ -564,7 +564,7 @@ class ProjectRecordsController extends Controller
     public function answer(string $id)
     {
         $ProjectFile = ProjectFiles::with('rfp_bundles')->findOrFail($id);
-        if (Auth::user()->hasRole('Administrador')) {  
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             if($ProjectFile->status != "processando"){
                 $Project = Project::with('user')->findOrFail($ProjectFile->project_id);
        
@@ -659,7 +659,7 @@ class ProjectRecordsController extends Controller
     
     public function filterAnswer(Request $request, string $id)
     { 
-        if (Auth::user()->hasRole('Administrador')) {       
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             $Project = ProjectFiles::findOrFail($id);
             $query = ProjectRecord::query()->with('rfp_bundles')->with('answers');
 
@@ -723,7 +723,7 @@ class ProjectRecordsController extends Controller
     public function references(string $id)
     { 
         $Project = ProjectRecord::findOrFail($id);
-        if (Auth::user()->hasRole('Administrador')) {            
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) { 
             //$query = ProjectRecord::query()->with('rfp_bundles');
 
             $ProjectAnswer = ProjectAnswer::where('id', '=', $Project->project_answer_id)->first();
@@ -783,7 +783,7 @@ class ProjectRecordsController extends Controller
     public function detail(string $id)
     { 
         $Project = ProjectRecord::findOrFail($id);
-        if (Auth::user()->hasRole('Administrador')) {            
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             //$query = ProjectRecord::query()->with('rfp_bundles');
             $ProjectAnswer = ProjectAnswer::where('id', '=', $Project->project_answer_id)->first()->toArray();
 
