@@ -1298,17 +1298,17 @@ label{
         background-color: #FFF;
         border-radius: 8px;
         padding: 30px;
-        display: inline-flex;
     }
 
     .btnConfig{
-        width: 200px;
-        height: 100px;
-        margin: 10px;;
-        background-color: rgb(238 245 255);
+        width: 100%;
+        height: 56px;
+        margin: 5px;
+        background-color: #E3EEFF;
         text-align: center;
         color: #5570F1;
-        border-radius: 5px;;
+        border-radius: 5px;
+        display: flex;
     }
 
     .btn_titleComponent{
@@ -1348,10 +1348,15 @@ label{
 
 
     .btnConfig svg{
-        margin: auto;
-        margin-top: 25px;
+        margin-top: 16px;
         margin-bottom: 5px;
         color: #5570F1;
+        margin-left: 25px;
+    }
+
+    .btnConfig span{
+        margin-top: 16px;
+        margin-left: 10px;
     }
 
     .btn_voltar{

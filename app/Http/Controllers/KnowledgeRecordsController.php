@@ -89,7 +89,7 @@ class KnowledgeRecordsController extends Controller
         $perPage = 100; // Seu número de itens por página
         $KnowledgeBase = KnowledgeBase::findOrFail($id);
 
-        if (Auth::user()->hasRole('Administrador')) {   
+        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
             $query = KnowledgeRecord::query()->with('rfp_bundles');
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
@@ -162,7 +162,7 @@ class KnowledgeRecordsController extends Controller
     public function updateDetails(Request $request, string $id)
     { 
         // Valida a Permissão do usuário
-        if (Auth::user()->hasRole('Administrador')) {     
+        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
             $KnowledgeRecords = KnowledgeRecord::findOrFail($id);
             if($request->resposta){
                 $KnowledgeRecords->resposta = $request->resposta;
@@ -204,7 +204,7 @@ class KnowledgeRecordsController extends Controller
     public function errors(string $id)
     {
         $KnowledgeBase = KnowledgeBase::findOrFail($id);
-        if (Auth::user()->hasRole('Administrador')) {
+        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
             
             $ListClassificacaoRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('processo')->pluck('processo');
             $ListRespostaRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('resposta')->pluck('resposta');
@@ -261,7 +261,7 @@ class KnowledgeRecordsController extends Controller
 
     public function filterError(Request $request, string $id)
     { 
-        if (Auth::user()->hasRole('Administrador')) {       
+        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
             $KnowledgeBase = KnowledgeBase::findOrFail($id);
             $query = KnowledgeRecord::query()->with('rfp_bundles');
 
@@ -299,7 +299,7 @@ class KnowledgeRecordsController extends Controller
      */
     public function processing(Request $request, string $id)
     {
-        if (Auth::user()->hasRole('Administrador')) {     
+        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
             $KnowledgeBase = KnowledgeBase::findOrFail($id);
             if($KnowledgeBase->status == "não enviado"){
                 $KnowledgeBase->status = "processando";
@@ -327,7 +327,7 @@ class KnowledgeRecordsController extends Controller
     {
         // Encontrar o usuário pelo ID
         $Record = KnowledgeRecord::where('id_record', $id)->first();
-        if (Auth::user()->hasRole('Administrador')) {
+        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
             try {
                 $RecordRemove = KnowledgeRecord::where('id_record', $id)->delete();
 
