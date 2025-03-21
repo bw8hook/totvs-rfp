@@ -28,7 +28,7 @@ class KnowledgeRecordsController extends Controller
     public function index(string $id, string $Record_id = null)
     {
         $KnowledgeBase = KnowledgeBase::findOrFail($id);
-       if (Auth::user()->hasRole('Administrador')) {
+        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
             if($KnowledgeBase->status != "processando"){
                 $ListClassificacaoRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('processo')->pluck('processo');
                 $ListRespostaRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('resposta')->pluck('resposta');
