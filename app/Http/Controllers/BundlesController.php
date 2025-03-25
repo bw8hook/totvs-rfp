@@ -6,6 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Auth\User;
 use App\Models\RfpBundle;
 use App\Models\Agent;
+use App\Models\Category;
+use App\Models\LineOfProduct;
+use App\Models\Module;
+use App\Models\Segments;
+use App\Models\RfpProcess;
+use App\Models\Type;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -88,15 +94,24 @@ class BundlesController extends Controller
      */
     public function create(): View
     {
-
-        //$AgentId = Auth::user()->id;
+        $lineofproducts = LineOfProduct::all();
+        $segments = Segments::all();
+        $agents = Agent::all();
+        $modules = Module::all();
+        $process = RfpProcess::all();
+        $categories = Category::all();
+        $types = Type::all();
+  
 
         $data = array(
-            'title' => 'Todos Arquivos',
+            'lineofproducts' => $lineofproducts,
+            'segments' => $segments,
+            'agents' => $agents,
+            'categories' => $categories,
+            'modules' => $modules,
+            'types' => $types,
+            'process' => $process,
         );
-
-
-        //return view('auth.register')->with($data);
 
        return view('bundles.create')->with($data);
     }
@@ -108,17 +123,48 @@ class BundlesController extends Controller
      */
     public function edit($id): View
     {
-        if (Auth::user()->hasRole('Administrador')) {
+        if (Auth::user()->hasAnyPermission(['bundles.manage'])) {
             $Bundle = RfpBundle::where('bundle_id', $id)->firstOrFail();
-            $AgentSelected = Agent::where('id', $Bundle->agent_id)->first();
+            
+            $lineofproducts = LineOfProduct::all();
+            $LinesSelected = $Bundle->lineOfProduct()->get();
+
+            $segments = Segments::all();
+            $SegmentsSelected = $Bundle->segments()->get();
+
             $agents = Agent::all();
+            $AgentSelected = Agent::where('id', $Bundle->agent_id)->first();
+
+            $modules = Module::all();
+            $ModulesSelected = $Bundle->modules()->get();
+
+            $process = RfpProcess::all();
+            $ProcessSelected = $Bundle->rfpProcesses()->get();
+
+            $categories = Category::all();
+            $CategorieSelected = Category::where('id', $Bundle->category_id)->first();
+
+            $types = Type::all();
+            $typesSelected = Type::where('id', $Bundle->type_id)->first();
 
             if ($Bundle && $agents) {
                 $data = array(
                     'bundle' => $Bundle,
+                    'lineofproducts' => $lineofproducts,
+                    'segments' => $segments,
                     'agents' => $agents,
+                    'modules' => $modules,
+                    'process' => $process,
+                    'categories' => $categories,
+                    'types' => $types,
                     'id' => $id,
-                    'AgentSelected' => $AgentSelected
+                    'LinesSelected' => $LinesSelected,
+                    'SegmentsSelected' => $SegmentsSelected,
+                    'AgentSelected' => $AgentSelected,
+                    'ModulesSelected' => $ModulesSelected,
+                    'ProcessSelected' => $ProcessSelected->toArray(),
+                    'CategorieSelected' => $CategorieSelected,
+                    'typesSelected' => $typesSelected
                 );
 
                 return view('bundles.edit')->with($data);;
@@ -135,7 +181,7 @@ class BundlesController extends Controller
      */
     public function remove($id)
     {
-        if (Auth::user()->hasRole('Administrador')) {
+        if (Auth::user()->hasAnyPermission(['bundles.manage'])) {
             // Encontrar o usuário pelo ID
             $user = RfpBundle::find($id);
 
@@ -156,7 +202,7 @@ class BundlesController extends Controller
      */
     public function register(Request $request)
     {
-        if (Auth::user()->hasRole('Administrador')) {
+        if (Auth::user()->hasAnyPermission(['bundles.manage'])) {
             // Validação dos dados
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255'
@@ -183,7 +229,7 @@ class BundlesController extends Controller
      */
     public function update(Request $request)
     {
-        if (Auth::user()->hasRole('Administrador')) {
+        if (Auth::user()->hasAnyPermission(['bundles.manage'])) {
             // Validação dos dados
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
@@ -192,15 +238,29 @@ class BundlesController extends Controller
 
             $produto = RfpBundle::where('bundle_id', $validatedData['bundle_id'])->firstOrFail(); // Encontra o registro pelo ID
         
-
-
             if ($produto) {
                 $produto->bundle =  $validatedData['name'];
                 $produto->status =  $request->status;
-                if($request->selected_agents){
-                    $produto->agent_id =  intval($request->selected_agents[0]);   
+                $produto->status_totvs =  $request->status_totvs;
+
+                $produto->type_id = intval($request->types); 
+                $produto->category_id = intval($request->categories); 
+                $produto->agent_id = intval($request->agents); 
+
+                if($request->selected_line){
+                    $produto->lineOfProduct()->sync($request->selected_line);
                 }
-                
+
+                if($request->selected_segment){
+                    $produto->segments()->sync($request->selected_segment);
+                }
+                if($request->selected_module){
+                    $produto->modules()->sync($request->selected_module);
+                }
+                if($request->selected_process){
+                    $produto->rfpProcesses()->sync($request->selected_process);
+                }
+
                 $produto->save(); // Salva as alterações no banco
                 
                 return redirect()->route('bundles.list')->with('success', 'Produto editado com sucesso.');

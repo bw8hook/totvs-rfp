@@ -12,11 +12,32 @@ class RfpBundle extends Model
     protected $fillable = [
         'bundle',
         'agent_id',
+        'type_id',
+        'service_group_id',
+        'working_group_id',
+        'category_id',
+        'status_totvs',
+        'status',
         'created_at',
         'updated_at',
     ];
 
     // Defina o relacionamento com o modelo Agent
+    public function type()
+    {
+        return $this->belongsTo(Type::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function projectFiles()
+    {
+        return $this->belongsToMany(ProjectFiles::class, 'project_files_rfp_bundles', 'bundle_id', 'project_file_id');
+    }
+
     public function agent()
     {
         return $this->belongsTo(Agent::class, 'agent_id');
@@ -32,6 +53,51 @@ class RfpBundle extends Model
     {
         return $this->belongsToMany(RfpProcess::class, 'rfp_process_bundle', 'rfp_bundle_id', 'rfp_process_id')
             ->withTimestamps(); // se sua tabela pivot tem timestamps
+    }
+
+    
+
+
+    public function lineOfProduct()
+    {
+        return $this->belongsToMany(LineOfProduct::class, 'line_of_product_rfp_bundles', 'rfp_bundles_id', 'line_of_product_id');
+    }
+
+    public function segments()
+    {
+        return $this->belongsToMany(Segments::class, 'rfp_bundle_segment', 'bundle_id', 'segment_id');
+    }
+
+
+    /**
+     * Relacionamento N:N com a tabela modules.
+     */
+    public function modules()
+    {
+        return $this->belongsToMany(Module::class, 'module_product', 'product_id', 'module_id');
+    }
+
+
+    public function projectRecords()
+    {
+        return $this->belongsToMany(ProjectRecord::class, 
+            'project_records_bundles', 
+            'bundle_id', 
+            'project_record_id'
+        )->withTimestamps();
+    }
+
+    
+
+    public function knowledgeRecords()
+    {
+        return $this->belongsToMany(KnowledgeRecord::class, 
+            'knowledge_records_bundles', 
+            'bundle_id', 
+            'knowledge_record_id', 
+            'bundle_id', 
+            'id'
+        );
     }
     
 }

@@ -1,78 +1,68 @@
 <x-app-layout>
-    <div class="py-4" style=" padding-bottom: 130px;">
-        <div class="max-w-full mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div style=" padding-bottom: 130px;">
+        <div class="max-w-7xl mx-auto space-y-6">
+    
 
-            <div id="titleComponent_KnowledgeBase" style=" display: inherit; padding-top: 30px; display: inherit; min-height: 97px; height: auto; margin-bottom: -16px !important;" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative" >
-                <div class="AlignTitleLeft" style="width: 80%;">
-                    <div class="flex" style="width: 100%;">
-                        <img src="{{ asset('icons/file-ai.svg') }}" alt="Upload Icon" style="height: 33%; width:52px; padding-right: 18px;">
-                        <span>Novo Projeto</span>
-                    </div>
-                    <div class="relative block items-center" style=" padding-bottom: 12px; margin-left: 8px; width: 90%;">        
-                        <div class="info_details" style="color:#8A94AD;"> Vamos começar um novo projeto!<br/>
-                        Dê um nome para a RFP e posteriormente vincule arquivos.</div>
+            <div class="list-form" style="padding-top:0px;">
+                  
+                <div id="titleComponentForm" class=" flex items-center justify-between px-4 space-x-2 relative">
+                    <div class="flex items-center space-x-2" style="display: block; margin-left: 30px;">
+                
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; margin-top: 3px; width: 27px; margin-right: 1px;">
+                            <line x1="8" y1="6" x2="21" y2="6" style="color: #5570F1;"></line>
+                            <line x1="8" y1="12" x2="21" y2="12" style="color: #5570F1;"></line>
+                            <line x1="8" y1="18" x2="21" y2="18" style="color: #5570F1;"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6" style="color: #5570F1;"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12" style="color: #5570F1;"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18" style="color: #5570F1;"></line>
+                        </svg>
+
+
+                        <div style="display: inline-grid; width: 94%;">
+                            <span style="color: #141824; font-size: 22px; font-weight: 600; line-height: 28.6px; text-align: left;">Cadastro de Nova Linha de Produto</span>
+                            <div style="color:#8A94AD; font-size: 16px; font-weight: 400; line-height: 20px; text-align: left; margin-top: 8px; ">Preencha o formulário abaixo para adicionar uma nova linha de produto ao seu catálogo. Certifique-se de fornecer todas as informações necessárias.</div>
+                        </div>
                     </div>
                 </div>
 
-            </div>
+                <form method="POST" action="{{ route('line-of-products.store') }}" enctype="multipart/form-data" style=" margin: auto; width: 65%; min-width: 450px; background: #FFF; box-shadow: 0px 4px 28px rgba(0, 0, 0, 0.1); border-radius: 15px; padding: 50px 15%;">
+                @csrf
+                
+                <!-- Name -->
+                <div>
+                    <x-input-label for="name" :value="__('Nome')" />
+                    <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" value="" required autofocus  autocomplete="name" />
+                    <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                </div>               
 
-                <form method="post" id="formID" action="{{ route('project.create') }}" class="bg-white rounded-lg shadow-md p-8 w-full flex flex-col" style=" margin-bottom: 100px; position:relative;">
-                    @csrf
+  
+               <!-- TIPO DE CONTA -->
+               <div class="mt-4">
+                    <x-input-label for="status" :value="__('Status')" />
+                    <select name="status"  class="form-control">
+                        <option value="ativo" >Ativo</option>
+                       <option value="inativo" >Inativo</option>
+                    </select>
+                    <x-input-error :messages="$errors->get('status')" class="mt-2" />
+                </div>
+          
+                <div class="flex items-center justify-end mt-3">
+                    <button type="submit" class=" inline-flex items-center rounded-md font-semibold text-xs text-white btn_enviar" style="height: 46px; display: inline;">
+                        <span>Cadastrar</span>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline;">
+                            <path d="M13.5817 6.90667L14.7517 8.09417L9.92417 12.85C9.60167 13.1725 9.1775 13.3333 8.75167 13.3333C8.32583 13.3333 7.8975 13.1708 7.57167 12.8458L5.25333 10.5992L6.41417 9.40167L8.74167 11.6575L13.5817 6.90667ZM20 10C20 15.5142 15.5142 20 10 20C4.48583 20 0 15.5142 0 10C0 4.48583 4.48583 0 10 0C15.5142 0 20 4.48583 20 10ZM18.3333 10C18.3333 5.405 14.595 1.66667 10 1.66667C5.405 1.66667 1.66667 5.405 1.66667 10C1.66667 14.595 5.405 18.3333 10 18.3333C14.595 18.3333 18.3333 14.595 18.3333 10Z" fill="white"/>
+                        </svg>
 
-                    <div class="loading" style="display:none; background: #ffffffcf; position: absolute; width: 100%; height: 100%; top: 0px; left: 0px;">
-                        <div id="lottie-container" style="width: 100px; height:100px; position: absolute; top: 50%; left: 50%; transform: translate(-75px, -35px);"></div>
-                    </div>
-
-   
-                    <div class="flex flex-column items-center justify-center">
-
-                        <div style="padding-top: 10px"></div>
-
-                        <!-- Name -->
-                        <div style="width: 35%; margin-bottom: 25px;">
-                            <x-input-label for="name" :value="__('*Nome:')" />
-                            <x-text-input id="name" class="formAddKnowledge" type="text" name="name" required autofocus autocomplete="name" />
-                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                            <p id="nameError" class="mt-2"></p> <!-- Exibe erro do JS -->
-                        </div>
-
-                        <!-- Name -->
-                        <div style="width: 35%; margin-bottom: 40px;">
-                            <x-input-label for="responsavel" :value="__('Responsável:')" />
-                            <x-text-input id="responsavel" class="formAddKnowledge" type="text" name="responsavel" value="{{Auth::user()->name}}" required autofocus autocomplete="name" disabled/>
-                            <x-input-error :messages="$errors->get('responsavel')" class="mt-2" />
-                        </div>
-
-                        <!-- Name -->
-                        <div style="width: 35%; margin-bottom: 25px;">
-                            <x-input-label for="data" :value="__('Data:')" />
-                            <x-text-input id="data" class="formAddKnowledge" type="text" name="data" value="{{ now()->format('d/m/Y') }}" required autofocus autocomplete="name" disabled/>
-                        </div>
-
-                        <button type="submit" id="uploadButton" class="px-4 py-2" style="background-color: #5570F1; width: 300px; height: 58px; border-radius: 10px; color: white; font-weight:bold; font-size:22px;">Salvar Projeto</button>
-                        <a href="{{route('project.list')}}" id="uploadButton" class="px-4 py-2" style="background-color: #E0E0E0; width: 160; height: 58px; border-radius: 10px; color:#525B75; margin-top:20px; box-shadow: 0px 19px 34px -20px #E0E0E0; font-weight:bold; font-size:22px; text-align: center;line-height: 44px;">Voltar</a>
-                    </div>
+                    </button>
                 </div>
 
+                <a href="" class="btn_voltar">Voltar</a>
+
+            </form>
+        </div>
+
+
+           
         </div>
     </div>
 </x-app-layout>
-
-<script>
-    document.getElementById("formID").addEventListener("submit", function (event) {
-        let nameField = document.getElementById("name");
-        let nameError = document.getElementById("nameError");
-
-        if (nameField.value.trim() === "") {
-            event.preventDefault(); // Impede o envio do formulário
-            nameError.innerText = "O nome é obrigatório!";
-            nameError.style.color = "red";
-        } else if (nameField.value.length < 3) {
-            event.preventDefault();
-            nameError.innerText = "O nome deve ter pelo menos 3 caracteres!";
-            nameError.style.color = "red";
-        } else {
-            nameError.innerText = ""; // Limpa a mensagem de erro se estiver válido
-        }
-    });
-</script>

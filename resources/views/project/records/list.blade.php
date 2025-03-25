@@ -11,7 +11,16 @@
                     <div class="relative block items-center" style="padding-bottom: 12px; padding-left:7px;">        
                         <div class="info_details" style="color:#3A57E8"> {{$ProjectFile->filename_original}} </div>
                         <div class="info_details"> Requisitos:<span> {{$CountCountRecordsResultado}}</span></div>
-                        <div class="info_details"> Produto:<span> {{$ProjectFile->rfp_bundles->bundle}}</span></div>
+                        
+                        <div class="info_details" style="width: 100%;"> Produto:<span>
+                            @isset($ProjectFile->rfp_bundles->bundle)
+                                {{$ProjectFile->rfp_bundles->bundle}}
+                            @else
+                                @foreach ($ProjectFile->bundles as $bundleProject)
+                                    <span style="background: #ececec; padding: 5px 10px; margin-left: 5px; border-radius: 5px;">{{$bundleProject->bundle}}</span>
+                                @endforeach
+                            @endisset
+                        </span></div>
                         <div class="info_details"> Responsável:<span> {{$Project->user->name}}</span></div>
                     </div>
                 </div>
@@ -22,7 +31,7 @@
                 <div class="bloco_info_filter_records">
                     <div>
                         <h2>Edição e Envio de Requisitos</h2>
-                        <h4>VVerifique cada requisito antes de enviar para análise da IA. Para facilitar a sua escolha de edição de requisitos, escolha os filtros abaixo através do ID, palavras-chave e/ou classificação. Ao finalizar a sua edição, conclua a operação com o botão <b>“Concluir e enviar”.</b></h4>
+                        <h4>Verifique cada requisito antes de enviar para análise da IA. Para facilitar a sua escolha de edição de requisitos, escolha os filtros abaixo através do ID, palavras-chave e/ou classificação. Ao finalizar a sua edição, conclua a operação com o botão <b>“Concluir e enviar”.</b></h4>
                     </div>
                         
                     <form id="filterForm">

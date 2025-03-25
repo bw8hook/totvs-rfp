@@ -13,7 +13,7 @@ class RolesController extends Controller
     {
         // Exemplo: Recuperar todos os registros
         $roles = Role::with('permissions')->get();
-        $permissions = Permission::all();
+        $permissions = Permission::orderBy('name', 'asc')->get();
         
         return view('roles.list', compact('roles', 'permissions'));
     }
@@ -61,9 +61,9 @@ class RolesController extends Controller
     {
         // Exemplo: Recuperar todos os registros
         $roles = Role::with('permissions')->get();
-        $permissions = Permission::all();
+        $groupedPermissions = Permission::all()->groupBy('group_name');
         
-        return view('roles.create', compact('roles', 'permissions'));
+        return view('roles.create', compact('roles', 'groupedPermissions'));
     }
 
 
@@ -91,10 +91,11 @@ class RolesController extends Controller
          // Exemplo: Recuperar todos os registros
          $roles = Role::with('permissions')->get();
          $permissions = Permission::all();
+         $groupedPermissions = Permission::all()->groupBy('group_name');
 
          $data = array(
             'role' => $role,
-            'permissions' => $permissions,
+            'groupedPermissions' => $groupedPermissions,
             'id' => $id,
         );
 
@@ -103,31 +104,24 @@ class RolesController extends Controller
 
     public function update(Request $request, $id)
     {
-        dd($request);
-        
-        //$role = UserRole::findOrFail($id);
         $role = Role::findById($id);
 
-        $validated = $request->validate([
-            'name' => 'required|unique:roles,name',
+        // Validação considerando o ID atual para ignorar na validação unique
+        $request->validate([
+            'name' => 'required|unique:roles,name,' . $id,
             'permissions' => 'array'
         ]);
 
-        dd($request);
-
-        if($request->has('permissions')) {
-            $role->givePermissionTo($request->permissions);
-        }
+        $role->update(['name' => $request->name]);
+        $role->syncPermissions($request->permissions ?? []);
         
-
-        $role->update($validated);
-        return redirect()->route('roles.list')->with('success', 'Role ATUALIZADA com sucesso!');
+        return redirect()->route('roles.list')->with('success', 'Perfil atualizado com sucesso!');
     }
 
     public function destroy($id)
     {
-        $role = UserRole::findOrFail($id);
+        $role = Role::findById($id);
         $role->delete();
-        return response()->json(['message' => 'Role deletada com sucesso.']);
+        return redirect()->route('roles.list')->with('success', 'Perfil deletado com sucesso!');
     }
 }

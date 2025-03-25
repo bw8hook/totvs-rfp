@@ -18,28 +18,27 @@ class PermissionsController extends Controller
     public function index()
     {
         $permissions = [
-            'knowledge.manage',
             'knowledge.add',
             'knowledge.edit',
             'knowledge.delete',
-            'projects.all.manage',
             'projects.all.add',
             'projects.all.edit',
             'projects.all.delete',
-            'projects.my.manage',
             'projects.my.add',
             'projects.my.edit',
             'projects.my.delete',
-            'users.manage',
             'users.add',
             'users.edit',
             'users.delete',
-            'config.manage',
             'roles.manage',
+            'products.manage',
+            'line-of-products.manage',
             'bundles.manage',
             'agents.manage',
             'answers.manage',
-            'process.manage'
+            'process.manage',
+            'segments.manage',
+            'modules.manage'
         ];
         
         foreach ($permissions as $permission) {

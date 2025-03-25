@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LineOfProduct;
-use App\Models\ServiceGroup;
+
 use Illuminate\Http\Request;
 
 class LineOfProductController extends Controller
@@ -49,8 +49,8 @@ class LineOfProductController extends Controller
     public function create()
     {
         $lineOfProducts = LineOfProduct::all();
-        $serviceGroups = ServiceGroup::all();
-        return view('line_of_products.create', compact('lineOfProducts', 'serviceGroups'));
+    
+        return view('line_of_products.create', compact('lineOfProducts'));
     }
 
     public function store(Request $request)
@@ -68,44 +68,37 @@ class LineOfProductController extends Controller
             dd($th);
             return redirect()->route('line-of-products.index')->with('error', 'Linha de Prod.');
         }
-
-       
     }
 
-    public function show(LineOfProduct $product)
+
+    public function edit($id)
     {
-        return view('line_of_products.show', compact('product'));
+        $lineOfProducts = LineOfProduct::findOrFail($id);
+
+        $data = array(
+            'lineOfProducts' => $lineOfProducts,
+            'id' => $id,
+        );
+
+        return view('line_of_products.edit')->with($data);
+
     }
 
-    public function edit(LineOfProduct $product)
+    public function update(Request $request, $id)
     {
-        $lineOfProducts = LineOfProduct::all();
-        $serviceGroups = ServiceGroup::all();
-        return view('line_of_products.edit', compact('product', 'lineOfProducts', 'serviceGroups'));
-    }
+        $lineOfProducts = LineOfProduct::findOrFail($id);
 
-    public function update(Request $request, LineOfProduct $product)
-    {
-        $validatedData = $request->validate([
-            'type' => 'required',
-            'name' => 'required',
-            'category' => 'required',
-            'service_group_id' => 'required|exists:rfp_service_groups,id',
-            'hook_status' => 'required|boolean',
-            'totvs_status' => 'required|in:Ativo,Descontinuado',
-            'line_of_product_id' => 'required|exists:rfp_line_of_products,id',
-            'inclusion_date' => 'required|date',
-            'inactivation_date' => 'nullable|date',
-        ]);
+        $validatedData = $request->validate(['name' => 'required', 'status' => 'required']);
 
-        $product->update($validatedData);
+        $lineOfProducts->update($validatedData);
 
         return redirect()->route('line-of-products.index')->with('success', 'Linha de Produto atualizado com sucesso.');
     }
 
-    public function destroy(LineOfProduct $product)
+    public function destroy($id)
     {
-        $product->delete();
+        $lineOfProducts = LineOfProduct::findOrFail($id);
+        $lineOfProducts->delete();
 
         return redirect()->route('line-of-products.index')->with('success', 'Linha de Produto excluído com sucesso.');
     }

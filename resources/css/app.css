@@ -2185,3 +2185,439 @@ label{
         margin-top: 10px;
         margin-left: 10px;
     }
+
+
+    .segment-checkbox{
+        height: 24px;
+        padding: 11px;
+        margin: 8px 15px 8px 5px;
+        background:#F7F7F7;
+    }
+
+
+    .segment-project{
+        display: block;
+        background: #F7F7F7;
+        border-bottom: 1px solid #CCC;
+        color: #5E6470;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+    #ModalProdutosOverlay{
+        width: 100vw;
+        height: 100vh;
+        background-color: #0000006e;
+        position: fixed;
+        z-index: 999999999;
+        top: 0px;
+        left: 0px;
+        bottom: 0px;
+        right: 0px;
+        display: none;
+    }
+
+    #ModalProdutos{
+        display: none;
+        position: absolute;
+        width: 80vw;
+        height: 80vh;
+        background-color: #fafafa;
+        z-index: 999999999;
+        top: 50%;
+        left: 50%;
+        bottom:50%;
+        right: 50%;
+        transform: translate(-50%, -50%);
+        padding: 30px;
+        border-radius: 8px;;
+        overflow: scroll;
+    }
+
+        .btn_close{
+            width: 20px;
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            cursor: pointer;
+        }
+
+        #ModalProdutos .title{
+            width: 100%;
+            border-bottom: 2px solid #E3EEFF;
+            font-style: normal;
+            font-weight: 400;
+            font-size: 20px;
+            line-height: 150%;
+            color: #0E2ECF;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            margin-top: 20px;
+        }
+
+        .alerta_pre_selecao{
+            background-color: #E3EEFF;
+            padding: 10px 23px;
+            display: inline-block;
+            border-radius: 7px;
+            color: #5570F1;
+            font-style: normal;
+            font-weight: 400;
+            font-size: 12px;
+            line-height: 140%;
+            margin-left: 10px;
+            display: none;
+            max-width: 350px;
+        }
+
+        .alerta_pre_selecao .pre-line{
+            margin-top: 10px;;
+        }
+
+            .alerta_pre_selecao .pre-line, .alerta_pre_selecao .pre-segment{
+                display: none;
+                font-weight: bold;
+            }
+
+            .alerta_pre_selecao .pre-line span, .alerta_pre_selecao .pre-segment span{
+                font-weight: 100;
+            }
+
+        .alerta_pre_selecao h4 {
+            font-weight: bolder;
+        }
+
+
+        #filterAdvancedSearch{
+            margin-top: 20px;
+        }
+
+        #filterFormProdutos .primeira_linha input{
+            background-color: #efefef;
+            border-radius: 5px;
+            color: #5E6470;
+            border: none;
+            width: 100%;
+            margin-left: 10px;
+        }
+
+        #filterFormProdutos .primeira_linha .inputField{
+            width: 400px;
+        }
+
+
+        #filterFormProdutos .segunda_linha{
+            display: flex;
+        }
+
+        #filterFormProdutos .segunda_linha input{
+            background-color: #efefef;
+            border-radius: 5px;
+            color: #5E6470;
+            border: none;
+            width: 195px;
+        }
+
+        #filterFormProdutos .segunda_linha select{
+            background-color: #efefef;
+            border-radius: 5px;
+            color: #5E6470;
+            width:195px;
+            border: none;
+        }
+
+        #filterFormProdutos .segunda_linha button {
+            display: flex
+        ;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            padding: 8px 48px;
+            gap: 12px;
+            width: 127px;
+            height: 38px;
+            background: #5570F1;
+            border-radius: 88px;
+            margin-top: 40px;
+            color: #FFF;
+            font-weight: bolder;
+            text-transform: uppercase;
+            font-size: 13px;
+            margin-right: 5px;
+        }
+
+        #filterFormProdutos .segunda_linha .inputField label{
+            color: #5E6470;
+            font-size: 14px;
+        }
+
+        #filterFormProdutos .segunda_linha .inputField{
+            margin: 10px 0px;
+            width: 215px;
+        }
+
+
+        #ProductsResults{
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #efefef;
+        }
+
+        .resultadosTitle{
+            font-style: normal;
+            font-weight: 500;
+            font-size: 16px;
+            line-height: 150%;
+            color: #0E2ECF;
+            margin-bottom: 20px;
+        }
+
+        .SearchHeader{
+            width: 100%;
+            background-color: #FFF;
+            font-style: normal;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            line-height: 300%;
+            color: #5570F1;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            padding: 10px 20px;
+        }
+
+        .SearchHeader .form-check-input[type=checkbox]{
+            height: 10px;
+            padding: 7px;
+            margin: 12px 15px 1px 5px;
+        }
+
+
+
+
+
+        .search_nome{
+            width: 20%;
+        }
+
+        .search_tipo{
+            width: 20%;
+        }
+        
+        .search_segmento{
+            width: 20%;
+        }
+
+        .search_categoria{
+            width: 20%;
+        }
+
+        .search_grupo{
+            width: 20%;
+
+        }
+
+        .search_agente{
+            width: 20%;
+        }
+
+
+        .SearchBody .listItem{
+            width: 100%;
+            background-color: #f9f9f9;
+            font-style: normal;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 20px;;
+            color: #525B75;
+            padding-bottom: 15px;
+            margin-bottom: 6px;
+            display: flex;
+            padding: 10px 20px;
+            box-sizing: border-box;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+
+
+        .SearchBody .listItem .form-check-input[type=checkbox]{
+            height: 10px;
+            padding: 7px;
+            margin: 1px 15px 1px 5px;
+        }
+
+
+        
+        
+
+
+
+
+
+
+
+        .btn_open_filtro{
+            width: 180px;
+            display: inline-flex;
+            float: right;
+            border-bottom: 1px solid #5570F1;
+            margin-bottom: 20px;
+            color: #5570F1;
+            line-height: 17px;
+            padding: 12px 3px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn_open_filtro svg{
+             margin: 0 10px;
+        }
+
+
+        .alert_filtro_custom{
+            float: right;
+            width: 100%;
+            text-align: right;
+            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 14px;
+            margin-top: -10px;
+            display: none;
+        }
+
+        .btn_submit_filter{
+            display: block;
+            padding: 8px 48px;
+            gap: 12px;
+            width: 285px;
+            height: 38px;
+            background: #5570F1;
+            border-radius: 88px;
+            margin-top: 40px;
+            color: #FFF;
+            font-weight: bolder;
+            text-transform: uppercase;
+            font-size: 13px;
+            margin: 20px auto;
+            cursor: pointer;
+        }
+
+        .btn_submit_filter:hover{
+            background-color: #0075b5;
+        }
+
+
+
+
+        select2-container--default .select2-selection--multiple {
+            border-color: #d1d5db;
+            border-radius: 0.375rem;
+            min-height: 38px;
+        }
+        
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            border-color: #2563eb;
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 2px #bfdbfe;
+        }
+        
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #e5e7eb;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            padding: 0 8px;
+            margin: 3px;
+        }
+        
+        .select2-container--default .select2-search--inline .select2-search__field {
+            margin-top: 3px;
+        }
+        
+        .select2-dropdown {
+            border-color: #d1d5db;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+
+
+
+
+
+
+
+        .ts-wrapper {
+            position: relative;
+            background: #f7f7f7;
+            border-radius: 7px;
+            z-index: 2;
+        }
+        
+        .ts-control {
+            background: #f7f7f7;
+            border: none;
+            padding: 18px 10px;
+            border-radius: 10px;
+        }
+        
+        .ts-control input{
+            font-size: 14px;
+            font-weight: 100;
+            color: #6f778c;
+        }
+
+        .ts-control input::placeholder{
+            color: #6f778c;
+        }
+
+        .ts-dropdown {
+            @apply mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm;
+        }
+        
+        .ts-dropdown .active {
+            @apply bg-indigo-600 text-white;
+        }
+        
+        .ts-dropdown .option {
+            @apply cursor-default select-none py-2 px-3;
+        }
+        
+        .ts-wrapper.multi .ts-control > div {
+            @apply bg-indigo-100 border border-indigo-200 rounded px-2 py-1 text-sm text-indigo-800 mr-1 mb-1;
+        }
+        
+        .ts-wrapper.multi .ts-control > div .remove {
+            @apply text-indigo-600 hover:text-indigo-800 cursor-pointer ml-1;
+        }
+        
+        .ts-wrapper.plugin-remove_button .item .remove {
+            @apply border-l border-indigo-200 pl-2 ml-2;
+        }
+        
+        .no-results {
+            @apply text-gray-500 py-2 px-3 text-sm;
+        }
+        
+        /* Estilo para o foco */
+        .ts-wrapper.focus .ts-control {
+            @apply border-indigo-500 ring-1 ring-indigo-500;
+        }
+        
+        /* Estilo para o placeholder */
+        .ts-control > input::placeholder {
+            @apply text-gray-400;
+        }
+

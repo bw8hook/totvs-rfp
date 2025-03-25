@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Exports\KnowledgeBaseExport;
 use App\Exports\KnowledgeCorrectionExport;
 use App\Models\Agent;
 use App\Models\ProjectAnswer;
@@ -50,7 +51,6 @@ class KnowledgeController extends Controller
             $AllFiles = KnowledgeBase::withCount('knowledgeRecords')->get();
 
             // Último atualizado
-            
             $lastUpdated = KnowledgeBase::where('user_id', Auth::id())->orderBy('updated_at', 'desc')->first();
             if ($lastUpdated) {
                 $lastUpdatedDate = Carbon::parse($lastUpdated->updated_at)->format('d/m/Y'); // Apenas o dia
@@ -81,11 +81,11 @@ class KnowledgeController extends Controller
             }
 
             $resultados = DB::table(table: 'knowledge_records')
-            ->leftJoin('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id') // INNER JOIN
-            ->select('knowledge_records.bundle_id', 'rfp_bundles.bundle',  DB::raw('COUNT(*) as total'))
+            //->leftJoin('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id') // INNER JOIN
+            //->select('knowledge_records.bundle_id', 'rfp_bundles.bundle',  DB::raw('COUNT(*) as total'))
             ->where('knowledge_records.user_id',  Auth::id()) // Filtra pelo ID do usuário
-            ->groupBy('knowledge_records.bundle_id') // Agrupa pelo ID do bundle
-            ->groupBy('rfp_bundles.bundle') // Agrupa pelo ID do bundle
+            //->groupBy('knowledge_records.bundle_id') // Agrupa pelo ID do bundle
+            //->groupBy('rfp_bundles.bundle') // Agrupa pelo ID do bundle
             ->get();
         
             $CountResultado = 0;
@@ -93,7 +93,7 @@ class KnowledgeController extends Controller
             //Exibindo o resultado
             foreach ($resultados as $resultado) {
                 $CountPacotes++;
-                $CountResultado = $CountResultado + $resultado->total;
+                //$CountResultado = $CountResultado + $resultado->total;
             }
         
             $data = array(
@@ -369,6 +369,111 @@ class KnowledgeController extends Controller
           
         Log::info('Finalizando o processamento da base de conhecimento'); // Adiciona log aqui
     }
+
+
+
+
+
+
+
+
+    public function cron2(){
+        Log::info('Iniciando o processamento da base de conhecimento'); // Adiciona log aqui
+        $KnowledgeBase = KnowledgeBase::where('status', "processando")->get();
+        if ($KnowledgeBase->count() > 0) {
+            foreach ($KnowledgeBase as $item) {
+                try {
+                    $Bundles = RfpBundle::with('agent')->get();
+
+                    foreach ($Bundles as $bundle) {
+                        
+                        $Records = KnowledgeRecord::where('knowledge_base_id', $item->id)
+                        ->where('knowledge_records.status', 'aguardando')
+                        ->select(
+                            'knowledge_records.id_record',
+                            'knowledge_records.processo',
+                            'knowledge_records.subprocesso',
+                            'knowledge_records.requisito',
+                            'knowledge_records.resposta',
+                            'knowledge_records.modulo',
+                            DB::raw('(
+                                SELECT rb.bundle 
+                                FROM knowledge_records_bundles krb
+                                JOIN rfp_bundles rb ON krb.bundle_id = rb.bundle_id
+                                WHERE krb.knowledge_record_id = knowledge_records.id_record
+                                AND krb.bundle_status = "principal"
+                                LIMIT 1
+                            ) as produto_principal'),
+                            'knowledge_records.observacao',
+                            DB::raw('(
+                                SELECT GROUP_CONCAT(
+                                    COALESCE(
+                                        rb.bundle,
+                                        krb.old_bundle
+                                    )
+                                )
+                                FROM knowledge_records_bundles krb
+                                LEFT JOIN rfp_bundles rb ON krb.bundle_id = rb.bundle_id
+                                WHERE krb.knowledge_record_id = knowledge_records.id_record
+                                AND krb.bundle_status = "adicional"
+                            ) as produtos_adicionais')
+                        )
+                        ->get();
+
+                        if (!$Records->isEmpty()) {
+                            $filenamePrev = $item->id.'_'.$item->name.'_'.uniqid();
+                            $fileName = preg_replace('/[^\w\-_\.]/', '', $filenamePrev);
+                            $fileName = trim($fileName, '_');
+                            $fileName = Str::slug($fileName).'.csv';
+
+                            $BundleName = preg_replace('/[^\w\-_\.]/', '', $bundle->bundle);
+                            $BundleName = trim($BundleName, '_');
+                            $BundleName = Str::slug($BundleName);
+
+                            $filePath = 'cdn/knowledge/base_exported/'.$BundleName.'/'.$fileName;
+
+                            // Cria um Registro de Arquivo Exportado
+                            $KnowledgeBaseExported = new KnowledgeBaseExported();
+                            $KnowledgeBaseExported->user_id = $item->user_id;
+                            $KnowledgeBaseExported->bundle_id = $bundle->bundle_id;
+                            $KnowledgeBaseExported->default_base_id = $item->id;
+                            $KnowledgeBaseExported->save();
+                            $KnowledgeBaseExportedid = $KnowledgeBaseExported->id;
+                            $KnowledgeBaseExported->filepath = $filePath;
+                            $KnowledgeBaseExported->filename = $fileName;
+                            
+                            // Envia os arquivos para a S3 e Pega a URL
+                            $export = new KnowledgeBaseExport($item->id, $Records, $KnowledgeBaseExportedid);
+                            Excel::store($export, $filePath, 's3');
+                            $fileUrl = Storage::disk('s3')->url($filePath);
+
+                            if (!empty($fileUrl)) {
+                                // Atualiza com a URL
+                                $KnowledgeBaseExported->file_url = $fileUrl;
+                                $KnowledgeBaseExported->save();
+                                $item->status = 'processado';
+                                $item->save();
+                            }
+                        } else {
+                           Log::error("Erro ao processar a base de conhecimento");
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Erro: " . $e->getMessage());
+                }
+            }
+        } else {
+            Log::info('Nenhuma base de conhecimento com status "processando" encontrada');
+        }
+
+        Log::info('Finalizando o processamento da base de conhecimento'); // Adiciona log aqui
+    }
+
+
+    
+
+
+
 
 
   public function cron3(){

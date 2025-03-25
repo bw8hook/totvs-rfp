@@ -74,8 +74,6 @@ class UploadProjectToAnswer extends Command
         try {
             $ProjectFiles = ProjectFiles::where('status', "em processamento")->get();
     
-
-            
             $client = new Client([
                 'base_uri' => $this->baseUrl,
                 'timeout' => 30,

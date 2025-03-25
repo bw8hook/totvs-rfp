@@ -10,7 +10,7 @@ use App\Models\Diretrizes;
 
 class AgentController extends Controller
 {
-    public function lista(){
+    public function index(){
 
        // BUSCA A LISTA DE AGENTS
        $CountAgentsPage = 1;

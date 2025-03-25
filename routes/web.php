@@ -1,7 +1,11 @@
 <?php
 
+use App\Exceptions\MagicWriteAPI\Agents;
+use App\Http\Controllers\AgentController;
+use App\Http\Controllers\AgentsController;
 use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\LineOfProductController;
+use App\Http\Controllers\ModulesController;
 use App\Http\Controllers\NewProjectController;
 use App\Http\Controllers\ProcessController;
 use App\Http\Controllers\ProductController;
@@ -13,6 +17,7 @@ use App\Http\Controllers\KnowledgeController;
 use App\Http\Controllers\KnowledgeRecordsController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectRecordsController;
+use App\Http\Controllers\SegmentsController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -45,7 +50,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/knowledge/filter', [KnowledgeController::class,'filter'])->name('knowledge.filter');
         Route::post('/knowledge/update-infos/{id}', [KnowledgeController::class,'updateInfos'])->name('knowledge.updateInfos');
     //CRON PARA AUTOMATIZAR  SUBIDA PARA IA
-    Route::get('/knowledge/cron', [KnowledgeController::class,'cron'])->name('knowledge.cron');
+    Route::get('/knowledge/cron', [KnowledgeController::class,'cron2'])->name('knowledge.cron');
+
 
     // REGISTROS DA BASE DE CONHECIMENTO
         //AJAX
@@ -79,7 +85,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/project/filter-detail', [ProjectController::class,'filterDetail'])->name('project.filterDetail');
         
         Route::post('/project/update-infos/{id}', [ProjectController::class,'updateInfos'])->name('project.updateInfos');
-    //CRON PARA AUTOMATIZAR  SUBIDA PARA IA
+    
+        //CRON PARA AUTOMATIZAR  SUBIDA PARA IA
     Route::get('/project/cron', [ProjectController::class,'cron'])->name('knowledge.cron');
 
     // REGISTROS DA BASE DE CONHECIMENTO
@@ -144,7 +151,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/process/filter', [ProcessController::class, 'filter'])->name('process.filter');
     Route::get('/process', [ProcessController::class,'list'])->name('process.list');
-    Route::get('/process/new', [ProcessController::class, 'create'])->name('process.register');
+    Route::get('/process/new', [ProcessController::class, 'create'])->name('process.create');
     Route::get('/process/edit/{id}', [ProcessController::class, 'edit'])->name('process.edit');
     Route::delete('/process/remove/{id}', [ProcessController::class, 'remove'])->name('process.remove');
     Route::post('/process/register', [ProcessController::class, 'register'])->name('process.register');
@@ -158,13 +165,15 @@ Route::get('/roles/filter', [RolesController::class, 'filter'])->name('roles.fil
 Route::get('/roles/new', [RolesController::class,'new'])->middleware(['auth', 'verified'])->name('roles.new');
 Route::post('/roles/new', [RolesController::class, 'store'])->middleware(['auth', 'verified'])->name('roles.store');
 Route::get('/roles/{id}', [RolesController::class, 'show'])->middleware(['auth', 'verified'])->name('roles.show');
-Route::post('/roles/{id}', [RolesController::class, 'edit'])->middleware(['auth', 'verified'])->name('roles.update');
-Route::delete('/roles/{id}', [RolesController::class, 'remove'])->middleware(['auth', 'verified'])->name('roles.remove');
+Route::post('/roles/{id}', [RolesController::class, 'update'])->middleware(['auth', 'verified'])->name('roles.update');
+Route::delete('/roles/{id}', [RolesController::class, 'destroy'])->middleware(['auth', 'verified'])->name('roles.remove');
 Route::get('/roles', [RolesController::class,'index'])->middleware(['auth', 'verified'])->name('roles.list');
 
-// CADASTRO DE PERMISSÕES
-Route::post('/permissions', [PermissionsController::class,'index'])->middleware(['auth', 'verified'])->name('permissions.list');
 
+// CADASTRO DE PERMISSÕES
+Route::get('/permissions', [PermissionsController::class,'index'])->middleware(['auth', 'verified'])->name('permissions.list');
+
+// Teste de Email
 Route::get('/teste-email', [PermissionsController::class,'new_email'])->middleware(['auth', 'verified'])->name('new_email');
 
 
@@ -182,19 +191,41 @@ Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name
 Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
 Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
 
-
 // Listar todos os produtos
 Route::get('/line-of-products', [LineOfProductController::class, 'index'])->name('line-of-products.index');
 Route::get('/line-of-products/filter', [LineOfProductController::class, 'filter'])->name('line-of-products.filter');
-Route::get('/line-of-products/create', [LineOfProductController::class, 'create'])->name('line-of-products.create');
-Route::post('/line-of-products', [LineOfProductController::class, 'store'])->name('line-of-products.store');
-Route::get('/line-of-products/{product}', [LineOfProductController::class, 'show'])->name('line-of-products.show');
-Route::get('/line-of-products/{product}/edit', [LineOfProductController::class, 'edit'])->name('line-of-products.edit');
-Route::put('/line-of-products/{product}', [LineOfProductController::class, 'update'])->name('line-of-products.update');
-Route::delete('/line-of-products/{product}', [LineOfProductController::class, 'destroy'])->name('line-of-products.destroy');
+Route::get('/line-of-products/new', [LineOfProductController::class, 'create'])->name('line-of-products.create');
+Route::post('/line-of-products/new', [LineOfProductController::class, 'store'])->name('line-of-products.store');
+Route::get('/line-of-products/{id}', [LineOfProductController::class, 'edit'])->name('line-of-products.edit');
+Route::post('/line-of-products/{id}', [LineOfProductController::class, 'update'])->name('line-of-products.update');
+Route::delete('/line-of-products/{id}', [LineOfProductController::class, 'destroy'])->name('line-of-products.destroy');
 
+// Listar todos os Segmentos
+Route::get('/segments', [SegmentsController::class, 'index'])->name('segments.index');
+Route::get('/segments/filter', [SegmentsController::class, 'filter'])->name('segments.filter');
+Route::get('/segments/new', [SegmentsController::class, 'create'])->name('segments.create');
+Route::post('/segments/new', [SegmentsController::class, 'store'])->name('segments.store');
+Route::get('/segments/{id}', [SegmentsController::class, 'edit'])->name('segments.edit');
+Route::post('/segments/{id}', [SegmentsController::class, 'update'])->name('segments.update');
+Route::delete('/segments/{id}', [SegmentsController::class, 'destroy'])->name('segments.destroy');
 
+// Listar todos os Modules
+Route::get('/modules', [ModulesController::class, 'index'])->name('modules.index');
+Route::get('/modules/filter', [ModulesController::class, 'filter'])->name('modules.filter');
+Route::get('/modules/new', [ModulesController::class, 'create'])->name('modules.create');
+Route::post('/modules/new', [ModulesController::class, 'store'])->name('modules.store');
+Route::get('/modules/{id}', [ModulesController::class, 'edit'])->name('modules.edit');
+Route::post('/modules/{id}', [ModulesController::class, 'update'])->name('modules.update');
+Route::delete('/modules/{id}', [ModulesController::class, 'destroy'])->name('modules.destroy');
 
+// Listar todos os produtos
+Route::get('/agents', [AgentsController::class, 'index'])->name('agents.index');
+Route::get('/agents/filter', [AgentsController::class, 'filter'])->name('agents.filter');
+Route::get('/agents/new', [AgentsController::class, 'create'])->name('agents.create');
+Route::post('/agents/new', [AgentsController::class, 'store'])->name('agents.store');
+Route::get('/agents/{id}', [AgentsController::class, 'edit'])->name('agents.edit');
+Route::post('/agents/{id}', [AgentsController::class, 'update'])->name('agents.update');
+Route::delete('/agents/{id}', [AgentsController::class, 'destroy'])->name('agents.destroy');
 
 
 Route::get('/csrf-token', function () {

@@ -2,7 +2,7 @@
     <div class="py-4" style=" padding-bottom: 130px;">
         <div class="max-w-full mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            <x-title-component :showButton="true" textButton="Adicionar Linha/Produto" urlButton="new-bundles" > {{ __('Linhas/Produtos Cadastrados') }} </x-title-component>
+            <x-title-component :showButton="true" textButton="Adicionar Produto" urlButton="bundles/new" > {{ __('Produtos Cadastrados') }} </x-title-component>
 
             <div id="BlocoLista" class="p-4 sm:p-8">
                 <div class="bloco_info_details_header">
@@ -32,7 +32,7 @@
                     <thead>
                         <tr>
                             <th style="width:11%; text-align:center;">ID</th>
-                            <th style="width:60%;">Nome da Linha/Produto</th>
+                            <th style="width:60%;">Nome do Produto</th>
                             <th  style="width:13%; text-align:center;">Data do Cadastro</th>
                             <th  style="width:15%; text-align:center;">Ação</th>
                         </tr>    

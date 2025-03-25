@@ -49,12 +49,10 @@ class UploadKnowledgeBase extends Command
             mkdir($tempDir, 0755, true);
         }
 
-
         foreach ($Bundles as $bundle) {
             $gBaseById = $RDStationMentoria->Bases->getBaseById($bundle->agent->knowledge_id);
             if (!empty($gBaseById['id'])) {
                 
-
                 $KnowledgeBaseExported = KnowledgeBaseExported::where('status', "aguardando")->where('bundle_id', $bundle->bundle_id)->get();
                 if ($KnowledgeBaseExported->count() > 0) {
                     foreach ($KnowledgeBaseExported as $item) {

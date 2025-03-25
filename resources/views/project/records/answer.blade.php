@@ -11,7 +11,16 @@
                     <div class="relative block items-center" style="padding-bottom: 12px; padding-left:7px;">        
                         <div class="info_details" style="color:#3A57E8"> {{$ProjectFile->filename_original}} </div>
                         <div class="info_details"> Requisitos:<span> {{$CountCountRecordsResultado}}</span></div>
-                        <div class="info_details"> Produto:<span> {{$ProjectFile->rfp_bundles->bundle}}</span></div>
+                        <div class="info_details" style="width: 100%;"> Produto:<span>
+                            @isset($ProjectFile->rfp_bundles->bundle)
+                                {{$ProjectFile->rfp_bundles->bundle}}
+                            @else
+                                @foreach ($ProjectFile->bundles as $bundleProject)
+                                    <span style="background: #ececec; padding: 5px 10px; margin-left: 5px; border-radius: 5px;">{{$bundleProject->bundle}}</span>
+                                @endforeach
+                            @endisset
+                        </span></div>
+
                         <div class="info_details"> Responsável:<span> {{$Project->user->name}}</span></div>
                     </div>
                 </div>
@@ -399,7 +408,7 @@
                                 <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.modulo ? record.answers.modulo : ''} </td>
                                 <td style="width:42%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.resposta ? record.answers.resposta : ''} </td>
                                 <td style="width:12%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #D2E4FF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #0E2ECF;"> ${record.answers.acuracidade_porcentagem ? record.answers.acuracidade_porcentagem : ''} </span> </td>
-                                <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #C7EBFF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #141824;"> ${record.rfp_bundles.bundle ? record.rfp_bundles.bundle : ''} </span></td>
+                                <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #C7EBFF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #141824;"> ${record.answers.linha_produto ? record.answers.linha_produto : ' Produto não encontrado'}   </span></td>
                                 <td style="width:10%;  display: flex; align-items: center;">
                                     ${btnEdit}
                                 </td>

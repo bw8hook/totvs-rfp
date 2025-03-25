@@ -31,13 +31,13 @@ class KnowledgeBaseExport implements FromCollection, WithHeadings
             $ProjectRecord->base_exported_id = $this->KnowledgeBaseExportedId;
             $ProjectRecord->save();
         }
-
+        
         return $this->Records;
     }
 
     public function headings(): array
     {
-        return ["ID Registro", "Processo", "Subprocesso", "Requisito", "Resposta", "Módulo", "Observações", "Linha/Produto"];
+        return ["ID Registro", "Processo", "Subprocesso", "Requisito", "Resposta", "Módulo", "Produto Principal", "Observações", "Produtos Adicionais"];
     }
 
 

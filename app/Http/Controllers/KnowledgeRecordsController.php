@@ -39,12 +39,26 @@ class KnowledgeRecordsController extends Controller
                 $AllProcess =  RfpProcess::orderBy('order', 'asc')->get();
                 $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
 
-                $ListProdutos = DB::table('knowledge_records')
-                ->leftJoin('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id')
-                ->where('knowledge_records.knowledge_base_id', $KnowledgeBase->id)
-                ->groupBy('knowledge_records.bundle_id')
-                ->select('knowledge_records.bundle_id', 'rfp_bundles.bundle')
-                ->groupBy('rfp_bundles.bundle') // Agrupa pelo ID do bundle
+            //     $ListProdutos = DB::table('knowledge_records')
+            //     //->leftJoin('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id')
+            //     ->where('knowledge_records.knowledge_base_id', $KnowledgeBase->id)
+            //    // ->groupBy('knowledge_records.bundle_id')
+            //     //->select('knowledge_records.bundle_id', 'rfp_bundles.bundle')
+            //    // ->groupBy('rfp_bundles.bundle') // Agrupa pelo ID do bundle
+            //     ->get();
+
+
+                $ListProdutos = DB::table('knowledge_records as kr')
+                ->leftJoin('knowledge_records_bundles as krb', 'kr.id_record', '=', 'krb.knowledge_record_id')
+                ->leftJoin('rfp_bundles as rb', 'krb.bundle_id', '=', 'rb.bundle_id')
+                ->where('kr.knowledge_base_id', $KnowledgeBase->id)
+                ->select(
+                    'kr.*',
+                    'krb.bundle_id',
+                    'krb.old_bundle',
+                    'krb.bundle_status',
+                    'rb.bundle as bundle_name'
+                )
                 ->get();
 
                 $Records = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->get();
@@ -90,68 +104,109 @@ class KnowledgeRecordsController extends Controller
         $KnowledgeBase = KnowledgeBase::findOrFail($id);
 
         if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
-            $query = KnowledgeRecord::query()->with('rfp_bundles');
-
-            // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
-            $query->where('knowledge_base_id', '=', $KnowledgeBase->id);
-
-            // Aplicar filtros
-            if ($request->has('keyWord') && !empty($request->keyWord)) {
-                $query->where(function ($q) use ($request) {
-                    $q->where('requisito', 'like', '%' . $request->keyWord . '%')
-                    ->orWhere('observacao', 'like', '%' . $request->keyWord . '%')
-                    ->orWhere('processo', 'like', '%' . $request->keyWord . '%')
-                    ->orWhere('subprocesso', 'like', '%' . $request->keyWord . '%')
-                    ->orWhere('resposta', 'like', '%' . $request->keyWord . '%')
-                    ->orWhere('modulo', 'like', '%' . $request->keyWord . '%')
-                    ->orWhere('bundle_old', 'like', '%' . $request->keyWord . '%');
+            
+            $query = KnowledgeRecord::query()->with('bundles');
+            
+            // Filtro base
+            $query->where('knowledge_base_id', $KnowledgeBase->id);
+            
+            // Filtro de palavra-chave
+            if ($request->filled('keyWord')) {
+                $keyWord = $request->keyWord;
+                $query->where(function($q) use ($keyWord) {
+                    $q->where('requisito', 'like', '%' . $keyWord . '%')
+                      ->orWhere('observacao', 'like', '%' . $keyWord . '%')
+                      ->orWhere('processo', 'like', '%' . $keyWord . '%')
+                      ->orWhere('subprocesso', 'like', '%' . $keyWord . '%')
+                      ->orWhere('resposta', 'like', '%' . $keyWord . '%')
+                      ->orWhere('modulo', 'like', '%' . $keyWord . '%')
+                      ->orWhereHas('bundles', function($query) use ($keyWord) {
+                          $query->where('bundle', 'like', '%' . $keyWord . '%')
+                                ->orWhere('knowledge_records_bundles.old_bundle', 'like', '%' . $keyWord . '%');
+                      });
                 });
             }
             
-            $processo = $request->processo === "null" ? null : $request->processo;
-            if (filled($processo)) {
+            // Filtro de processo
+            if ($request->filled('processo') && $request->processo !== "null") {
                 $query->where('processo', 'like', '%' . $request->processo . '%');
             }
             
-            $resposta = $request->resposta === "null" ? null : $request->resposta;
-            if (filled($resposta)) {
+            // Filtro de resposta
+            if ($request->filled('resposta') && $request->resposta !== "null") {
                 $query->where('resposta', 'like', '%' . $request->resposta . '%');
             }
-
-            $product = $request->product === "null" ? null : $request->product;
-            if (filled($product)) {
-                $query->where('bundle_old', 'like', '%' . $request->product . '%');
+            
+            // Filtro de produto
+            if ($request->filled('product') && $request->product !== "null") {
+                $query->whereHas('bundles', function($query) use ($request) {
+                    $query->where('bundle', 'like', '%' . $request->product . '%')
+                          ->orWhere('knowledge_records_bundles.old_bundle', 'like', '%' . $request->product . '%');
+                });
             }
-
-            // Aplicar ordenação (substitua 'id_record' pelo campo que você usa para ordenar)
+            
+            // Ordenação
             $query->orderBy('id_record', 'asc');
-
-            $page = null;
+            
+            // Cálculo de página para Record_id específico
             if ($Record_id) {
-                // Clone a query para calcular a posição
-                $positionQuery = clone $query;
+                $position = (clone $query)
+                    ->where('id_record', '<', $Record_id)
+                    ->count();
                 
-                // Calcular a posição do registro
-                $position = $positionQuery->where('id_record', '<', $Record_id)->count();
-
-                // Calcular a página
                 $page = floor($position / $perPage) + 1;
-
-                // Definir a página na request para a paginação
                 $request->merge(['page' => $page]);
             }
-
-            // Paginação
+            
+            // Paginação com transformação dos dados
             $records = $query->paginate($perPage);
+            
 
+            // Na transformação
+            $records->getCollection()->transform(function ($record) {
+                $recordArray = $record->toArray(); // Mantém todos os campos originais
+
+                // Sobrescreve apenas o campo 'bundles' com a versão separada
+                $recordArray['bundles'] = [
+                    'principais' => $record->bundles
+                        ->where('pivot.bundle_status', 'principal')
+                        ->values()
+                        ->map(function($bundle) {
+                            return [
+                                'id' => $bundle->bundle_id,
+                                'name' => $bundle->bundle,
+                                'status' => $bundle->pivot->bundle_status,
+                                'old_bundle' => $bundle->pivot->old_bundle
+                            ];
+                        })->toArray(),
+                        
+                    'adicionais' => $record->bundles
+                        ->where('pivot.bundle_status', 'adicional')
+                        ->values()
+                        ->map(function($bundle) {
+                            return [
+                                'id' => $bundle->bundle_id,
+                                'name' => $bundle->bundle,
+                                'status' => $bundle->pivot->bundle_status,
+                                'old_bundle' => $bundle->pivot->old_bundle
+                            ];
+                        })->toArray()
+                ];
+
+                return $recordArray;
+            });
+
+
+            
             $data = [
-                'response' => $records,
+                'response' => $records
             ];
-
+            
             if ($Record_id) {
                 $data['id'] = $Record_id;
                 $data['page'] = $page;
             }
+            
 
             // Retornar dados em JSON
             return response()->json($data);
@@ -169,7 +224,36 @@ class KnowledgeRecordsController extends Controller
             }
 
             if($request->bundle){
-                $KnowledgeRecords->bundle_id = $request->bundle;
+                $bundlePrincipalAnterior = DB::table('knowledge_records_bundles')
+                    ->where('knowledge_record_id', $KnowledgeRecords->id_record)
+                    ->where('bundle_status', 'principal')
+                    ->join('rfp_bundles', 'knowledge_records_bundles.bundle_id', '=', 'rfp_bundles.bundle_id')
+                    ->select('rfp_bundles.*', 'knowledge_records_bundles.*')
+                    ->first();
+
+                // Remove o bundle principal atual
+                DB::table('knowledge_records_bundles')
+                    ->where('knowledge_record_id', $KnowledgeRecords->id_record) // certifique-se de usar a chave correta
+                    ->where('bundle_status', 'principal')
+                    ->delete();
+
+                // Depois adiciona o novo
+                $KnowledgeRecords->bundles()->attach($request->bundle, [
+                    'knowledge_record_id' => $KnowledgeRecords->id_record, // certifique-se de usar a chave correta
+                    'old_bundle' => $bundlePrincipalAnterior ? $bundlePrincipalAnterior->bundle : null,
+                    'bundle_status' => 'principal',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+                
+
+
+                // Faz o sync
+                //$KnowledgeRecords->bundles()->sync($bundlesData);
+
+
+                //$KnowledgeRecords->bundles()->sync($request->bundle);
+                //$KnowledgeRecords->bundle_id = $request->bundle;
             }
 
             if($request->processo){
@@ -267,14 +351,9 @@ class KnowledgeRecordsController extends Controller
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
             $query->where('knowledge_base_id', '=', $KnowledgeBase->id);
-
             // Pelo menos uma das três condições opcionais deve ser verdadeira
             $query->where(function($q) {
                 $q->where(function($subQ) {
-                    $subQ->whereNull('bundle_id')
-                        ->orWhere('bundle_id', '');
-                })
-                ->orWhere(function($subQ) {
                     $subQ->whereNull('processo_id')
                         ->orWhere('processo_id', '');
                 })

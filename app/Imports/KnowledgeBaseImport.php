@@ -7,6 +7,7 @@ use App\Models\RfpBundle;
 use App\Models\RfpProcess;
 use App\Models\KnowledgeRecord;
 use App\Models\KnowledgeError;
+use DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Collection;
@@ -89,63 +90,101 @@ class KnowledgeBaseImport implements ToCollection, WithStartRow, WithEvents, Wit
                 
                 // Salva o registro
                 $KnowledgeRecord = new KnowledgeRecord();
-                    // Dados de configuração
-                    $KnowledgeRecord->knowledge_base_id = $this->id;
-                    $KnowledgeRecord->user_id = Auth::id();
-                    $KnowledgeRecord->bundle_old = $row[5];
-                    $KnowledgeRecord->spreadsheet_line = $index;
+                
+                // Dados de configuração
+                $KnowledgeRecord->knowledge_base_id = $this->id;
+                $KnowledgeRecord->user_id = Auth::id();
+                $KnowledgeRecord->bundle_old = $row[5];
+                $KnowledgeRecord->spreadsheet_line = $index;
 
-                    // Valida o PRODUTO
-                    if (!$bundleIDFound) {
-                        $KnowledgeRecord->bundle_id = null;
-                    }else{
-                        $KnowledgeRecord->bundle_id = $bundleIDFound;
-                    }
+                // Valida o PRODUTO
                     
-                     // Valida o PRODUTO
-                     if (!$ProcessIDFound) {
-                        $KnowledgeRecord->processo_id = null;
-                    }else{
-                        $KnowledgeRecord->processo_id = $ProcessIDFound;
-                    }
+                // Valida o PRODUTO
+                if (!$ProcessIDFound) {
+                    $KnowledgeRecord->processo_id = null;
+                }else{
+                    $KnowledgeRecord->processo_id = $ProcessIDFound;
+                }
 
-                    // Dados do arquivo
-                    $KnowledgeRecord->processo = $row[0];
-                    $KnowledgeRecord->subprocesso = $row[1];
-                    $KnowledgeRecord->requisito = $row[2];
-                    $KnowledgeRecord->resposta = $row[3];
-                    $KnowledgeRecord->modulo = $row[4];
-                    $KnowledgeRecord->observacao = $row[6];
-                    $KnowledgeRecord->status = "aguardando";
+                // Dados do arquivo
+                $KnowledgeRecord->processo = $row[0];
+                $KnowledgeRecord->subprocesso = $row[1];
+                $KnowledgeRecord->requisito = $row[2];
+                $KnowledgeRecord->resposta = $row[3];
+                $KnowledgeRecord->modulo = $row[4];
+                $KnowledgeRecord->observacao = $row[6];
+                $KnowledgeRecord->status = "aguardando";
 
                 // Tenta salvar
                 if ($KnowledgeRecord->save()) {
+                    
+                    if (!$bundleIDFound) {
+                        try {
+                            $inserted = DB::table('knowledge_records_bundles')->insert([
+                                'knowledge_record_id' => $KnowledgeRecord->id_record,
+                                'bundle_id' => null,
+                                'old_bundle' => $row[5],
+                                'bundle_status' => 'principal',
+                                'created_at' => now(),
+                                'updated_at' => now()
+                            ]);
+                                                
+                        } catch (\Exception $e) {
+                            dd([
+                                'erro' => $e->getMessage(),
+                                'knowledge_record_id' => $KnowledgeRecord->id_record,
+                                'old_bundle' => $row[5]
+                            ]);
+                        }
+                        //$KnowledgeRecord->bundle_id = null;
+                    }else{
+                        if(!empty($row[5])){
+                            $KnowledgeRecord->bundles()->attach($bundleIDFound, [
+                                'old_bundle' => $row[5],
+                                'bundle_status' => 'principal'
+                            ]);
+                        }
+                        
+                    }
+
+
+
+
+                    // Divide o texto por vírgulas e limpa espaços
+                    $ProdutosAdicionais = array_map('trim', explode(',', $row[7]));
+                    foreach ($ProdutosAdicionais as $ProdutoAdicional) {
+                        // Procura o bundle pelo nome
+                        $bundle = RfpBundle::where('bundle', 'like', '%' . $ProdutoAdicional . '%')->first();
+
+                        if(!empty($row[7])){
+                            if ($bundle) {
+                                // Se encontrou o bundle, vincula ao knowledge record
+                                $KnowledgeRecord->bundles()->attach($bundle->bundle_id, [
+                                    'old_bundle' => $ProdutoAdicional,
+                                    'bundle_status' => 'adicional'
+                                ]);
+                            } else {
+                                // Se não encontrou o bundle, adiciona como type
+                                DB::table('knowledge_records_bundles')->insert([
+                                    'knowledge_record_id' => $KnowledgeRecord->id_record,
+                                    'bundle_id' => null,
+                                    'old_bundle' => $ProdutoAdicional,
+                                    'bundle_status' => 'adicional',
+                                    'created_at' => now(),
+                                    'updated_at' => now()
+                                ]);
+                            }
+                        }
+                    }
+
+
+
+
+                
                     //$this->updatedRows[$index]['final'] = $row[2];
                 }else{
                     dd($row);        
-                }   
-        
-                // }else{
-                //     $DadosErros = array();
-                //     $DadosErros['row'] = $row;
-                //     if($rows->get($index-1)){
-                //         $DadosErros['lastInserted'] = $rows->get($index-1);
-                //     }else{
-                //         $DadosErros['lastInserted'] = null;
-                //     }
-
-                //     if(empty($row[7])){
-                //         $MsgErro = 'Erro ao processar o arquivo - LINHA/PRODUTO não está preenchida';
-                //     }else{
-                //         $MsgErro = 'Erro ao processar o arquivo - Não encontramos o "'.$row[7].'" na nossa lista de Pacotes';
-                //     }
-                    
-                //     $DadosErrosTotal = array();
-                //     $DadosErrosTotal['error_message'] = $MsgErro;
-                //     $DadosErrosTotal['error_data'] = $DadosErros;
-                    
-                //     throw new Exception(json_encode($DadosErrosTotal));
-                // }
+                } 
             }
         } catch (Exception $e) {
             Log::error('Erro no processamento do Excel', [
@@ -174,9 +213,10 @@ class KnowledgeBaseImport implements ToCollection, WithStartRow, WithEvents, Wit
             'Subprocesso',
             'Descrição do Requisito',
             'Resposta',
-            'Módulo',
-            'Produto',
-            'Observações'
+            'Módulos',
+            'Produto Principal',
+            'Observações',
+            'Produtos Adicionais',
         ];
     
         if ($rows->isEmpty()) {
@@ -235,7 +275,7 @@ class KnowledgeBaseImport implements ToCollection, WithStartRow, WithEvents, Wit
                 return $key < $expectedColumnCount;
             })->values();
         });
-        }
+    }
     
 
 

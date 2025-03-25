@@ -45,15 +45,43 @@ class ProjectRecordsController extends Controller
 
                 $AllAnswers =  RfpAnswer::orderBy('order', 'asc')->get();
                 $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
+                
                 $AllProcess = RfpProcess::orderBy('order', 'asc')->get();
 
-                $ListProdutos = DB::table('project_records')
-                ->leftJoin('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
-                ->where('project_records.project_file_id', $ProjectFile->id)
-                ->groupBy('project_records.bundle_id')
-                ->select('project_records.bundle_id', 'rfp_bundles.bundle')
-                ->groupBy('rfp_bundles.bundle')
+                // $ListProdutos = DB::table('project_records')
+                // ->leftJoin('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
+                // ->where('project_records.project_file_id', $ProjectFile->id)
+                // ->groupBy('project_records.bundle_id')
+                // ->select('project_records.bundle_id', 'rfp_bundles.bundle')
+                // ->groupBy('rfp_bundles.bundle')
+                // ->get();
+
+                $ListProdutos = DB::table('project_files_rfp_bundles as pfb')
+                ->select(
+                    'pfb.project_file_id as pivot_project_file_id', // debug
+                    'pfb.bundle_id as pivot_bundle_id', // debug
+                    'rb.bundle_id',
+                    'rb.bundle',
+                    'pr.project_file_id'
+                )
+                ->leftJoin('rfp_bundles as rb', function($join) {
+                    $join->on('pfb.bundle_id', '=', 'rb.bundle_id');
+                })
+                ->leftJoin('project_records as pr', function($join) use ($ProjectFile) {
+                    $join->on('rb.bundle_id', '=', 'pr.bundle_id')
+                        ->where('pr.project_file_id', '=', $ProjectFile->id);
+                })
+                ->where('pfb.project_file_id', $ProjectFile->id)
+                ->groupBy('pfb.project_file_id', 'pfb.bundle_id', 'rb.bundle_id', 'rb.bundle', 'pr.project_file_id')
                 ->get();
+            
+            // // Debug
+            // dd([
+            //     'Total de registros' => $ListProdutos->count(),
+            //     'Registros' => $ListProdutos
+            // ]);
+
+
 
                 $Records = ProjectRecord::where('project_file_id', $ProjectFile->id)->get();
                 $CountRecords = 0;
@@ -348,7 +376,7 @@ class ProjectRecordsController extends Controller
     { 
         $Project = ProjectFiles::findOrFail($id);
         if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
-            $query = ProjectRecord::query()->with('rfp_bundles');
+            $query = ProjectRecord::query();
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
             $query->where('project_file_id', '=', $Project->id);
@@ -356,16 +384,12 @@ class ProjectRecordsController extends Controller
             // Pelo menos uma das três condições opcionais deve ser verdadeira
             $query->where(function($q) {
                 $q->where(function($subQ) {
-                    $subQ->whereNull('bundle_id')
-                        ->orWhere('bundle_id', '');
-                })
-                ->orWhere(function($subQ) {
                     $subQ->whereNull('processo_id')
                         ->orWhere('processo_id', '');
-                }) ;
+                });
             });
 
-                        
+                     
             // Paginação
             $records = $query->paginate(40);
 
@@ -582,7 +606,7 @@ class ProjectRecordsController extends Controller
 
                 $AllAnswers = RfpAnswer::orderBy('order', 'asc')->get();
                 $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
-                $AllModules = Module::orderBy('module_name', 'asc')->get();
+                $AllModules = Module::orderBy('name', 'asc')->get();
 
                 $ListProdutos = DB::table('project_records')
                 ->leftJoin('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
@@ -733,8 +757,7 @@ class ProjectRecordsController extends Controller
 
             $linhas = preg_split('/[\n;]+/', $Referencia, -1, PREG_SPLIT_NO_EMPTY);
             $linhas = array_map('trim', $linhas);
-
-
+            
             $dados = [];
 
             foreach($linhas as $linha) {
@@ -747,6 +770,7 @@ class ProjectRecordsController extends Controller
                     }
                 }
             }         
+            
             
             
             $KnowledgeAll = KnowledgeRecord::with('rfp_bundles')->where('id_record', '=', $dados['ID Registro'])->get();
