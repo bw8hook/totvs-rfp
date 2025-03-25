@@ -1,0 +1,27 @@
+---
+services:
+  migrate:
+    image: ghcr.io/bw8hook/totvs-rfp:main
+    container_name: migrate-totvs-rfp
+    env_file: ".env"
+    entrypoint: php artisan migrate --force
+
+  scheduler:
+    image: ghcr.io/bw8hook/totvs-rfp:main
+    container_name: totvs-rfp-scheduler
+    env_file: ".env"
+    entrypoint: php artisan schedule:work
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  app:
+    image: ghcr.io/bw8hook/totvs-rfp:main
+    container_name: totvs-rfp
+    ports:
+      - "8080:8080"
+    env_file: ".env"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
