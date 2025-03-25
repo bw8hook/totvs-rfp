@@ -1,199 +1,68 @@
 <x-app-layout>
-    <div class="flex flex-col">
-        <div class="py-4" style=" padding-bottom: 130px;">
+    <div style=" padding-bottom: 130px;">
+        <div class="max-w-7xl mx-auto space-y-6">
+    
 
-            <x-title-component :showButton="false">Novo Processo</x-title-component>
-            
-            <div class="list-form" style="margin-top: 21px;">
-                <form method="POST" id="myForm" action="{{ route('process.register') }}" style=" margin: auto; width: 40%; min-width: 450px;">
+            <div class="list-form" style="padding-top:0px;">
+                  
+                <div id="titleComponentForm" class=" flex items-center justify-between px-4 space-x-2 relative">
+                    <div class="flex items-center space-x-2" style="display: block; margin-left: 30px;">
+                
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; margin-top: 3px; width: 27px; margin-right: 1px;">
+                            <line x1="8" y1="6" x2="21" y2="6" style="color: #5570F1;"></line>
+                            <line x1="8" y1="12" x2="21" y2="12" style="color: #5570F1;"></line>
+                            <line x1="8" y1="18" x2="21" y2="18" style="color: #5570F1;"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6" style="color: #5570F1;"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12" style="color: #5570F1;"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18" style="color: #5570F1;"></line>
+                        </svg>
+
+
+                        <div style="display: inline-grid; width: 94%;">
+                            <span style="color: #141824; font-size: 22px; font-weight: 600; line-height: 28.6px; text-align: left;">Cadastro de Novo Processo</span>
+                            <div style="color:#8A94AD; font-size: 16px; font-weight: 400; line-height: 20px; text-align: left; margin-top: 8px; ">Preencha o formulário abaixo para adicionar um novo processo ao seu catálogo. Certifique-se de fornecer todas as informações necessárias.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ route('process.register') }}" enctype="multipart/form-data" style=" margin: auto; width: 65%; min-width: 450px; background: #FFF; box-shadow: 0px 4px 28px rgba(0, 0, 0, 0.1); border-radius: 15px; padding: 50px 15%;">
                 @csrf
-
+                
                 <!-- Name -->
                 <div>
-                    <x-input-label for="name" :value="__('Nome')" />
-                    <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" value="" required autofocus autocomplete="name" />
-                    <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                </div>
+                    <x-input-label for="process" :value="__('Nome')" />
+                    <x-text-input id="process" class="block mt-1 w-full" type="text" name="process" value="" required autofocus  autocomplete="name" />
+                    <x-input-error :messages="$errors->get('process')" class="mt-2" />
+                </div>               
 
-                <div>
-                    <x-input-label for="product" :value="__('Vincule os Produtos')" />
-                    <div id="dropdown-wrapper" class="relative w-full">
-                        <!-- Campo de Seleção -->
-                        <div id="dropdown-toggle" class="border rounded-lg p-2 flex items-center gap-2 cursor-pointer bg-white flex-wrap" style="min-height: 60px;">
-                            <div id="selected-items" class="flex flex-wrap gap-2"></div>
-                            <span id="placeholder-text" class="text-gray-500">Selecione...</span>
-                        </div>
-
-                        <!-- Lista de Opções -->
-                        <div id="dropdown-menu" class="hidden absolute mt-1 w-full bg-white border rounded-lg shadow-lg z-10">
-                            <div id="dropdown-options">
-                                @foreach ($bundles as $index => $item)
-                                    <div class="option-item flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer" data-id="{{ $item['bundle_id'] }}" data-name="{{ $item['bundle'] }}" data-documents="{{ $item['document_count'] }}">
-                                        <span>{{ $item['bundle'] }}</span>
-                                    </div>
-                                @endforeach
-
-                                
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-                <!-- Status -->
-                <div style="margin-top:10px;">
+  
+               <!-- TIPO DE CONTA -->
+               <div class="mt-4">
                     <x-input-label for="status" :value="__('Status')" />
-                    <div class="flex items-center gap-4 mt-1">
-                        <label>
-                            <input type="radio" name="status" value="active" checked style="height: 7px; padding: 7px; margin-bottom: 2px;">
-                            Ativo
-                        </label>
-
-                        <label>
-                            <input type="radio" name="status" value="inactive" style="height: 7px; padding: 7px; margin-bottom: 2px;">
-                            Inativo
-                        </label>
-                    </div>
+                    <select name="status"  class="form-control">
+                        <option value="ativo" >Ativo</option>
+                       <option value="inativo" >Inativo</option>
+                    </select>
                     <x-input-error :messages="$errors->get('status')" class="mt-2" />
                 </div>
           
-                <div class="flex items-center justify-end mt-4">
+                <div class="flex items-center justify-end mt-3">
+                    <button type="submit" class=" inline-flex items-center rounded-md font-semibold text-xs text-white btn_enviar" style="height: 46px; display: inline;">
+                        <span>Cadastrar</span>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline;">
+                            <path d="M13.5817 6.90667L14.7517 8.09417L9.92417 12.85C9.60167 13.1725 9.1775 13.3333 8.75167 13.3333C8.32583 13.3333 7.8975 13.1708 7.57167 12.8458L5.25333 10.5992L6.41417 9.40167L8.74167 11.6575L13.5817 6.90667ZM20 10C20 15.5142 15.5142 20 10 20C4.48583 20 0 15.5142 0 10C0 4.48583 4.48583 0 10 0C15.5142 0 20 4.48583 20 10ZM18.3333 10C18.3333 5.405 14.595 1.66667 10 1.66667C5.405 1.66667 1.66667 5.405 1.66667 10C1.66667 14.595 5.405 18.3333 10 18.3333C14.595 18.3333 18.3333 14.595 18.3333 10Z" fill="white"/>
+                        </svg>
 
-                    <x-primary-button class="ms-4 btn_enviar">
-                        {{ __('Adicionar Processo') }}
-                    </x-primary-button>
+                    </button>
                 </div>
+
+                <a href="" class="btn_voltar">Voltar</a>
+
             </form>
         </div>
 
 
-        
+           
         </div>
     </div>
 </x-app-layout>
-
-
-<script>
-        $(document).ready(function () {
-    let isMultiple = true; // Flag para permitir seleção múltipla
-    let $wrapper = $("#dropdown-wrapper");
-    let $toggle = $("#dropdown-toggle");
-    let $menu = $("#dropdown-menu");
-    let $selectedItemsContainer = $("#selected-items");
-    let $placeholderText = $("#placeholder-text");
-
-    // Inicializar selectedItems com os valores dos inputs hidden
-    let selectedItems = $("input[name='selected_agents[]']").map(function() {
-        return parseInt($(this).val());
-    }).get();
-
-    function initializeSelectedItems() {
-        selectedItems.forEach(id => {
-            let $option = $(`.option-item[data-id="${id}"]`);
-            if ($option.length) {
-                let name = $option.data('name');
-                $option.addClass("bg-gray-200");
-                addSelectedItemBlock(id, name);
-            }
-        });
-        updatePlaceholderText();
-        updateHiddenInputs();
-    }
-
-    // Chame esta função no início
-    initializeSelectedItems();
-
-    // Mostrar/ocultar dropdown ao clicar no campo de seleção
-    $toggle.on("click", function () {
-        $menu.toggleClass("hidden");
-    });
-
-    // Selecionar um item ao clicar
-    $(".option-item").on("click", function () {
-        let agentName = $(this).data("name");
-        let agentId = parseInt($(this).data("id"));
-
-        if (isMultiple) {
-            if (selectedItems.includes(agentId)) {
-                // Remover item se já estiver selecionado
-                selectedItems = selectedItems.filter(id => id !== agentId);
-                $(this).removeClass("bg-gray-200");
-                removeSelectedItemBlock(agentId);
-            } else {
-                // Adicionar item à seleção
-                selectedItems.push(agentId);
-                $(this).addClass("bg-gray-200");
-                addSelectedItemBlock(agentId, agentName);
-            }
-        } else {
-            // Seleção única
-            selectedItems = [agentId];
-            $selectedItemsContainer.empty();
-            addSelectedItemBlock(agentId, agentName);
-            $menu.addClass("hidden");
-        }
-
-        // Esconder o menu após a seleção
-        $menu.addClass("hidden");
-
-        updatePlaceholderText();
-        updateHiddenInputs();
-    });
-
-    // Adicionar bloco de item selecionado
-    function addSelectedItemBlock(agentId, agentName) {
-        let itemBlock = $(`
-            <div class="selected-item flex items-center bg-gray-200 text-gray-700 px-2 py-1 rounded">
-                <span>${agentName}</span>
-                <button class="ml-1 text-gray-500 hover:text-gray-700" data-id="${agentId}">✕</button>
-            </div>
-        `);
-
-        // Adicionar evento de clique para remover o item
-        itemBlock.find("button").on("click", function (event) {
-            event.stopPropagation();
-            let idToRemove = parseInt($(this).data("id"));
-            selectedItems = selectedItems.filter(id => id !== idToRemove);
-            removeSelectedItemBlock(idToRemove);
-            $(".option-item[data-id=" + idToRemove + "]").removeClass("bg-gray-200");
-            updatePlaceholderText();
-            updateHiddenInputs();
-        });
-
-        $selectedItemsContainer.append(itemBlock);
-    }
-
-    // Remover bloco de item selecionado
-    function removeSelectedItemBlock(agentId) {
-        $selectedItemsContainer.find("button[data-id=" + agentId + "]").parent().remove();
-    }
-
-    // Atualizar texto do placeholder
-    function updatePlaceholderText() {
-        if (selectedItems.length === 0) {
-            $placeholderText.removeClass("hidden");
-        } else {
-            $placeholderText.addClass("hidden");
-        }
-    }
-
-    // Atualizar campos ocultos
-    function updateHiddenInputs() {
-        // Remove todos os campos ocultos existentes
-        $("input[name='selected_agents[]']").remove();
-
-        // Adiciona novos campos ocultos para cada item selecionado
-        selectedItems.forEach(id => {
-            let hiddenInput = `<input type="hidden" name="selected_agents[]" value="${id}">`;
-            $("#myForm").append(hiddenInput);
-        });
-    }
-
-    // Fechar dropdown ao clicar fora
-    $(document).on("click", function (event) {
-        if (!$wrapper.is(event.target) && $wrapper.has(event.target).length === 0) {
-            $menu.addClass("hidden");
-        }
-    });
-});
-    </script>

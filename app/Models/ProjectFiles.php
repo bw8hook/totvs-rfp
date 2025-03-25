@@ -22,6 +22,11 @@ class ProjectFiles extends Model
         return $this->belongsTo(RfpBundle::class, 'bundle_id', 'bundle_id'); // Relacionamento com a tabela RfpBundle
     }
 
+    public function bundles()
+    {
+        return $this->belongsToMany(RfpBundle::class, 'project_files_rfp_bundles', 'project_file_id', 'bundle_id');
+    }
+
 
     public function user()
     {

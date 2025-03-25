@@ -92,7 +92,7 @@
                                         </button>
                                     </a>
                                     <div class="btn_delete_row">
-                                        <form action="roles/remove/${role.id}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este perfil?');" style="margin: 0px;">
+                                        <form action="roles/${role.id}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este perfil?');" style="margin: 0px;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit">

@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Agent extends Model
 {
-    /**
-     * Define o relacionamento 1:1 com o modelo Product.
-     */
+    use HasFactory;
+
+    protected $fillable = ['agent_name', 'knowledge_id', 'knowledge_id_hook', 'prompt', 'search_engine', 'status']; // Adicione os campos necessários
+
     public function product()
     {
         return $this->belongsTo(Product::class);

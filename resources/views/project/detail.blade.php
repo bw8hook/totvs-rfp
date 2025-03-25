@@ -32,14 +32,14 @@
                                         </div>
                                     </div>
 
-                                    <div style="display: flex; flex-direction: row; align-items: center;">
+                                    <!-- <div style="display: flex; flex-direction: row; align-items: center;">
                                         <div style="font-size: 16px; font-weight: 400; line-height: 22.2px; text-align: left; color:#141824;">Produtos:</div>
                                         <div style="font-size: 16px; font-weight: 700; line-height: 44.2px; text-align: left; color:#141824;">
                                             @foreach ($ListProducts as $ListProduct)
                                             <span style="box-sizing: border-box; background: #E0E0E0; border: 1px solid rgba(0, 0, 0, 0.05); border-radius: 8px;  padding: 4px 10px; margin-left: 5px;">{{$ListProduct}}</span>
                                             @endforeach
                                         </div>
-                                    </div>
+                                    </div> -->
 
                                 </div>
                                 <div>
@@ -128,11 +128,11 @@
                             <thead>
                                 <tr>
                                     <th style="width:16%; text-align:left; font-size: 13px;">NOME DO ARQUIVO:</th>
-                                    <th style="width:10%; text-align: center; font-size: 13px;">DATA DE CRIAÇÃO:</th>
-                                    <th style="width:16%; text-align: center; font-size: 13px;">LINHA/PRODUTO:</th>
-                                    <th style="width:10%; text-align: center; font-size: 13px;">REQUISITOS:</th>
-                                    <th style="width:13%; text-align: center; font-size: 13px;">RESP. IA:</th>
-                                    <th style="width:15%; text-align: center; font-size: 13px;">RESP. USUÁRIO:</th>
+                                    <th style="width:15%; text-align: center; font-size: 13px;">DATA DE CRIAÇÃO:</th>
+                                    <!-- <th style="width:16%; text-align: center; font-size: 13px;">LINHA/PRODUTO:</th> -->
+                                    <th style="width:15%; text-align: center; font-size: 13px;">REQUISITOS:</th>
+                                    <th style="width:16%; text-align: center; font-size: 13px;">RESP. IA:</th>
+                                    <th style="width:16%; text-align: center; font-size: 13px;">RESP. USUÁRIO:</th>
                                     <th style="width:13%; text-align: center; font-size: 13px;">STATUS:</th>
                                     <th style="width:15%; text-align: center; font-size: 13px;"></th>
                                 </tr>    
@@ -294,7 +294,7 @@
                             <tr class="listaTabela" style="min-height:60px; max-height: 100%;">
                                     <td style="width:19%; text-align:left; line-height: 33px;" title="${record.filename_original}">${record.filename_original}</td>
                                     <td style="width:19%; line-height: 33px;">${formattedDate}</td>
-                                    <td style="width:19%; line-height: 33px; color:#8A94AD; text-transform:uppercase; font-weight:700; font-size: 13px;">${record.rfp_bundles.bundle}</td>
+                                    
                                     <td style="width:19%; line-height: 33px;">${record.project_records_count}</td>
                                     <td style="width:19%; line-height: 33px;">${record.respondidos_ia_count}</td>
                                     <td style="width:19%; line-height: 33px;">${record.respondidos_user_count}</td>

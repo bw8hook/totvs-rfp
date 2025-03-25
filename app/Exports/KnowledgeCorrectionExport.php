@@ -39,7 +39,7 @@ class KnowledgeCorrectionExport implements FromCollection, WithHeadings
 
     public function headings(): array
     {
-        return ["ID Registro", "Processo", "Subprocesso", "Requisito", "Resposta", "Módulo", "Observações", "Linha/Produto"];
+        return ["ID Registro", "Processo", "Subprocesso", "Requisito", "Resposta", "Módulo", "Produto Principal", "Observações", "Produtos Adicionais"];
     }
 
 

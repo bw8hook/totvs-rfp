@@ -15,59 +15,191 @@
                     <x-input-error :messages="$errors->get('name')" class="mt-2" />
                 </div>
 
+
+                <div class="mt-4">
+                    <x-input-label for="categories" :value="__('Selecione a Categoria')" />
+                    <select name="categories"  class="form-control">
+                        @foreach ($categories as $index => $item)
+                            <option value="{{ $item['id'] }}"  >{{ $item['name'] }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('categories')" class="mt-2" />
+                </div>
+
+
+                <div class="mt-4">
+                    <x-input-label for="types" :value="__('Selecione o Tipo')" />
+                    <select name="types"  class="form-control">
+                        @foreach ($types as $index => $item)
+                            <option value="{{ $item['id'] }}"  >{{ $item['name'] }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('types')" class="mt-2" />
+                </div>
+            
+                <!-- Linha de Produtos -->
                 <div>
-                    <x-input-label for="agent" :value="__('Selecione um Agente')" />
-                    <div id="dropdown-wrapper" class="relative w-full">
-                        <!-- Campo de Seleção -->
-                        <div id="dropdown-toggle" class="border rounded-lg p-2 flex items-center gap-2 cursor-pointer bg-white flex-wrap" style="height: 60px;">
-                            @if (!empty($AgentSelected))
-                                <div id="selected-items" class="flex flex-wrap gap-2"><div class="selected-item flex items-center bg-gray-200 text-gray-700 px-2 py-1 rounded">
-                                        <span>{{$AgentSelected->agent_name}}</span>
-                                        <button class="ml-1 text-gray-500 hover:text-gray-700" data-id="{{$AgentSelected->id}}">✕</button>
-                                    </div>
+                    <x-input-label for="lineofproducts" :value="__('Selecione Linha de Produto(s)')" />
+                    <div id="dropdown-wrapper-line" class="relative w-full">
+                        <div id="dropdown-toggle-line" class="border rounded-lg p-2 flex items-center gap-2 cursor-pointer bg-white flex-wrap" style="min-height: 60px;">
+                            @if (!empty($LinesSelected))
+                                <div id="selected-items-line" class="flex flex-wrap gap-2">
+                                    @foreach ($LinesSelected as $index => $LineSelected)
+                                        <div class="selected-item flex items-center bg-gray-200 text-gray-700 px-2 py-1 rounded">
+                                            <span>{{$LineSelected->name}}</span>
+                                            <button class="ml-1 text-gray-500 hover:text-gray-700" data-id="{{$LineSelected->id}}">✕</button>
+                                        </div>
+                                    @endforeach
                                 </div>
-
-                                <span id="placeholder-text" class="text-gray-500" hidden>Selecione...</span>
+                                <span id="placeholder-text-line" class="text-gray-500" hidden>Selecione...</span>
                             @else
-                                <div id="selected-items" class="flex flex-wrap gap-2"></div>
-                                <span id="placeholder-text" class="text-gray-500">Selecione...</span>
+                                <div id="selected-items-line" class="flex flex-wrap gap-2"></div>
+                                <span id="placeholder-text-line" class="text-gray-500">Selecione...</span>
                             @endif    
-                       
-
-                           
                         </div>
-
-                        <!-- Lista de Opções -->
-                        <div id="dropdown-menu" class="hidden absolute mt-1 w-full bg-white border rounded-lg shadow-lg z-10">
-                            <div id="dropdown-options">
-                                @foreach ($agents as $index => $item)
-                                    <div class="option-item flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer" data-id="{{ $item['id'] }}" data-name="{{ $item['agent_name'] }}" data-documents="{{ $item['document_count'] }}">
-                                        <span>{{ $item['agent_name'] }}</span>
+                        <div id="dropdown-menu-line" class="hidden absolute mt-1 w-full bg-white border rounded-lg shadow-lg z-10">
+                            <div id="dropdown-options-line">
+                                @foreach ($lineofproducts as $index => $item)
+                                    <div class="option-item flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer" data-id="{{ $item['id'] }}" data-name="{{ $item['name'] }}" data-documents="{{ $item['document_count'] }}">
+                                        <span>{{ $item['name'] }}</span>
                                     </div>
                                 @endforeach
-
-                                
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Segmentos -->
+                <div>
+                    <x-input-label for="segments" :value="__('Selecione Segmento(s)')" />
+                    <div id="dropdown-wrapper-segment" class="relative w-full">
+                        <div id="dropdown-toggle-segment" class="border rounded-lg p-2 flex items-center gap-2 cursor-pointer bg-white flex-wrap" style="min-height: 60px;">
+                            @if (!empty($SegmentsSelected))
+                                <div id="selected-items-segment" class="flex flex-wrap gap-2">
+                                    @foreach ($SegmentsSelected as $index => $SegmentSelected)
+                                        <div class="selected-item flex items-center bg-gray-200 text-gray-700 px-2 py-1 rounded">
+                                            <span>{{$SegmentSelected->name}}</span>
+                                            <button class="ml-1 text-gray-500 hover:text-gray-700" data-id="{{$SegmentSelected->id}}">✕</button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <span id="placeholder-text-segment" class="text-gray-500" hidden>Selecione...</span>
+                            @else
+                                <div id="selected-items-segment" class="flex flex-wrap gap-2"></div>
+                                <span id="placeholder-text-segment" class="text-gray-500">Selecione...</span>
+                            @endif    
+                        </div>
+                        <div id="dropdown-menu-segment" class="hidden absolute mt-1 w-full bg-white border rounded-lg shadow-lg z-10">
+                            <div id="dropdown-options-segment">
+                                @foreach ($segments as $index => $item)
+                                    <div class="option-item flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer" data-id="{{ $item['id'] }}" data-name="{{ $item['name'] }}" data-documents="{{ $item['document_count'] }}">
+                                        <span>{{ $item['name'] }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <x-input-label for="agents" :value="__('Selecione o Agente')" />
+                    <select name="agents"  class="form-control">
+                        @foreach ($agents as $index => $item)
+                            <option value="{{ $item['id'] }}"  >{{ $item['agent_name'] }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('agents')" class="mt-2" />
+                </div>
+
+
+                <!-- Módulos -->
+                <div>
+                    <x-input-label for="modules" :value="__('Selecione Módulo(s)')" />
+                    <div id="dropdown-wrapper-module" class="relative w-full">
+                        <div id="dropdown-toggle-module" class="border rounded-lg p-2 flex items-center gap-2 cursor-pointer bg-white flex-wrap" style="min-height: 60px;">
+                            @if (!empty($ModulesSelected))
+                                <div id="selected-items-module" class="flex flex-wrap gap-2">
+                                    @foreach ($ModulesSelected as $index => $ModuleSelected)
+                                        <div class="selected-item flex items-center bg-gray-200 text-gray-700 px-2 py-1 rounded">
+                                            <span>{{$ModuleSelected->name}}</span>
+                                            <button class="ml-1 text-gray-500 hover:text-gray-700" data-id="{{$ModuleSelected->id}}">✕</button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <span id="placeholder-text-module" class="text-gray-500" hidden>Selecione...</span>
+                            @else
+                                <div id="selected-items-module" class="flex flex-wrap gap-2"></div>
+                                <span id="placeholder-text-module" class="text-gray-500">Selecione...</span>
+                            @endif    
+                        </div>
+                        <div id="dropdown-menu-module" class="hidden absolute mt-1 w-full bg-white border rounded-lg shadow-lg z-10">
+                            <div id="dropdown-options-module">
+                                @foreach ($modules as $index => $item)
+                                    <div class="option-item flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer" data-id="{{ $item['id'] }}" data-name="{{ $item['name'] }}" data-documents="{{ $item['document_count'] }}">
+                                        <span>{{ $item['name'] }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Processos -->
+
+
+
+        
+
+
+                <div>
+                    <x-input-label for="process" :value="__('Selecione Processo(s)')" />
+                    <div id="dropdown-wrapper-process" class="relative w-full">
+                        <div id="dropdown-toggle-process" class="border rounded-lg p-2 flex items-center gap-2 cursor-pointer bg-white flex-wrap" style="min-height: 60px;">
+                            @if (!empty($ProcessSelected))
+                                <div id="selected-items-process" class="flex flex-wrap gap-2">
+                                    @foreach ($ProcessSelected as $index => $ProcesSelected)   
+                                        <div class="selected-item flex items-center bg-gray-200 text-gray-700 px-2 py-1 rounded">
+                                            <span>{{$ProcesSelected->process}}</span>
+                                            <button class="ml-1 text-gray-500 hover:text-gray-700" data-id="{{$ProcesSelected->id}}">✕</button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <span id="placeholder-text-process" class="text-gray-500" hidden>Selecione...</span>
+                            @else
+                                <div id="selected-items-process" class="flex flex-wrap gap-2"></div>
+                                <span id="placeholder-text-process" class="text-gray-500">Selecione...</span>
+                            @endif    
+                        </div>
+                        <div id="dropdown-menu-process" class="hidden absolute mt-1 w-full bg-white border rounded-lg shadow-lg z-10">
+                            <div id="dropdown-options-process">
+                                @foreach ($process as $index => $item)
+                                    <div class="option-item flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer" data-id="{{ $item['id'] }}" data-name="{{ $item['process'] }}" data-documents="{{ $item['document_count'] }}">
+                                        <span>{{ $item['process'] }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Status -->
+                 <div class="mt-4">
+                    <x-input-label for="status_totvs" :value="__('Status Totvs')" />
+                    <select name="status_totvs"  class="form-control">
+                        <option value="ativo" >Ativo</option>
+                       <option value="descontinuado" >Descontinuado</option>
+                    </select>
+                    <x-input-error :messages="$errors->get('status_totvs')" class="mt-2" />
+                </div>
+
 
                 <!-- Status -->
-                <div style="margin-top:10px;">
+                <div class="mt-4">
                     <x-input-label for="status" :value="__('Status')" />
-                    <div class="flex items-center gap-4 mt-1">
-                        <label>
-                            <input type="radio" name="status" value="active" {{ old('status', $bundle->status) === 'active' ? 'checked' : '' }} style="height: 7px; padding: 7px; margin-bottom: 2px;">
-                            Ativo
-                        </label>
-
-                        <label>
-                            <input type="radio" name="status" value="inactive"
-                                {{ old('status', $bundle->status) === 'inactive' ? 'checked' : '' }} style="height: 7px; padding: 7px; margin-bottom: 2px;">
-                            Inativo
-                        </label>
-                    </div>
+                    <select name="status"  class="form-control">
+                        <option value="active"  {{ $bundle->status === 'active' ? 'selected' : '' }} >Ativo</option>
+                       <option value="inactive"  {{ $bundle->status === 'inactive' ? 'selected' : '' }} >Inativo</option>
+                    </select>
                     <x-input-error :messages="$errors->get('status')" class="mt-2" />
                 </div>
 
@@ -92,108 +224,183 @@
 
 
 <script>
-        $(document).ready(function () {
-            let isMultiple = false; // Flag para permitir seleção múltipla
+    $(document).ready(function () {
+    function initializeDropdown(type) {
+        const selectors = {
+            wrapper: `#dropdown-wrapper-${type}`,
+            toggle: `#dropdown-toggle-${type}`,
+            menu: `#dropdown-menu-${type}`,
+            selectedItems: `#selected-items-${type}`,
+            placeholderText: `#placeholder-text-${type}`,
+            options: `#dropdown-options-${type}`
+        };
 
-            let $wrapper = $("#dropdown-wrapper");
-            let $toggle = $("#dropdown-toggle");
-            let $menu = $("#dropdown-menu");
-            let $selectedItemsContainer = $("#selected-items");
-            let $placeholderText = $("#placeholder-text");
+        let isMultiple = true;
+        let selectedItems = [];
 
-            let selectedItems = [];
-
-            // Mostrar/ocultar dropdown ao clicar no campo de seleção
-            $toggle.on("click", function () {
-                $menu.toggleClass("hidden");
-            });
-
-            // Selecionar um item ao clicar
-            $(".option-item").on("click", function () {
-                let agentName = $(this).data("name");
-                let agentId = $(this).data("id");
-
-                if (isMultiple) {
-                    if (selectedItems.includes(agentId)) {
-                        // Remover item se já estiver selecionado
-                        selectedItems = selectedItems.filter(id => id !== agentId);
-                        $(this).removeClass("bg-gray-200");
-                        removeSelectedItemBlock(agentId);
-                    } else {
-                        // Adicionar item à seleção
-                        selectedItems.push(agentId);
-                        $(this).addClass("bg-gray-200");
-                        addSelectedItemBlock(agentId, agentName);
-                    }
-                } else {
-                    // Seleção única
-                    selectedItems = [agentId];
-                    $selectedItemsContainer.empty();
-                    addSelectedItemBlock(agentId, agentName);
-                    $menu.addClass("hidden");
-                }
-
-                // Esconder o menu após a seleção
-                $menu.addClass("hidden");
-
-                updatePlaceholderText();
-                updateHiddenInputs();
-            });
-
-            // Adicionar bloco de item selecionado
-            function addSelectedItemBlock(agentId, agentName) {
-                let itemBlock = $(`
-                    <div class="selected-item flex items-center bg-gray-200 text-gray-700 px-2 py-1 rounded">
-                        <span>${agentName}</span>
-                        <button class="ml-1 text-gray-500 hover:text-gray-700" data-id="${agentId}">✕</button>
-                    </div>
-                `);
-
-                // Adicionar evento de clique para remover o item
-                itemBlock.find("button").on("click", function (event) {
-                    event.stopPropagation();
-                    let idToRemove = $(this).data("id");
-                    selectedItems = selectedItems.filter(id => id !== idToRemove);
-                    removeSelectedItemBlock(idToRemove);
-                    $(".option-item[data-id=" + idToRemove + "]").removeClass("bg-gray-200");
-                    updatePlaceholderText();
-                    updateHiddenInputs();
-                });
-
-                $selectedItemsContainer.append(itemBlock);
-            }
-
-            // Remover bloco de item selecionado
-            function removeSelectedItemBlock(agentId) {
-                $selectedItemsContainer.find("button[data-id=" + agentId + "]").parent().remove();
-            }
-
-            // Atualizar texto do placeholder
-            function updatePlaceholderText() {
-                if (selectedItems.length === 0) {
-                    $placeholderText.removeClass("hidden");
-                } else {
-                    $placeholderText.addClass("hidden");
-                }
-            }
-
-            // Atualizar campos ocultos
-            function updateHiddenInputs() {
-                // Remove todos os campos ocultos existentes
-                $("input[name='selected_agents[]']").remove();
-
-                // Adiciona novos campos ocultos para cada item selecionado
-                selectedItems.forEach(id => {
-                    let hiddenInput = `<input type="hidden" name="selected_agents[]" value="${id}">`;
-                    $("#myForm").append(hiddenInput);
-                });
-            }
-
-            // Fechar dropdown ao clicar fora
-            $(document).on("click", function (event) {
-                if (!$wrapper.is(event.target) && $wrapper.has(event.target).length === 0) {
-                    $menu.addClass("hidden");
-                }
-            });
+        // Inicializar selectedItems com itens já selecionados
+        $(`${selectors.selectedItems} .selected-item`).each(function() {
+            const id = $(this).find('button').data('id');
+            selectedItems.push(id);
+            $(`${selectors.wrapper} .option-item[data-id="${id}"]`).addClass('bg-gray-200');
         });
+
+        // Toggle dropdown
+        $(selectors.toggle).on("click", function () {
+            $(selectors.menu).toggleClass("hidden");
+        });
+
+        // Select item
+        $(`${selectors.wrapper} .option-item`).on("click", function () {
+            const agentName = $(this).data("name");
+            const agentId = $(this).data("id");
+
+            if (isMultiple) {
+                if (selectedItems.includes(agentId)) {
+                    selectedItems = selectedItems.filter(id => id !== agentId);
+                    $(this).removeClass("bg-gray-200");
+                    removeSelectedItemBlock(agentId);
+                } else {
+                    selectedItems.push(agentId);
+                    $(this).addClass("bg-gray-200");
+                    addSelectedItemBlock(agentId, agentName);
+                }
+            } else {
+                selectedItems = [agentId];
+                $(selectors.selectedItems).empty();
+                addSelectedItemBlock(agentId, agentName);
+                $(selectors.menu).addClass("hidden");
+            }
+
+            updatePlaceholderText();
+            updateHiddenInputs();
+        });
+
+        // Função modificada para remover item
+        function removeSelectedItemBlock(agentId) {
+            $(`${selectors.selectedItems} button[data-id="${agentId}"]`).parent().remove();
+            $(`${selectors.wrapper} .option-item[data-id="${agentId}"]`).removeClass("bg-gray-200");
+            selectedItems = selectedItems.filter(id => id !== agentId);
+            updatePlaceholderText();
+            updateHiddenInputs();
+        }
+
+        // Adicionar evento de clique para botões de remoção existentes
+        $(`${selectors.selectedItems} .selected-item button`).on("click", function(event) {
+            event.stopPropagation();
+            const idToRemove = $(this).data("id");
+            removeSelectedItemBlock(idToRemove);
+        });
+
+        function addSelectedItemBlock(agentId, agentName) {
+            const itemBlock = $(`
+                <div class="selected-item flex items-center bg-gray-200 text-gray-700 px-2 py-1 rounded">
+                    <span>${agentName}</span>
+                    <button class="ml-1 text-gray-500 hover:text-gray-700" data-id="${agentId}">✕</button>
+                </div>
+            `);
+
+            itemBlock.find("button").on("click", function (event) {
+                event.stopPropagation();
+                removeSelectedItemBlock(agentId);
+            });
+
+            $(selectors.selectedItems).append(itemBlock);
+        }
+
+        function updatePlaceholderText() {
+            if (selectedItems.length === 0) {
+                $(selectors.placeholderText).removeClass("hidden");
+            } else {
+                $(selectors.placeholderText).addClass("hidden");
+            }
+        }
+
+        function updateHiddenInputs() {
+            $(`input[name='selected_${type}[]']`).remove();
+            selectedItems.forEach(id => {
+                const hiddenInput = `<input type="hidden" name="selected_${type}[]" value="${id}">`;
+                $("#myForm").append(hiddenInput);
+            });
+        }
+
+        // Close dropdown when clicking outside
+        $(document).on("click", function (event) {
+            const $wrapper = $(selectors.wrapper);
+            if (!$wrapper.is(event.target) && $wrapper.has(event.target).length === 0) {
+                $(selectors.menu).addClass("hidden");
+            }
+        });
+    }
+
+    // Initialize all dropdowns
+    initializeDropdown('line');
+    initializeDropdown('segment');
+    initializeDropdown('module');
+    initializeDropdown('process');
+});
+
+
+
+
+
+
+
+
+
+
+
+
+$(document).ready(function() {
+    let segmentSelect; // Variável para o TomSelect
+
+    // Inicializa o TomSelect com suas configurações personalizadas
+    segmentSelect = new TomSelect('#multi-select', {
+        plugins: ['remove_button', 'clear_button'],
+        maxItems: null,
+        valueField: 'id',
+        labelField: 'name',
+        searchField: ['name'],
+        placeholder: 'Selecione as opções...',
+        persist: false,
+        createOnBlur: false,
+        create: false,
+        closeAfterSelect: false,
+
+        // Tradução para português
+        plugins: {
+            'remove_button': {
+                title: 'Remover'
+            },
+            'clear_button': {
+                title: 'Limpar todos'
+            }
+        },
+
+        render: {
+            no_results: function(data, escape) {
+                return '<div class="no-results">Nenhum resultado encontrado</div>';
+            },
+            option: function(data, escape) {
+                return `<div class="py-2 px-3">
+                    <div class="text-sm">${escape(data.name)}</div>
+                </div>`;
+            },
+            item: function(data, escape) {
+                return `<div class="flex items-center space-x-1">
+                    <span class="block truncate">${escape(data.name)}</span>
+                </div>`;
+            }
+        },
+        onChange: function(values) {
+            applyFilters();
+            updateSelectedTexts();
+        }
+    });
+});
+
+
+
+
+
     </script>

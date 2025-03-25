@@ -102,7 +102,6 @@ class ProcessController extends Controller
      */
     public function edit($id): View
     {
-        if (Auth::user()->hasRole('Administrador')) {
             $Process = RfpProcess::find($id);
             $Bundles = RfpBundle::all();
 
@@ -124,9 +123,7 @@ class ProcessController extends Controller
             } else {
                 return redirect()->back()->with('error', 'Produto não encontrado.');
             }
-        }else{
-            return redirect()->back()->with('error', 'Usuário sem permissão para editar.');
-        }
+
     }
 
     /**
@@ -134,7 +131,7 @@ class ProcessController extends Controller
      */
     public function remove($id)
     {
-        if (Auth::user()->hasRole('Administrador')) {
+       
             // Encontrar o usuário pelo ID
             $Process = RfpProcess::find($id);
 
@@ -145,9 +142,6 @@ class ProcessController extends Controller
             } else {
                 return redirect()->back()->with('error', 'Produto não encontrado.');
             }
-        }else{
-            return redirect()->back()->with('error', 'Usuário sem permissão para excluir.');
-        }
     }
 
 
@@ -156,84 +150,49 @@ class ProcessController extends Controller
      */
     public function register(Request $request)
     {
-        if (Auth::user()->hasRole('Administrador')) {
-            // Validação dos dados
-            $validatedData = $request->validate([
-                'name' => 'required|string|max:255'
-            ]);
+        $validatedData = $request->validate([
+            'process' => 'required',
+            'status' => 'required',
+        ]);
+        
+        try {
+            $Id = RfpProcess::create($validatedData);
 
-            // Criar o novo registro no banco de dados
-            $ProcessInserted = RfpProcess::create([
-                'process' => $validatedData['name'],
-                'status' => $request->status,
-            ]);
-
-
-            if ($ProcessInserted) {
-                $Process = RfpProcess::findOrFail($ProcessInserted->id);
-
-                if($request->selected_agents){
-                    $listBundles = [];
-                    foreach ($request->selected_agents as $key => $value) {
-                        $listBundles[] = $value;
-                    }
-
-                    // // Sincronizar bundles (remove existentes e adiciona novos)
-                    $Process->rfpBundles()->sync($listBundles);
-                }               
-                
-                $Process->save();
-
-
-                //return response()->json(['message' => 'Produto criado com sucesso!', 'data' => $post], 201);
-                return redirect()->back()->with('success', 'Processo criado com sucesso.');
-            } else {
-                return redirect()->back()->with('error', 'Processo não encontrado.');
-            }
-        }else{
-            return redirect()->back()->with('error', 'Usuário sem permissão para adicionar.');
+            return redirect()->route('process.list')->with('success', 'Processo criado com sucesso.');
+        } catch (\Throwable $th) {
+            return redirect()->route('process.list')->with('error', 'Erro ao Salvar Processo.');
         }
     }
 
         /**
      * Display the registration view.
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
-        if (Auth::user()->hasRole('Administrador')) {
+       
+       
+
             // Validação dos dados
             $validatedData = $request->validate([
-                'name' => 'required|string|max:255',
-                'id' => 'required'
+                'process' => 'required|string|max:255',
             ]);
 
-            $produto = RfpProcess::where('id', $validatedData['id'])->firstOrFail(); // Encontra o registro pelo ID
+            $produto = RfpProcess::where('id', $id)->firstOrFail(); // Encontra o registro pelo ID
 
-
+           
+            
             if ($produto) {
-                $produto->process =  $validatedData['name'];
-                $produto->status =  $request->status;
-                if($request->selected_agents){
-                    $listBundles = [];
-                    foreach ($request->selected_agents as $key => $value) {
-                        $listBundles[] = $value;
-                    }
-
-                    // // Sincronizar bundles (remove existentes e adiciona novos)
-                    $produto->rfpBundles()->sync($listBundles);
-                }               
+                $produto->process =  $validatedData['process'];
+                $produto->status =  $request->status;     
                 
                 $produto->save(); // Salva as alterações no banco
                 
-                return redirect()->route('process.list')->with('success', 'Produto editado com sucesso.');
+                return redirect()->route('process.list')->with('success', 'Processo editado com sucesso.');
                 //return response()->json(['message' => 'Produto criado com sucesso!', 'data' => $post], 201);
                
             } else {
                 return redirect()->back()->with('error', 'Produto não encontrado.');
             }
-        }else{
-            return redirect()->back()->with('error', 'Usuário sem permissão para excluir.');
-        }
     }
 
 

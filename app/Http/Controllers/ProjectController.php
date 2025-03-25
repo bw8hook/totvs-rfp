@@ -1,9 +1,12 @@
 <?php
 namespace App\Http\Controllers;
+use App\Models\Segments;
+use App\Models\Type;
 use Carbon\Carbon;
 use App\Models\KnowledgeBase;
 use App\Models\KnowledgeRecord;
 use App\Models\RfpBundle;
+use App\Models\Category;
 use App\Models\Agent;
 use App\Models\ProjectAnswer;
 use App\Models\RfpProcess;
@@ -22,7 +25,9 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use App\Http\Controllers\MentoriaController;
+use App\Models\LineOfProduct;
 use App\Models\Module;
+use App\Models\ServiceGroup;
 use Illuminate\Support\Str;
 use DateTime;
 
@@ -36,7 +41,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Exception\RequestException;
-
 
 class ProjectController extends Controller
 {
@@ -216,7 +220,7 @@ class ProjectController extends Controller
                     $CountAnswerUser += $File->records->where('status', 'user edit')->count();
                     $CountAnswerIA += $File->records->where('status', 'respondido ia')->count();
 
-                    $ListProducts[] = $ListFile['bundle']->bundle;
+                    $ListProducts[] = $ListFile['bundle'];
                     $ListProducts = array_unique($ListProducts);
                     
                     $ListFiles[] = $ListFile;
@@ -373,8 +377,17 @@ class ProjectController extends Controller
         $Project = Project::findOrFail($id);
         if($Project){
             if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage', 'projects.all.add', 'projects.my.manage', 'projects.my.add'])) {     
-                $Bundles = RfpBundle::all();
-                $data = [ 'Project' => $Project, 'bundles' => $Bundles, 'userId' => Auth::id() ];            
+                $Bundles = RfpBundle::with(['agent', 'category', 'type', 'lineOfProduct', 'segments'])->get(); 
+
+                $lines = LineOfProduct::all();
+
+                $types = Type::all();
+                $segments = Segments::all();
+                $categorys = Category::all();
+                $services = ServiceGroup::all();
+                $agents = Agent::all();
+
+                $data = [ 'Project' => $Project, 'lines' => $lines, 'bundles' => $Bundles, 'types' => $types,  'segments' => $segments, 'categorys' => $categorys, 'services' => $services, 'agents' => $agents,   'userId' => Auth::id() ];            
                 return view('project.files')->with($data);
             }else{
                 return redirect()->back()->with('error', 'Você não tem permissão para ver esse projeto!');
@@ -390,8 +403,9 @@ class ProjectController extends Controller
      */
     public function file_upload(Request $request, string $id) {
 
-        $RfpBundle = RfpBundle::findOrFail($request->bundle);
+        //$RfpBundle = RfpBundle::findOrFail($request->bundle);
         $ProjectData = Project::findOrFail($id);
+
 
         // Faz o upload para o S3 (Para BACKUP)
         $File = $request->file('file');
@@ -399,23 +413,27 @@ class ProjectController extends Controller
         $fileName = preg_replace('/[^\w\-_\.]/', '', $fileName); // Substitui caracteres não permitidos por "_"
         $fileName = trim($fileName, '_');
         $fileName = Str::slug($fileName).'_'.$File->hashName();;
-        $filePath = 'cdn/projects/archives/'.$RfpBundle->bundle.'/'.$fileName;
+        $filePath = 'cdn/projects/archives/general/'.$fileName;
         $UploadedFile = Storage::disk('s3')->put($filePath, file_get_contents($File));
 
         // Sobe o arquivo para historico e salva no BD
         $ProjectFile = new ProjectFiles();
         $ProjectFile->user_id = $ProjectData->iduser_responsable;
-        $ProjectFile->bundle_id = $request->bundle;
+        //$ProjectFile->bundle_id = $request->bundle;
         $ProjectFile->project_id = $id;
         $ProjectFile->filepath = $filePath;
         $ProjectFile->filename = $fileName;
         $ProjectFile->filename_original = $File->getClientOriginalName();
         $ProjectFile->file_extension = $File->getClientOriginalExtension();
         $ProjectFile->save();
-        
+
+        if ($request->has('bundles')) {
+            $ProjectFile->bundles()->attach($request->bundles);
+        }
+
         try {
             // Chama a importação do EXCEL
-            $import = new ProjectRecordsImport($ProjectFile->id, $ProjectFile->bundle_id);
+            $import = new ProjectRecordsImport($ProjectFile->id, $request->bundles);
             // Executa a importação
             $Excel = Excel::import($import, $File);
 
@@ -527,111 +545,144 @@ class ProjectController extends Controller
     public function cron(Request $request)
     {
         try {
-            $ProjectFiles = ProjectFiles::where('status', "em processamento")->get();
-    
-            $client = new Client([
-                'base_uri' => $this->baseUrl,
+            $ProjectFiles = ProjectFiles::where('status', "em processamento")
+            ->with('bundles')
+            ->get();
+            
+            $clientHookIA = new Client([
+                'base_uri' => 'https://totvs-ia.hook.app.br/v1/',
                 'timeout' => 30,
                 'headers' => [
-                    'Authorization' => 'Bearer ' . $this->apiKey,
+                    'Authorization' => 'Bearer app-y133Gvf5qZvY8yM3gyojkOzR',
                     'Accept' => 'application/json',
                 ],
             ]);
-
     
-            $requests = function () use ($ProjectFiles, $client) {
+            $requestsHook = function () use ($ProjectFiles, $clientHookIA) {
                 foreach ($ProjectFiles as $File) {
-                    $Records = ProjectRecord::whereNotNull('project_records.bundle_id')
-                        ->where('project_records.project_file_id', $File->id)
-                        ->where('project_records.status', "processando")
-                        ->join('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
-                        ->get();
-            
-                    foreach ($Records as $Record) {
-                        $Agent = Agent::where('id', $Record->agent_id)->first();
-                        $Processo = RfpProcess::where('id', $Record->processo_id)->first();
-            
-                        $prompt = 'Você é uma IA avançada especializada em sistemas ERP da TOTVS, representando a equipe de engenharia da empresa. Seu objetivo é fornecer respostas técnicas precisas e claras sobre os produtos ERP da TOTVS, baseando-se na base de conhecimento fornecida.
+                    // Pega os IDs dos bundles vinculados
+                    $bundleIds = $File->bundles->pluck('bundle_id')->toArray();
 
-                        Instruções de busca e resposta:
+                    // Busca os dados completos dos RfpBundles
+                    $bundles = RfpBundle::whereIn('bundle_id', $bundleIds)->get();
 
-                        1. Ao receber uma pergunta, identifique o produto, o processo, a classificação e o requisito mencionados pelo usuário.
-                        2. Realize a busca considerando tanto a coluna "DESCRIÇÃO DO REQUISITO" quanto a coluna "PROCESSO". Priorize correspondências que atendam tanto ao requisito quanto ao processo especificado.
-                        3. Use uma busca case-insensitive e considere sinônimos ou termos relacionados tanto para o requisito quanto para o processo.
-                        4. Se encontrar múltiplas correspondências, priorize as mais relevantes com base na similaridade com a pergunta do usuário e na correspondência do processo.
-                        5. Ao analisar a aderência do produto ao requisito, considere as seguintes categorias:
-                            - Atende: O produto atende completamente ao requisito no processo especificado.
-                            - Atende Parcial: O produto atende parte do requisito ou atende em um processo relacionado.
-                            - Customizável: O requisito pode ser atendido através de customizações para o processo específico.
-                            - Não Atende: O produto não atende ao requisito no processo especificado.
-                            - Desconhecido: Não há informações suficientes para determinar a aderência no processo especificado.
-                        6. Forneça uma análise detalhada justificando como o produto atende ou não ao requisito no contexto do processo especificado. Inclua considerações sobre complexidade e frequência de uso, se relevante.
-                        7. Se disponível, inclua informações da coluna OBSERVAÇÕES relacionadas ao requisito e processo encontrados.
-                        8. Quando não encontrar uma correspondência exata para o requisito e processo, forneça a informação mais próxima disponível, indicando claramente que é uma aproximação e explicando as diferenças.
-                        9. Se a pergunta for ambígua ou não houver informações suficientes na base de conhecimento sobre o requisito ou o processo, indique claramente essa limitação.
-                        10. Estime a acuracidade de sua resposta em porcentagem, considerando tanto a correspondência do requisito quanto do processo, e explique brevemente como chegou a essa estimativa.
-                        11. Mantenha sempre um tom profissional e técnico na resposta.
-                        12. Não divulgue informações confidenciais ou detalhes técnicos sensíveis que possam comprometer a segurança dos sistemas.
-                        13. Se necessário, sugira que o usuário entre em contato com o suporte técnico da TOTVS para informações mais detalhadas ou específicas sobre o requisito no contexto do processo mencionado.
+                    // Primeiro pega os agent_ids dos bundles
+                    $agentIds = $bundles->pluck('agent_id')->unique()->toArray();
 
-                        Lembre-se: Sua prioridade é fornecer informações precisas e úteis, considerando sempre tanto o requisito quanto o processo especificado. Baseie-se estritamente nas informações disponíveis na base de conhecimento fornecida, dando ênfase à relação entre o requisito e o processo mencionado.';
-                                                
-                        $requisito = 'É possível fazer modificação dos rótulos dos campos do sistema através de configuração na própria ferramenta, sem necessidade de codificação?';
-                        $processo = 'Configurações do sistema';
+                    // Depois busca os agents
+                    $agents = Agent::whereIn('id', $agentIds)->get();
 
-                        $body = [
-                            'system' => $prompt,
-                            'kbs' => [$Agent->knowledge_id],
-                            'messages' => [
-                                [
-                                    'role' => 'user',
-                                    'content' => json_encode([
-                                        'requisito' => $requisito,
-                                        'processo' => $processo
-                                    ])
-                                ]
-                            ],
-                            'responseFormat' => [
-                                'type' => 'json_schema',
-                                'schema' => $this->getSchema()
-                            ]
-                        ];                      
+                    if($agents[0]->search_engine == "Open IA"){
     
-                        yield function () use ($client, $body, $Record) {
-                            return $client->postAsync('/rest/completions', [
-                                'json' => $body,
-                                'headers' => ['Content-Type' => 'application/json'],
-                            ])->then(function ($response) use ($Record) {
-                                return ['response' => $response, 'record' => $Record];
-                            });
-                        };
+                        $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
+                            ->where('project_records.status', "processando")
+                            //->join('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
+                            ->get();
+
+
+                        foreach ($Records as $Record) {
+                            //$Agent = Agent::where('id', $Record->agent_id)->first();
+                            $Processo = RfpProcess::where('id', $Record->processo_id)->first();
+
+                            //$ProdutosPrioritarios = $Records->rfpBundles->pluck('bundle')->implode(', ');
+
+                            $ProdutosPrioritarios = $bundles->pluck('bundle')->unique()->implode(', ');
+                           
+                            
+                            $agentIds = $bundles->pluck('agent_id')->unique();
+                            $agentsList = Agent::whereIn('id', $agentIds)->get();
+                            $AgentesPrioritarios = $agentsList->pluck('knowledge_id_hook')->filter()->implode(', ');
+                            
+                            $agentsString = $agents->slice(1) // Ignora o primeiro elemento
+                                ->pluck('knowledge_id_hook') // ou o campo que você quer
+                                ->implode(', ' ); // Junta com vírgula
+
+                            // OU de forma mais detalhada:
+                            $agentsString = '';
+                            foreach($agents->slice(1) as $key => $agent) {
+                                $agentsString .= $agent->knowledge_id_hook;
+                                if($key < $agents->count() - 2) { // -2 porque começamos do segundo elemento
+                                    $agentsString .= ', ';
+                                }
+                            }
+
+                            $prioritariosArray = array_map('trim', explode(',', $AgentesPrioritarios));
+                            $agentsString = '';
+
+                            foreach($agents->slice(1) as $key => $agent) {
+                                // Só adiciona se não estiver no array de prioritários
+                                if (!in_array($agent->knowledge_id_hook, $prioritariosArray)) {
+                                    $agentsString .= $agent->knowledge_id_hook;
+                                    
+                                    // Verifica se há próximo item válido para adicionar vírgula
+                                    $nextExists = false;
+                                    foreach($agents->slice($key + 2) as $nextAgent) {
+                                        if (!in_array($nextAgent->knowledge_id_hook, $prioritariosArray)) {
+                                            $nextExists = true;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if ($nextExists) {
+                                        $agentsString .= ', ';
+                                    }
+                                }
+                            }
+
+
+                            $requisito = $Record->requisito;
+                            $processo = $Processo->process;
+    
+                            $body = [
+                                'inputs' =>  [
+                                    'base_id_primarios' => $AgentesPrioritarios,
+                                    'base_id_secundarios' => $agentsString,    
+                                ],
+                                'query' => json_encode([
+                                        'requisito' => $requisito,
+                                        'processo' => $processo,
+                                        'produto' => $ProdutosPrioritarios
+                                ]),
+                                'response_mode' => 'blocking',
+                                "conversation_id" => "",
+                                "user" => "RFP-API-USER",
+                                "files" => [],
+                            ];    
+
+                            
+                            yield function () use ($clientHookIA, $body, $Record) { 
+                                return $clientHookIA->postAsync('/v1/chat-messages', [
+                                    'json' => $body,
+                                    'headers' => ['Content-Type' => 'application/json'],
+                                ])->then(function ($response) use ($Record) {
+                                    return ['response' => $response, 'record' => $Record];
+                                });
+                            };               
+                        }
                     }
                 }
             };
+           
     
-            $pool = new Pool($client, $requests(), [
+            $pool = new Pool($clientHookIA, $requestsHook(), [
                 'concurrency' => 5,
                 'fulfilled' => function ($result, $index) {
                     $response = $result['response'];
                     $Record = $result['record'];
                     $data = json_decode($response->getBody(), true);
-                
-                    print_r($Record->requisito);
-
-                    dd($data);
-
+            
                     $DadosResposta = new ProjectAnswer;
                     $DadosResposta->bundle_id = $Record->bundle_id;
                     $DadosResposta->user_id = $Record->user_id;
                     $DadosResposta->requisito_id = $Record->id;
                     $DadosResposta->requisito = $Record->requisito;
     
-                    $Answer = json_decode($data['output']['content']);
-                  
+                    $Answer = json_decode($data['answer']);
     
                     $DadosResposta->aderencia_na_mesma_linha = $Answer->aderencia_na_mesma_linha ?? null;
                     $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
                     $DadosResposta->resposta = $Answer->resposta ?? null;
+                    $DadosResposta->modulo = $Answer->modulo ?? null;
                     $DadosResposta->referencia = $Answer->referencia ?? null;
                     $DadosResposta->observacao = $Answer->observacao ?? null;
                     $DadosResposta->acuracidade_porcentagem = $Answer->acuracidade_porcentagem ?? null;
@@ -642,21 +693,21 @@ class ProjectController extends Controller
                     if($Answer->aderencia_na_mesma_linha != 'desconhecido'){
                         $Record->update(['status' => 'respondido ia']);
                         $Record->update(['project_answer_id' => $DadosResposta->id]);
-
+    
                         $ProjectFile = ProjectFiles::where('id', $Record->project_id)->first();
                         if($ProjectFile->status == "processando"){
                             $ProjectFile->status = 'processado';
                             $ProjectFile->save();
                         }
-        
                     }
-                   
-                    Log::info("Processamento de todos os arquivos concluído com sucesso");
-                   
 
+                    dd('Finalizou');
+                    //Log::info("Processamento de todos os arquivos concluído com sucesso");
+    
                 },
                 'rejected' => function ($reason, $index) {
-                    Log::error("Request failed: " . $reason->getMessage());
+                    dd($reason);
+                    //Log::error("Request failed: " . $reason->getMessage());
                     // Você pode querer atualizar o status do Record aqui também
                 },
             ]);
@@ -665,13 +716,10 @@ class ProjectController extends Controller
             // Executa o pool
             $promise = $pool->promise();
             $promise->wait();
-    
-            //return response()->json(['message' => 'Processamento concluído']);
         } catch (\Exception $e) {
-            //dd($e->getMessage());
             Log::error("Erro no processamento: " . $e->getMessage());
-            //return response()->json(['error' => 'Ocorreu um erro durante o processamento'], 500);
         }
+
     }
 
 

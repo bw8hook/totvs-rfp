@@ -35,7 +35,7 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
 
     protected $id;
 
-    protected $idbundle;
+    protected $bundles = [];
     protected $idpacote; // Variável para armazenar o ID
     public $Erros = [];
     private $ListBundles = [];
@@ -43,10 +43,10 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
     public $erroRows = [];
     
 
-    public function __construct($id, $idbundle)
+    public function __construct($id, $bundles)
     {
          $this->id = $id;
-         $this->idbundle = $idbundle;
+         $this->bundles = $bundles;
         // $this->idpacote = $idpacote; // Define o ID recebido no construtor
     }
 
@@ -101,8 +101,7 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
                         $ProjectRecord->processo_id = $processIDFound;
                     }
                     
-                    // Dados do arquivo
-                    $ProjectRecord->bundle_id = $this->idbundle;
+                    //$ProjectRecord->bundle_id = $this->idbundle;
                     $ProjectRecord->processo = $row[0];
                     $ProjectRecord->subprocesso = $row[1];
                     $ProjectRecord->requisito = $row[2];
@@ -110,6 +109,8 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
 
                 // Tenta salvar
                 if ($ProjectRecord->save()) {
+                    // Vincula os Produtos com o RECORD
+                    $ProjectRecord->bundles()->sync($this->bundles);
                     //$this->updatedRows[$index]['final'] = $row[2];
                 }else{
                     dd($row);        
