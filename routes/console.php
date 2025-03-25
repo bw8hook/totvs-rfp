@@ -28,7 +28,4 @@ Schedule::command('app:upload-project-to-answer-hook')->everyMinute();
 // Valida se todos foram respondidos, e atualiza o status do projeto.
 Schedule::command('app:update-processed-project')->everyThreeMinutes();
 
-// Debug
-Schedule::command('app:debug')->everyMinute();
-
 

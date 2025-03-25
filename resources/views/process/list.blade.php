@@ -2,7 +2,7 @@
     <div class="py-4" style=" padding-bottom: 130px;">
         <div class="max-w-full mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            <x-title-component :showButton="true" textButton="Adicionar Processo" urlButton="/process/new" > {{ __('Processos Cadastrados') }} </x-title-component>
+            <x-title-component :showButton="true" titleDescription="" textButton="Adicionar Processo" urlButton="/process/new" > {{ __('Processos Cadastrados') }} </x-title-component>
 
             <div id="BlocoLista" class="p-4 sm:p-8">
                 <div class="bloco_info_details_header">
