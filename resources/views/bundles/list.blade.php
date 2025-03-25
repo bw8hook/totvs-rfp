@@ -14,7 +14,7 @@
                     <span>Produtos</span>
                 </div>
                 <div class="relative flex items-center">        
-                    <a href="{{ route('bundles.register') }}" class="btn_titleComponent" >Cadastrar novo Produto </a>
+                    <a href="{{ route('bundles.new') }}" class="btn_titleComponent" >Cadastrar novo Produto </a>
                 </div>
             </div>
 
