@@ -21,7 +21,7 @@
                 </div>
             
             <div class="list-form" style="margin-top: 21px;">
-                <form method="POST" id="myForm" action="{{ route('bundles.new') }}" style=" margin: auto; width: 40%; min-width: 450px;">
+                <form method="POST" id="myForm" action="{{ route('bundles.register') }}" style=" margin: auto; width: 40%; min-width: 450px;">
                 @csrf
 
                 <!-- Name -->
