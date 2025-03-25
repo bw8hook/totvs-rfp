@@ -2,7 +2,22 @@
     <div class="py-4" style=" padding-bottom: 130px;">
         <div class="max-w-full mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            <x-title-component :showButton="true" textButton="Adicionar Perfil" urlButton="roles/new" > {{ __('Perfis Cadastrados') }} </x-title-component>
+            <div id="titleComponent" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative">
+                <div class="flex items-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" style="color: #5570F1;"></rect>
+                        <rect x="14" y="3" width="7" height="7" style="color: #5570F1;"></rect>
+                        <rect x="14" y="14" width="7" height="7" style="color: #5570F1;"></rect>
+                        <rect x="3" y="14" width="7" height="7" style="color: #5570F1;"></rect>
+                    </svg>
+
+                    <span>Perfis de Usuários</span>
+                </div>
+                <div class="relative flex items-center">        
+                    <a href="{{ route('roles.new') }}" class="btn_titleComponent" >Cadastrar novo Perfil </a>
+                </div>
+            </div>
+
 
             <div id="BlocoLista" class="p-4 sm:p-8">
                 <div class="bloco_info_details_header">
