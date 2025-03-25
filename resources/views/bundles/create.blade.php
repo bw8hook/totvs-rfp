@@ -2,7 +2,23 @@
     <div class="flex flex-col">
         <div class="py-4" style=" padding-bottom: 130px;">
 
-            <x-title-component :showButton="false">Editar Produto</x-title-component>
+        <div id="titleComponentForm" class=" flex items-center justify-between px-4 space-x-2 relative">
+                    <div class="flex items-center space-x-2" style="display: block; margin-left: 30px;">
+                
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; margin-top: 3px; width: 27px; margin-right: 1px;">
+                            <rect x="3" y="3" width="7" height="7" style="color: #5570F1;"></rect>
+                            <rect x="14" y="3" width="7" height="7" style="color: #5570F1;"></rect>
+                            <rect x="14" y="14" width="7" height="7" style="color: #5570F1;"></rect>
+                            <rect x="3" y="14" width="7" height="7" style="color: #5570F1;"></rect>
+                        </svg>
+
+
+                        <div style="display: inline-grid; width: 94%;">
+                            <span style="color: #141824; font-size: 22px; font-weight: 600; line-height: 28.6px; text-align: left;">Novo Produto</span>
+                            <div style="color:#8A94AD; font-size: 16px; font-weight: 400; line-height: 20px; text-align: left; margin-top: 8px; ">Preencha o formulário abaixo para adicionar um novo produto. Certifique-se de fornecer todas as informações necessárias.</div>
+                        </div>
+                    </div>
+                </div>
             
             <div class="list-form" style="margin-top: 21px;">
                 <form method="POST" id="myForm" action="{{ route('bundles.register') }}" style=" margin: auto; width: 40%; min-width: 450px;">
