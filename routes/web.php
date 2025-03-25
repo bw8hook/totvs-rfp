@@ -140,7 +140,7 @@ Route::get('/import/erro/{id}', [ImportController::class, 'listErroRecords'])->n
 Route::middleware('auth')->group(function () {
     Route::get('/bundles/filter', [BundlesController::class, 'filter'])->name('bundles.filter');
     Route::get('/bundles', [BundlesController::class,'list'])->name('bundles.list');
-    Route::get('/bundles/new', [BundlesController::class, 'create'])->name('bundles.register');
+    Route::get('/bundles/new', [BundlesController::class, 'create'])->name('bundles.new');
     Route::get('/bundles/edit/{id}', [BundlesController::class, 'edit'])->name('bundles.edit');
     Route::delete('/bundles/remove/{id}', [BundlesController::class, 'remove'])->name('bundles.remove');
     Route::post('/bundles/register', [BundlesController::class, 'register'])->name('bundles.register');
