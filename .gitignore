@@ -49,3 +49,5 @@ Homestead.json
 .env.production
 .phpactor.json
 auth.json
+cron_test.log
+scheduler.log
