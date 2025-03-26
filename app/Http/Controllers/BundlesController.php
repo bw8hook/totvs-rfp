@@ -162,7 +162,7 @@ class BundlesController extends Controller
                     'SegmentsSelected' => $SegmentsSelected,
                     'AgentSelected' => $AgentSelected,
                     'ModulesSelected' => $ModulesSelected,
-                    'ProcessSelected' => $ProcessSelected->toArray(),
+                    'ProcessSelected' => $ProcessSelected,
                     'CategorieSelected' => $CategorieSelected,
                     'typesSelected' => $typesSelected
                 );
@@ -211,9 +211,29 @@ class BundlesController extends Controller
             // Criar o novo registro no banco de dados
             $post = RfpBundle::create([
                 'bundle' => $validatedData['name'],
+                'status' => $request->status,
+                'status_totvs' => $request->status_totvs,
+                'type_id' => intval($request->types),
+                'category_id' => intval($request->categories),
+                'agent_id' => intval($request->agents),
             ]);
 
             if ($post) {
+                if($request->selected_line){
+                    $post->lineOfProduct()->sync($request->selected_line);
+                }
+
+                if($request->selected_segment){
+                    $post->segments()->sync($request->selected_segment);
+                }
+                if($request->selected_module){
+                    $post->modules()->sync($request->selected_module);
+                }
+                if($request->selected_process){
+                    $post->rfpProcesses()->sync($request->selected_process);
+                }
+
+
                 //return response()->json(['message' => 'Produto criado com sucesso!', 'data' => $post], 201);
                 return redirect()->back()->with('success', 'Produto criado com sucesso.');
             } else {
@@ -242,7 +262,6 @@ class BundlesController extends Controller
                 $produto->bundle =  $validatedData['name'];
                 $produto->status =  $request->status;
                 $produto->status_totvs =  $request->status_totvs;
-
                 $produto->type_id = intval($request->types); 
                 $produto->category_id = intval($request->categories); 
                 $produto->agent_id = intval($request->agents); 
