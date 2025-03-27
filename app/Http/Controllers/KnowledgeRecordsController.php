@@ -299,26 +299,25 @@ class KnowledgeRecordsController extends Controller
             $AllProcess =  RfpProcess::orderBy('order', 'asc')->get();
             $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
 
-            $ListProdutos = DB::table('knowledge_records')
-                ->leftJoin('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id')
-                ->where('knowledge_records.knowledge_base_id', $KnowledgeBase->id)
-                ->where(function ($query) {
-                    $query->orWhereNull('knowledge_records.bundle_id')
-                        ->orWhereNull('knowledge_records.processo')
-                        ->orWhereNull('knowledge_records.requisito')
-                        ->orWhereNull('knowledge_records.resposta')
-                        ->orWhereNull('knowledge_records.modulo')
-                        ->orWhere('knowledge_records.processo', '')
-                        ->orWhere('knowledge_records.requisito', '')
-                        ->orWhere('knowledge_records.resposta', '')
-                        ->orWhere('knowledge_records.modulo', '');
-                })
-                ->groupBy('knowledge_records.bundle_id', 'rfp_bundles.bundle')
-                ->select('knowledge_records.bundle_id', 'rfp_bundles.bundle')
-                ->get();
+            // $ListProdutos = DB::table('knowledge_records')
+            //     ->leftJoin('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id')
+            //     ->where('knowledge_records.knowledge_base_id', $KnowledgeBase->id)
+            //     ->where(function ($query) {
+            //         $query->orWhereNull('knowledge_records.processo')
+            //             ->orWhereNull('knowledge_records.requisito')
+            //             ->orWhereNull('knowledge_records.resposta')
+            //             ->orWhereNull('knowledge_records.modulo')
+            //             ->orWhere('knowledge_records.processo', '')
+            //             ->orWhere('knowledge_records.requisito', '')
+            //             ->orWhere('knowledge_records.resposta', '')
+            //             ->orWhere('knowledge_records.modulo', '');
+            //     })
+            //     ->groupBy('knowledge_records.bundle_id', 'rfp_bundles.bundle')
+            //     ->select('knowledge_records.bundle_id', 'rfp_bundles.bundle')
+            //     ->get();
 
 
-                $CountRecordsEmpty = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->whereNull('bundle_id')->orWhere('bundle_id', '')->count();
+                //$CountRecordsEmpty = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->whereNull('bundle_id')->orWhere('bundle_id', '')->count();
                 $CountRecords = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->count();
             
 
@@ -330,12 +329,11 @@ class KnowledgeRecordsController extends Controller
                     'ListClassificacao' => $ListClassificacaoRecebidas,
                     'ListResposta' => $ListRespostaRecebidas,
                     'ListProdutosRecebidas' => $ListProdutosRecebidas,
-                    'ListProdutos' => $ListProdutos,
                     'AllBundles' => $AllBundles,
                     'AllAnswers' => $AllAnswers,
                     'AllProcess' => $AllProcess,
                     'CountCountRecordsResultado' => $CountRecords,
-                    'CountCountRecordsEmpty' => $CountRecordsEmpty,
+                    'CountCountRecordsEmpty' => 0,
                 );
 
             return view('knowledge.records.erro')->with($data);
@@ -351,13 +349,10 @@ class KnowledgeRecordsController extends Controller
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
             $query->where('knowledge_base_id', '=', $KnowledgeBase->id);
+
             // Pelo menos uma das três condições opcionais deve ser verdadeira
             $query->where(function($q) {
                 $q->where(function($subQ) {
-                    $subQ->whereNull('processo_id')
-                        ->orWhere('processo_id', '');
-                })
-                ->orWhere(function($subQ) {
                     $subQ->whereNotIn('resposta', ['Atende', 'Não Atende', 'Atende Parcial', 'Customizável'])
                         ->orWhereNull('resposta');
                 });
