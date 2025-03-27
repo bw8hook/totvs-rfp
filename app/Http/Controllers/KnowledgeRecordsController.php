@@ -345,11 +345,12 @@ class KnowledgeRecordsController extends Controller
     { 
         if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
             $KnowledgeBase = KnowledgeBase::findOrFail($id);
-            $query = KnowledgeRecord::query()->with('rfp_bundles');
+            $query = KnowledgeRecord::query()->with('bundles');
 
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
             $query->where('knowledge_base_id', '=', $KnowledgeBase->id);
 
+            
             // Pelo menos uma das três condições opcionais deve ser verdadeira
             $query->where(function($q) {
                 $q->where(function($subQ) {
@@ -359,8 +360,53 @@ class KnowledgeRecordsController extends Controller
             });
 
 
+             // Filtro de produto
+             if ($request->filled('product') && $request->product !== "null") {
+                $query->whereHas('bundles', function($query) use ($request) {
+                    $query->where('bundle', 'like', '%' . $request->product . '%')
+                          ->orWhere('knowledge_records_bundles.old_bundle', 'like', '%' . $request->product . '%');
+                });
+            }
+
+
             // Paginação
-            $records = $query->paginate(100);
+             $records = $query->paginate(100);
+            
+             // Na transformação
+             $records->getCollection()->transform(function ($record) {
+                 $recordArray = $record->toArray(); // Mantém todos os campos originais
+ 
+                 // Sobrescreve apenas o campo 'bundles' com a versão separada
+                 $recordArray['bundles'] = [
+                     'principais' => $record->bundles
+                         ->where('pivot.bundle_status', 'principal')
+                         ->values()
+                         ->map(function($bundle) {
+                             return [
+                                 'id' => $bundle->bundle_id,
+                                 'name' => $bundle->bundle,
+                                 'status' => $bundle->pivot->bundle_status,
+                                 'old_bundle' => $bundle->pivot->old_bundle
+                             ];
+                         })->toArray(),
+                         
+                     'adicionais' => $record->bundles
+                         ->where('pivot.bundle_status', 'adicional')
+                         ->values()
+                         ->map(function($bundle) {
+                             return [
+                                 'id' => $bundle->bundle_id,
+                                 'name' => $bundle->bundle,
+                                 'status' => $bundle->pivot->bundle_status,
+                                 'old_bundle' => $bundle->pivot->old_bundle
+                             ];
+                         })->toArray()
+                 ];
+ 
+                 return $recordArray;
+             });
+ 
+
 
             return response()->json($records);
         }
