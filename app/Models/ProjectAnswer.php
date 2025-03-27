@@ -22,6 +22,7 @@ class ProjectAnswer extends Model
         'linha_produto',
         'resposta',
         'referencia',
+        'retriever_resources',
         'observacao',
         'acuracidade_porcentagem',
         'acuracidade_explicacao',

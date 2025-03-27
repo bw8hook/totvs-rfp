@@ -595,7 +595,7 @@
                                             </div>
                                             <div class="processoList">
                                                 <div class="labelProcesso">Produto</div>
-                                                <div class="textoProcesso">${record.rfp_bundles.bundle}</div>
+                                                <div class="textoProcesso">${record.bundles[0].bundle}</div>
                                             </div> 
                                         </div>
                                     </div>`;
