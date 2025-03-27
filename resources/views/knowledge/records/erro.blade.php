@@ -161,6 +161,8 @@
                             produto.bundle_id === record.bundles?.principais?.[0]?.id
                         );
                         
+                        console.log(ListProdutos);
+
                         // Se o bundle_id não existir na lista, ele aparece como desabilitado e selecionado
                         let bundleOptions = !existsInListProducts ? `<option disabled selected>${record.bundle_old}</option>` : '';
                         ListProdutos.forEach(produto => {
