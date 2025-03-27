@@ -21,7 +21,7 @@ class UploadKnowledgeBasecopy extends Command
      *
      * @var string
      */
-    protected $signature = 'app:upload-knowledge-base';
+    protected $signature = 'app:upload-knowledge-bas2';
 
     /**
      * The console command description.

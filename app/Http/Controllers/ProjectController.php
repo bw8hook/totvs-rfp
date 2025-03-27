@@ -474,16 +474,16 @@ class ProjectController extends Controller
     public function destroy(string $id)
     {
         // Encontrar o usuário pelo ID
-        $Arquivo = KnowledgeBase::where('knowledge_base_id', $id)->first();
+        $Arquivo = Project::where('id', $id)->first();
         if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage', 'projects.all.delete', 'projects.my.manage', 'projects.my.delete'])) {     
             if (Storage::exists($Arquivo->filepath)){
                 if (Storage::delete($Arquivo->filepath)){
-                    KnowledgeRecord::where('knowledge_base_id', $id)->delete();// 
-                    KnowledgeBase::where('knowledge_base_id', $id)->delete();// Exclui o usuário do banco de dados
+                    ProjectRecord::where('project_file_id', $id)->delete();// 
+                    Project::where('id', $id)->delete();// Exclui o usuário do banco de dados
                     return redirect()->back()->with('success', 'Arquivo excluído com sucesso.');
                 }else{
-                    KnowledgeRecord::where('knowledge_base_id', $id)->delete();// 
-                    KnowledgeBase::where('knowledge_base_id', $id)->delete();// Exclui o usuário do banco de dados
+                    ProjectRecord::where('project_file_id', $id)->delete();// 
+                    Project::where('id', $id)->delete();// Exclui o usuário do banco de dados
                     return redirect()->back()->with('error', 'Erro ao excluir arquivo.');
                 }
             }else{
@@ -545,13 +545,13 @@ class ProjectController extends Controller
     public function cron(Request $request)
     {
         try {
-            $ProjectFiles = ProjectFiles::where('status', "em processamento")
+            $ProjectFiles = ProjectFiles::where('status', "processado")
             ->with('bundles')
             ->get();
             
             $clientHookIA = new Client([
                 'base_uri' => 'https://totvs-ia.hook.app.br/v1/',
-                'timeout' => 30,
+                'timeout' => 60,
                 'headers' => [
                     'Authorization' => 'Bearer app-y133Gvf5qZvY8yM3gyojkOzR',
                     'Accept' => 'application/json',
@@ -574,15 +574,20 @@ class ProjectController extends Controller
 
                     if($agents[0]->search_engine == "Open IA"){
     
+
                         $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
                             ->where('project_records.status', "processando")
                             //->join('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
                             ->get();
 
-
                         foreach ($Records as $Record) {
                             //$Agent = Agent::where('id', $Record->agent_id)->first();
-                            $Processo = RfpProcess::where('id', $Record->processo_id)->first();
+                            $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
+                            $BundlesProcess = $Processo->rfpBundles;
+
+                            foreach ($BundlesProcess as $bundleProcess) {
+                                $DadosAgentePrioritario = Agent::where('id', $bundleProcess->agent_id)->first();
+                            }
 
                             //$ProdutosPrioritarios = $Records->rfpBundles->pluck('bundle')->implode(', ');
 
@@ -635,8 +640,8 @@ class ProjectController extends Controller
     
                             $body = [
                                 'inputs' =>  [
-                                    'base_id_primarios' => $AgentesPrioritarios,
-                                    'base_id_secundarios' => $agentsString,    
+                                    'base_id_primarios' => $DadosAgentePrioritario->knowledge_id_hook,
+                                    'base_id_secundarios' => $AgentesPrioritarios,    
                                 ],
                                 'query' => json_encode([
                                         'requisito' => $requisito,
@@ -645,17 +650,18 @@ class ProjectController extends Controller
                                 ]),
                                 'response_mode' => 'blocking',
                                 "conversation_id" => "",
-                                "user" => "RFP-API-USER",
+                                "user" => "RFP-API",
                                 "files" => [],
-                            ];    
-
+                            ];  
                             
                             yield function () use ($clientHookIA, $body, $Record) { 
                                 return $clientHookIA->postAsync('/v1/chat-messages', [
                                     'json' => $body,
                                     'headers' => ['Content-Type' => 'application/json'],
                                 ])->then(function ($response) use ($Record) {
+                                    Log::info("Enviado");
                                     return ['response' => $response, 'record' => $Record];
+                                    
                                 });
                             };               
                         }
@@ -665,12 +671,13 @@ class ProjectController extends Controller
            
     
             $pool = new Pool($clientHookIA, $requestsHook(), [
-                'concurrency' => 5,
+                'concurrency' => 10,
                 'fulfilled' => function ($result, $index) {
+                    Log::info("Resposta Recebida");
+
                     $response = $result['response'];
                     $Record = $result['record'];
                     $data = json_decode($response->getBody(), true);
-            
                     $DadosResposta = new ProjectAnswer;
                     $DadosResposta->bundle_id = $Record->bundle_id;
                     $DadosResposta->user_id = $Record->user_id;
@@ -678,15 +685,18 @@ class ProjectController extends Controller
                     $DadosResposta->requisito = $Record->requisito;
     
                     $Answer = json_decode($data['answer']);
+                    $Referencia = json_encode($data['metadata']['retriever_resources']);
     
                     $DadosResposta->aderencia_na_mesma_linha = $Answer->aderencia_na_mesma_linha ?? null;
                     $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
                     $DadosResposta->resposta = $Answer->resposta ?? null;
                     $DadosResposta->modulo = $Answer->modulo ?? null;
                     $DadosResposta->referencia = $Answer->referencia ?? null;
+                    $DadosResposta->retriever_resources = $Referencia ?? null;
                     $DadosResposta->observacao = $Answer->observacao ?? null;
                     $DadosResposta->acuracidade_porcentagem = $Answer->acuracidade_porcentagem ?? null;
                     $DadosResposta->acuracidade_explicacao = $Answer->acuracidade_explicacao ?? null;
+
                     $DadosResposta->save();
     
                     // Atualizar o status do Record
@@ -701,25 +711,23 @@ class ProjectController extends Controller
                         }
                     }
 
-                    dd('Finalizou');
-                    //Log::info("Processamento de todos os arquivos concluído com sucesso");
+                    Log::info("Processamento de todos os arquivos concluído com sucesso");
     
                 },
                 'rejected' => function ($reason, $index) {
-                    dd($reason);
-                    //Log::error("Request failed: " . $reason->getMessage());
+                    //dd($reason);
+                    Log::error("Request failed: " . $reason->getMessage());
                     // Você pode querer atualizar o status do Record aqui também
                 },
             ]);
     
-            Log::info("Executado com sucesso");
+            Log::info("Finalizado com sucesso");
             // Executa o pool
             $promise = $pool->promise();
             $promise->wait();
         } catch (\Exception $e) {
-            Log::error("Erro no processamento: " . $e->getMessage());
+            Log::error( $e);
         }
-
     }
 
 

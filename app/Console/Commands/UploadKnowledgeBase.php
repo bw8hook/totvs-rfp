@@ -36,7 +36,7 @@ class UploadKnowledgeBase extends Command
 
     public function handle()
     {
-        Log::info('Iniciando o processamento da base de conhecimento'); // Adiciona log aqui
+        Log::info('Iniciando o processamento da base de conhecimento - app:upload-knowledge-base'); // Adiciona log aqui
         
         $client = new Client();
         $Bundles = RfpBundle::with('agent')->get();
@@ -125,6 +125,7 @@ class UploadKnowledgeBase extends Command
                             $body = $response->getBody()->getContents();
                         
                         } catch (GuzzleException $e) {
+                            Log::error("Erro: " . $e->getMessage());
                             //echo "Erro: " . $e->getMessage();
                         }
 
@@ -141,6 +142,6 @@ class UploadKnowledgeBase extends Command
             }
         }
        
-        Log::info('Finalizando o processamento da base de conhecimento'); // Adiciona log aqui
+        Log::info('Finalizando o processamento da base de conhecimento - app:upload-knowledge-base'); // Adiciona log aqui
     }
 }

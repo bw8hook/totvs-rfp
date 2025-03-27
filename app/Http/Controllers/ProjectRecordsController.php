@@ -751,44 +751,89 @@ class ProjectRecordsController extends Controller
             //$query = ProjectRecord::query()->with('rfp_bundles');
 
             $ProjectAnswer = ProjectAnswer::where('id', '=', $Project->project_answer_id)->first();
-            $Referencia = $ProjectAnswer->referencia;
+            $ReferenciasResources = json_decode($ProjectAnswer->referencia);
+            $Referencias = $ProjectAnswer->referencia;
+
 
             //$linhas = array_map('trim', explode("\n", $Referencia));
 
-            $linhas = preg_split('/[\n;]+/', $Referencia, -1, PREG_SPLIT_NO_EMPTY);
-            $linhas = array_map('trim', $linhas);
+            // $linhas = preg_split('/[\n;]+/', $Referencia, -1, PREG_SPLIT_NO_EMPTY);
+            // $linhas = array_map('trim', $linhas);
+
             
             $dados = [];
-
-            foreach($linhas as $linha) {
-                if(!empty($linha)) {
-                    $partes = explode(':', $linha, 2);
-                    if(count($partes) == 2) {
-                        $chave = trim($partes[0]);
-                        $valor = trim($partes[1]);
-                        $dados[$chave] = $valor;
-                    }
-                }
-            }         
-            
-            
-            
-            $KnowledgeAll = KnowledgeRecord::with('rfp_bundles')->where('id_record', '=', $dados['ID Registro'])->get();
             $KnowledgeRecords = [];
 
-            if(count($KnowledgeAll) >= 1 ){
-                foreach ($KnowledgeAll as $key => $Knowledge) {
-                    $KnowledgeRecords[] = $Knowledge->toArray();  
+            $ListaReferencia = explode(';', $Referencias);
+            foreach($ListaReferencia as $index => $Referencia) {
+                if(!empty($Referencia)) {
+                    
+                    $partes = explode(',', $Referencia, 2);
+
+                    if(count($partes) == 2) {
+                        $documentoParte = trim($partes[0]);
+                        $registroParte = trim($partes[1]);
+                        
+                        preg_match('/Documento \d+: (.+)/', $documentoParte, $matchesDocumento);
+                        $dados[$index]['Documento'] = $matchesDocumento[1] ?? $documentoParte;
+                        
+                        preg_match('/Id (\d+):/', $registroParte, $matchesId);
+                        $dados[$index]['Id'] = $matchesId[1] ?? null;
+                        
+                        preg_match('/ID Registro: (\d+)/', $registroParte, $matchesRegistro);
+                        $dados[$index]['ID Registro'] = $matchesRegistro[1] ?? null;
+                    }
+
+                    
+                    $KnowledgeAll = KnowledgeRecord::with('bundles')->where('id_record', '=', $dados[$index]['ID Registro'])->get();
+                    
+
+                        if(count($KnowledgeAll) >= 1 ){
+                            foreach ($KnowledgeAll as $key => $Knowledge) {
+                                $KnowledgeRecords[] = $Knowledge->toArray();  
+                            }
+                        }else{
+
+                           
+                            // $KnowledgeAll = ProjectRecord::with('bundles')->where('id', '=', $dados[[$index]]['ID Registro'])->get();
+                            // foreach ($KnowledgeAll as $key => $Knowledge) {
+                            //     $KnowledgeRecords[] = $Knowledge->toArray();               
+                            // }
+                        }
+
                 }
-            }else{
-                $KnowledgeAll = ProjectRecord::with('rfp_bundles')->where('id', '=', $dados['ID Registro'])->get();
-                foreach ($KnowledgeAll as $key => $Knowledge) {
-                    $KnowledgeRecords[] = $Knowledge->toArray();               
-                }
-            }
+            }         
 
+            // foreach($ReferenciasResources as $index => $Referencia) {
+            //     if(!empty($Referencia)) {
+                  
+            //         $ListaReferencia = explode(';', $Referencia->content);
+                   
+            //         foreach ($ListaReferencia as $key => $ListaReferenciaValue) {
+            //             $partes = explode(':', $ListaReferenciaValue, 2);
+            //             if(count($partes) == 2) {
+            //                 $chave = trim($partes[0]);
+            //                 $valor = trim($partes[1]);
+            //                 $dados[$index][$chave] = $valor;
+            //             }
+            //         }
 
+            //         $KnowledgeAll = KnowledgeRecord::with('bundles')->where('id_record', '=', $dados[$index]['ID Registro'])->get();
+                   
+            
+            //             if(count($KnowledgeAll) >= 1 ){
+            //                 foreach ($KnowledgeAll as $key => $Knowledge) {
+            //                     $KnowledgeRecords[] = $Knowledge->toArray();  
+            //                 }
+            //             }else{
+            //                 $KnowledgeAll = ProjectRecord::with('bundles')->where('id', '=', $dados['ID Registro'])->get();
+            //                 foreach ($KnowledgeAll as $key => $Knowledge) {
+            //                     $KnowledgeRecords[] = $Knowledge->toArray();               
+            //                 }
+            //             }
 
+            //     }
+            // }         
 
             $data = array(
                 'ReferenciasIA' => $dados,

@@ -222,21 +222,14 @@
                     <x-input-error :messages="$errors->get('status')" class="mt-2" />
                 </div>
 
-
-             
-
-          
                 <div class="flex items-center justify-end mt-4">
-
                     <x-primary-button class="ms-4 btn_enviar">
-                        {{ __('Atualizar Produto') }}
+                        {{ __('Cadastrar Produto') }}
                     </x-primary-button>
                 </div>
             </form>
         </div>
 
-
-        
         </div>
     </div>
 </x-app-layout>
