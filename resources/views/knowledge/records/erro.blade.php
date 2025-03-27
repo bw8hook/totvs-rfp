@@ -154,13 +154,17 @@
                     // Atualizar tabela
                     let rows = '';
                     response.data.forEach(record => {
-                        // Verifica se record.bundle_id está presente em ListProdutos
-                        let existsInListProducts = ListProdutos.some(produto => produto.bundle_id === record.bundle_id);
+                        console.log(record);
 
+                        // Verifica se record.bundle_id está presente em ListProdutos
+                        let existsInListProducts = ListProdutos.some(produto => 
+                            produto.bundle_id === record.bundles?.principais?.[0]?.id
+                        );
+                        
                         // Se o bundle_id não existir na lista, ele aparece como desabilitado e selecionado
-                        let bundleOptions = !existsInListProducts ? `<option disabled selected>${record.bundle_old}</option>` : '<option disabled selected> - </option>';
+                        let bundleOptions = !existsInListProducts ? `<option disabled selected>${record.bundle_old}</option>` : '';
                         ListProdutos.forEach(produto => {
-                            bundleOptions += `<option value="${produto.bundle_id}" ${produto.bundle_id === record.bundle_id ? 'selected' : ''}>${produto.bundle}</option>`;
+                            bundleOptions += `<option value="${produto.bundle_id}" ${produto.bundle_id === record.bundles?.principais?.[0]?.id ? 'selected' : ''}>${produto.bundle}</option>`;
                         });
 
                         // Verifica se record.resposta está presente em ListRespostas
@@ -183,7 +187,7 @@
                         });
 
                         rows += `
-                            <tr class="listaTabela ${record.rfp_bundles ? '' : 'highlighted_error'}" data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
+                            <tr class="listaTabela ${existsInListProducts ? '' : 'highlighted_error'}"  data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
                                 <td style="width:3%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
                                 <td style="width:11%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">
                                      <select name="processo" class="${existsInListProcess ? '' : 'highlighted_error_select'}" style="border-radius: 8px; width:100%">

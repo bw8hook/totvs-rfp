@@ -256,6 +256,8 @@ class BundlesController extends Controller
                 'bundle_id' => 'required'
             ]);
 
+          
+
             $produto = RfpBundle::where('bundle_id', $validatedData['bundle_id'])->firstOrFail(); // Encontra o registro pelo ID
         
             if ($produto) {
@@ -265,6 +267,8 @@ class BundlesController extends Controller
                 $produto->type_id = intval($request->types); 
                 $produto->category_id = intval($request->categories); 
                 $produto->agent_id = intval($request->agents); 
+
+                $produto->save(); // Salva as alterações no banco
 
                 if($request->selected_line){
                     $produto->lineOfProduct()->sync($request->selected_line);
@@ -280,7 +284,7 @@ class BundlesController extends Controller
                     $produto->rfpProcesses()->sync($request->selected_process);
                 }
 
-                $produto->save(); // Salva as alterações no banco
+               
                 
                 return redirect()->route('bundles.list')->with('success', 'Produto editado com sucesso.');
                 //return response()->json(['message' => 'Produto criado com sucesso!', 'data' => $post], 201);
