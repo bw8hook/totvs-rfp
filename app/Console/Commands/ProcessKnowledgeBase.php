@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use DB;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -35,14 +36,42 @@ class ProcessKnowledgeBase extends Command
                     $Bundles = RfpBundle::with('agent')->get();
 
                     foreach ($Bundles as $bundle) {
-                        $Records = KnowledgeRecord::whereNotNull('knowledge_records.bundle_id')
-                            ->where('knowledge_base_id', $item->id)
-                            ->where('knowledge_records.bundle_id', $bundle->bundle_id)
-                            ->where('knowledge_records.status', 'aguardando')
-                            ->join('rfp_bundles', 'knowledge_records.bundle_id', '=', 'rfp_bundles.bundle_id')
-                            ->select('knowledge_records.id_record', 'knowledge_records.processo', 'knowledge_records.subprocesso', 'knowledge_records.requisito', 'knowledge_records.resposta', 'knowledge_records.modulo', 'knowledge_records.observacao', 'rfp_bundles.bundle')
-                            ->get();
                         
+                        $Records = KnowledgeRecord::where('knowledge_base_id', $item->id)
+                        ->where('knowledge_records.status', 'aguardando')
+                        ->join('knowledge_records_bundles', 'knowledge_records.id_record', '=', 'knowledge_records_bundles.knowledge_record_id')
+                        ->where('knowledge_records_bundles.bundle_id', $bundle->bundle_id) // Filtrar pelo bundle específico
+                        ->select(
+                            'knowledge_records.id_record',
+                            'knowledge_records.processo',
+                            'knowledge_records.subprocesso',
+                            'knowledge_records.requisito',
+                            'knowledge_records.resposta',
+                            'knowledge_records.modulo',
+                            DB::raw('(
+                                SELECT rb.bundle 
+                                FROM knowledge_records_bundles krb
+                                JOIN rfp_bundles rb ON krb.bundle_id = rb.bundle_id
+                                WHERE krb.knowledge_record_id = knowledge_records.id_record
+                                AND krb.bundle_status = "principal"
+                                LIMIT 1
+                            ) as produto_principal'),
+                            'knowledge_records.observacao',
+                            DB::raw('(
+                                SELECT GROUP_CONCAT(
+                                    COALESCE(
+                                        rb.bundle,
+                                        krb.old_bundle
+                                    )
+                                )
+                                FROM knowledge_records_bundles krb
+                                LEFT JOIN rfp_bundles rb ON krb.bundle_id = rb.bundle_id
+                                WHERE krb.knowledge_record_id = knowledge_records.id_record
+                                AND krb.bundle_status = "adicional"
+                            ) as produtos_adicionais')
+                        )
+                        ->get();
+
                         if (!$Records->isEmpty()) {
                             $filenamePrev = $item->id.'_'.$item->name.'_'.uniqid();
                             $fileName = preg_replace('/[^\w\-_\.]/', '', $filenamePrev);
@@ -64,7 +93,7 @@ class ProcessKnowledgeBase extends Command
                             $KnowledgeBaseExportedid = $KnowledgeBaseExported->id;
                             $KnowledgeBaseExported->filepath = $filePath;
                             $KnowledgeBaseExported->filename = $fileName;
-
+                            
                             // Envia os arquivos para a S3 e Pega a URL
                             $export = new KnowledgeBaseExport($item->id, $Records, $KnowledgeBaseExportedid);
                             Excel::store($export, $filePath, 's3');

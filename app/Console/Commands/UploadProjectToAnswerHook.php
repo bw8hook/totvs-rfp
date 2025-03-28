@@ -44,7 +44,7 @@ class UploadProjectToAnswerHook extends Command
             
             $clientHookIA = new Client([
                 'base_uri' => 'https://totvs-ia.hook.app.br/v1/',
-                'timeout' => 30,
+                'timeout' => 60,
                 'headers' => [
                     'Authorization' => 'Bearer app-y133Gvf5qZvY8yM3gyojkOzR',
                     'Accept' => 'application/json',
@@ -67,19 +67,33 @@ class UploadProjectToAnswerHook extends Command
 
                     if($agents[0]->search_engine == "Open IA"){
     
+
                         $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
                             ->where('project_records.status', "processando")
                             //->join('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
                             ->get();
 
                         foreach ($Records as $Record) {
-
                             //$Agent = Agent::where('id', $Record->agent_id)->first();
-                            $Processo = RfpProcess::where('id', $Record->processo_id)->first();
+                            $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
+                            $BundlesProcess = $Processo->rfpBundles;
+
+                            foreach ($BundlesProcess as $bundleProcess) {
+                                $DadosAgentePrioritario = Agent::where('id', $bundleProcess->agent_id)->first();
+                            }
+
+                            //$ProdutosPrioritarios = $Records->rfpBundles->pluck('bundle')->implode(', ');
+
+                            $ProdutosPrioritarios = $bundles->pluck('bundle')->unique()->implode(', ');
+                           
+                            
+                            $agentIds = $bundles->pluck('agent_id')->unique();
+                            $agentsList = Agent::whereIn('id', $agentIds)->get();
+                            $AgentesPrioritarios = $agentsList->pluck('knowledge_id_hook')->filter()->implode(', ');
                             
                             $agentsString = $agents->slice(1) // Ignora o primeiro elemento
                                 ->pluck('knowledge_id_hook') // ou o campo que você quer
-                                ->implode(', '); // Junta com vírgula
+                                ->implode(', ' ); // Junta com vírgula
 
                             // OU de forma mais detalhada:
                             $agentsString = '';
@@ -90,33 +104,57 @@ class UploadProjectToAnswerHook extends Command
                                 }
                             }
 
-                            $prompt = $agents[0]->prompt;
+                            $prioritariosArray = array_map('trim', explode(',', $AgentesPrioritarios));
+                            $agentsString = '';
+
+                            foreach($agents->slice(1) as $key => $agent) {
+                                // Só adiciona se não estiver no array de prioritários
+                                if (!in_array($agent->knowledge_id_hook, $prioritariosArray)) {
+                                    $agentsString .= $agent->knowledge_id_hook;
+                                    
+                                    // Verifica se há próximo item válido para adicionar vírgula
+                                    $nextExists = false;
+                                    foreach($agents->slice($key + 2) as $nextAgent) {
+                                        if (!in_array($nextAgent->knowledge_id_hook, $prioritariosArray)) {
+                                            $nextExists = true;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if ($nextExists) {
+                                        $agentsString .= ', ';
+                                    }
+                                }
+                            }
+
+
                             $requisito = $Record->requisito;
                             $processo = $Processo->process;
     
                             $body = [
                                 'inputs' =>  [
-                                    'base_id' => $agents[0]->knowledge_id_hook,
-                                    'base_id_secundarios' => $agentsString,
-                                    'system' => $prompt,        
+                                    'base_id_primarios' => $DadosAgentePrioritario->knowledge_id_hook,
+                                    'base_id_secundarios' => $AgentesPrioritarios,    
                                 ],
                                 'query' => json_encode([
                                         'requisito' => $requisito,
-                                        'processo' => $processo
+                                        'processo' => $processo,
+                                        'produto' => $ProdutosPrioritarios
                                 ]),
                                 'response_mode' => 'blocking',
                                 "conversation_id" => "",
-                                "user" => "abc-123",
+                                "user" => "RFP-API",
                                 "files" => [],
-                            ];       
-    
-
+                            ];  
+                            
                             yield function () use ($clientHookIA, $body, $Record) { 
                                 return $clientHookIA->postAsync('/v1/chat-messages', [
                                     'json' => $body,
                                     'headers' => ['Content-Type' => 'application/json'],
                                 ])->then(function ($response) use ($Record) {
+                                    Log::info("Enviado");
                                     return ['response' => $response, 'record' => $Record];
+                                    
                                 });
                             };               
                         }
@@ -126,12 +164,13 @@ class UploadProjectToAnswerHook extends Command
            
     
             $pool = new Pool($clientHookIA, $requestsHook(), [
-                'concurrency' => 5,
+                'concurrency' => 10,
                 'fulfilled' => function ($result, $index) {
+                    Log::info("Resposta Recebida");
+
                     $response = $result['response'];
                     $Record = $result['record'];
                     $data = json_decode($response->getBody(), true);
-                    
                     $DadosResposta = new ProjectAnswer;
                     $DadosResposta->bundle_id = $Record->bundle_id;
                     $DadosResposta->user_id = $Record->user_id;
@@ -139,15 +178,18 @@ class UploadProjectToAnswerHook extends Command
                     $DadosResposta->requisito = $Record->requisito;
     
                     $Answer = json_decode($data['answer']);
+                    $Referencia = json_encode($data['metadata']['retriever_resources']);
     
                     $DadosResposta->aderencia_na_mesma_linha = $Answer->aderencia_na_mesma_linha ?? null;
                     $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
                     $DadosResposta->resposta = $Answer->resposta ?? null;
                     $DadosResposta->modulo = $Answer->modulo ?? null;
                     $DadosResposta->referencia = $Answer->referencia ?? null;
+                    $DadosResposta->retriever_resources = $Referencia ?? null;
                     $DadosResposta->observacao = $Answer->observacao ?? null;
                     $DadosResposta->acuracidade_porcentagem = $Answer->acuracidade_porcentagem ?? null;
                     $DadosResposta->acuracidade_explicacao = $Answer->acuracidade_explicacao ?? null;
+
                     $DadosResposta->save();
     
                     // Atualizar o status do Record
@@ -161,24 +203,23 @@ class UploadProjectToAnswerHook extends Command
                             $ProjectFile->save();
                         }
                     }
-                   
-                    //Log::info("Processamento de todos os arquivos concluído com sucesso");
-                   
+
+                    Log::info("Processamento de todos os arquivos concluído com sucesso");
     
                 },
                 'rejected' => function ($reason, $index) {
-                    dd($reason);
-                    //Log::error("Request failed: " . $reason->getMessage());
+                    //dd($reason);
+                    Log::error("Request failed: " . $reason->getMessage());
                     // Você pode querer atualizar o status do Record aqui também
                 },
             ]);
     
-            Log::info("Executado com sucesso");
+            Log::info("Finalizado com sucesso");
             // Executa o pool
             $promise = $pool->promise();
             $promise->wait();
         } catch (\Exception $e) {
-            Log::error("Erro no processamento: " . $e->getMessage());
+            Log::error( $e);
         }
     }
 }

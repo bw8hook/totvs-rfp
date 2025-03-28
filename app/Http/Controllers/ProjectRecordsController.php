@@ -754,7 +754,6 @@ class ProjectRecordsController extends Controller
             $ReferenciasResources = json_decode($ProjectAnswer->referencia);
             $Referencias = $ProjectAnswer->referencia;
 
-
             //$linhas = array_map('trim', explode("\n", $Referencia));
 
             // $linhas = preg_split('/[\n;]+/', $Referencia, -1, PREG_SPLIT_NO_EMPTY);
@@ -765,9 +764,11 @@ class ProjectRecordsController extends Controller
             $KnowledgeRecords = [];
 
             $ListaReferencia = explode(';', $Referencias);
+
             foreach($ListaReferencia as $index => $Referencia) {
                 if(!empty($Referencia)) {
-                    
+                
+
                     $partes = explode(',', $Referencia, 2);
 
                     if(count($partes) == 2) {
@@ -784,6 +785,7 @@ class ProjectRecordsController extends Controller
                         $dados[$index]['ID Registro'] = $matchesRegistro[1] ?? null;
                     }
 
+                  
                     
                     $KnowledgeAll = KnowledgeRecord::with('bundles')->where('id_record', '=', $dados[$index]['ID Registro'])->get();
                     
