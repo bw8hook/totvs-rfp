@@ -180,7 +180,7 @@ class UploadProjectToAnswerHook extends Command
            
     
             $pool = new Pool($clientHookIA, $requestsHook(), [
-                'concurrency' => 1,
+                'concurrency' => 10,
                 'fulfilled' => function ($result, $index) {
                     Log::info("Resposta Recebida");
 
