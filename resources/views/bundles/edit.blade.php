@@ -37,11 +37,15 @@
                     <x-input-label for="categories" :value="__('Selecione a Categoria')" />
                     <select name="categories"  class="form-control">
                         @foreach ($categories as $index => $item)
+                        @if(isset($CategorieSelected->id))
                             @if($CategorieSelected->id == $item['id'])
                                 <option value="{{ $item['id'] }}" selected >{{ $item['name'] }}</option>
                             @else
                                 <option value="{{ $item['id'] }}"  >{{ $item['name'] }}</option>
                             @endif
+                        @else
+                                <option value="{{ $item['id'] }}"  >{{ $item['name'] }}</option>
+                        @endif
                         @endforeach
                     </select>
                     <x-input-error :messages="$errors->get('categories')" class="mt-2" />
@@ -52,11 +56,15 @@
                     <x-input-label for="types" :value="__('Selecione o Tipo')" />
                     <select name="types"  class="form-control">
                         @foreach ($types as $index => $item)
+                        @if(isset($typesSelected->id))
                             @if($typesSelected->id == $item['id'])
                                 <option value="{{ $item['id'] }}" selected >{{ $item['name'] }}</option>
                             @else
                                 <option value="{{ $item['id'] }}"  >{{ $item['name'] }}</option>
                             @endif
+                        @else
+                            <option value="{{ $item['id'] }}"  >{{ $item['name'] }}</option>
+                        @endif
                         @endforeach
                     </select>
                     <x-input-error :messages="$errors->get('types')" class="mt-2" />
@@ -130,11 +138,15 @@
                     <x-input-label for="agents" :value="__('Selecione o Agente')" />
                     <select name="agents"  class="form-control">
                         @foreach ($agents as $index => $item)
+                        @if(isset($AgentSelected->id))
                             @if($AgentSelected->id == $item['id'])
                                 <option value="{{ $item['id'] }}" selected >{{ $item['agent_name'] }}</option>
                             @else
                                 <option value="{{ $item['id'] }}"  >{{ $item['agent_name'] }}</option>
                             @endif
+                        @else
+                            <option value="{{ $item['id'] }}"  >{{ $item['agent_name'] }}</option>
+                        @endif
                         @endforeach
                     </select>
                     <x-input-error :messages="$errors->get('agents')" class="mt-2" />

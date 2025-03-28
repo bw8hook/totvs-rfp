@@ -9,6 +9,11 @@ class RfpBundle extends Model
     public $timestamps = true; // Garante que os timestamps serão usados
 
     protected $primaryKey = 'bundle_id'; // Define a chave primária
+
+    // Remover guarded completamente
+    protected $guarded = [];
+
+    // Definir fillable explicitamente
     protected $fillable = [
         'bundle',
         'agent_id',
@@ -17,10 +22,9 @@ class RfpBundle extends Model
         'working_group_id',
         'category_id',
         'status_totvs',
-        'status',
-        'created_at',
-        'updated_at',
+        'status'
     ];
+    
 
     // Defina o relacionamento com o modelo Agent
     public function type()

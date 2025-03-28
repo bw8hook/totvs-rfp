@@ -1,5 +1,6 @@
 <?php
 namespace App\Console\Commands;
+use App\Models\RfpBundle;
 use Illuminate\Console\Command;
 
 use App\Models\Agent;
@@ -50,7 +51,7 @@ class UploadProjectToAnswerHook extends Command
                     'Accept' => 'application/json',
                 ],
             ]);
-    
+
             $requestsHook = function () use ($ProjectFiles, $clientHookIA) {
                 foreach ($ProjectFiles as $File) {
                     // Pega os IDs dos bundles vinculados
@@ -66,26 +67,37 @@ class UploadProjectToAnswerHook extends Command
                     $agents = Agent::whereIn('id', $agentIds)->get();
 
                     if($agents[0]->search_engine == "Open IA"){
-    
 
-                        $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
+                        $Records = ProjectRecord::with('bundles')
+                            ->where('project_records.project_file_id', $File->id)
                             ->where('project_records.status', "processando")
                             //->join('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
                             ->get();
 
+
                         foreach ($Records as $Record) {
+            
                             //$Agent = Agent::where('id', $Record->agent_id)->first();
                             $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
                             $BundlesProcess = $Processo->rfpBundles;
 
+
+                            $ProdutosPrioritarios = '';
                             foreach ($BundlesProcess as $bundleProcess) {
                                 $DadosAgentePrioritario = Agent::where('id', $bundleProcess->agent_id)->first();
+
+                                // Se a string estiver vazia, adicione direto
+                                if (empty($ProdutosPrioritarios)) {
+                                    $ProdutosPrioritarios = $bundleProcess->bundle; // ou outro campo que queira
+                                } else {
+                                    // Se já tiver conteúdo, adicione com vírgula
+                                    $ProdutosPrioritarios .= ', ' . $bundleProcess->bundle;
+                                }
                             }
 
                             //$ProdutosPrioritarios = $Records->rfpBundles->pluck('bundle')->implode(', ');
 
-                            $ProdutosPrioritarios = $bundles->pluck('bundle')->unique()->implode(', ');
-                           
+                            $ProdutosAdicionais = $bundles->pluck('bundle')->unique()->implode(', ');
                             
                             $agentIds = $bundles->pluck('agent_id')->unique();
                             $agentsList = Agent::whereIn('id', $agentIds)->get();
@@ -127,7 +139,6 @@ class UploadProjectToAnswerHook extends Command
                                 }
                             }
 
-
                             $requisito = $Record->requisito;
                             $processo = $Processo->process;
     
@@ -139,14 +150,19 @@ class UploadProjectToAnswerHook extends Command
                                 'query' => json_encode([
                                         'requisito' => $requisito,
                                         'processo' => $processo,
-                                        'produto' => $ProdutosPrioritarios
-                                ]),
+                                        'produto' => $ProdutosPrioritarios,
+                                        'produtos_adicionais' => $ProdutosAdicionais
+                                ], JSON_UNESCAPED_UNICODE),
                                 'response_mode' => 'blocking',
                                 "conversation_id" => "",
-                                "user" => "RFP-API",
+                                "user" => "RFP-API-PROD",
                                 "files" => [],
                             ];  
                             
+
+                            //TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, TOTVS Agendamentos, TOTVS Logística TMS, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS WMS SaaS, TOTVS YMS, TOTVS Frete Embarcador
+                            //TOTVS Analytics, TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, Planejamento Orçamentário by Prophix, RD Station CRM, TOTVS Agendamentos, TOTVS Backoffice Portal de Vendas, TOTVS Cloud IaaS, TOTVS Comércio Exterior, TOTVS CRM Automação da Força de Vendas - SFA, TOTVS Fluig, TOTVS Frete Embarcador, TOTVS Gestão de Frotas - Linha Protheus, TOTVS Logística TMS, TOTVS Manufatura - Linha Protheus, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS Transmite, TOTVS Varejo Lojas - Linha Protheus, TOTVS WMS SaaS, TOTVS YMS, Universidade TOTVS, Analytics by GoodData
+
                             yield function () use ($clientHookIA, $body, $Record) { 
                                 return $clientHookIA->postAsync('/v1/chat-messages', [
                                     'json' => $body,
@@ -164,7 +180,7 @@ class UploadProjectToAnswerHook extends Command
            
     
             $pool = new Pool($clientHookIA, $requestsHook(), [
-                'concurrency' => 10,
+                'concurrency' => 1,
                 'fulfilled' => function ($result, $index) {
                     Log::info("Resposta Recebida");
 
@@ -176,6 +192,8 @@ class UploadProjectToAnswerHook extends Command
                     $DadosResposta->user_id = $Record->user_id;
                     $DadosResposta->requisito_id = $Record->id;
                     $DadosResposta->requisito = $Record->requisito;
+
+                    dd($data);
     
                     $Answer = json_decode($data['answer']);
                     $Referencia = json_encode($data['metadata']['retriever_resources']);
@@ -197,11 +215,11 @@ class UploadProjectToAnswerHook extends Command
                         $Record->update(['status' => 'respondido ia']);
                         $Record->update(['project_answer_id' => $DadosResposta->id]);
     
-                        $ProjectFile = ProjectFiles::where('id', $Record->project_id)->first();
-                        if($ProjectFile->status == "processando"){
-                            $ProjectFile->status = 'processado';
-                            $ProjectFile->save();
-                        }
+                        // $ProjectFile = ProjectFiles::where('id', $Record->project_id)->first();
+                        // if($ProjectFile->status == "processando"){
+                        //     $ProjectFile->status = 'processado';
+                        //     $ProjectFile->save();
+                        // }
                     }
 
                     Log::info("Processamento de todos os arquivos concluído com sucesso");

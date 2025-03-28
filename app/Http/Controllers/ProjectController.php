@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers;
+use App\Imports\DownloadAnsweredProjectImport;
 use App\Models\Segments;
 use App\Models\Type;
 use Carbon\Carbon;
@@ -23,6 +24,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use App\Http\Controllers\MentoriaController;
 use App\Models\LineOfProduct;
@@ -524,6 +527,8 @@ class ProjectController extends Controller
                     $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
                         ->where('project_records.status', "processando")
                         ->count();
+
+                        dd($Records);
             
                         if($Records == 0){
                             $File->status = 'processado';
@@ -538,12 +543,89 @@ class ProjectController extends Controller
 
 
 
+    
+
+    public function projectExport(Request $request)
+    {
+        Log::info('Iniciando o processamento da base de conhecimento');
+        try {
+            $ProjectFiles = ProjectFiles::where('status', "processado")
+            ->with('bundles')
+            ->get();
+
+            foreach ($ProjectFiles as $ProjectFile) {
+                // $Records = ProjectRecord::whereNotNull('project_records.bundle_id')
+                //     ->where('project_records.bundle_id', $bundle->bundle_id)
+                //     ->where('project_records.status', 'user edit')
+                //     ->whereNull('project_records.retroalimentacao')
+                //     ->get();
+
+                try {
+                    // Baixar arquivo do S3 para processamento local
+                    $tempInputFile = tempnam(sys_get_temp_dir(), 'excel');
+                    $contents = Storage::disk('s3')->get($ProjectFile->filepath);
+                    file_put_contents($tempInputFile, $contents);
+        
+                     // Criar instância de importação
+                    $import = new DownloadAnsweredProjectImport();
+
+                    // Importar arquivo
+                    Excel::import($import, $tempInputFile);
+
+                    // Salvar arquivo processado
+                    $tempOutputFile = tempnam(sys_get_temp_dir(), 'excel');
+                    $writer = new Xlsx($import->getSpreadsheet());
+                    $writer->save($tempOutputFile);
+
+                    // Enviar arquivo processado para S3
+                    $outputFilePath = 'caminho/no/s3/arquivo_processado.xlsx';
+                    Storage::disk('s3')->put(
+                        $outputFilePath, 
+                        file_get_contents($tempOutputFile)
+                    );
+
+                    // Preparar download
+                    return response()->download(
+                        $tempOutputFile, 
+                        'arquivo_processado.xlsx', 
+                        [
+                            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            'Content-Disposition' => 'attachment; filename="arquivo_processado.xlsx"'
+                        ]
+                    )->deleteFileAfterSend(true);
+
+                } catch (\Exception $e) {
+
+                    dd($e->getMessage());
+                    Log::error('Erro no processamento do Excel', [
+                        'message' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+
+                    return 'Erro no processamento';
+                }        
+            }
+        } catch (\Exception $e) {
+            Log::error("Erro: " . $e->getMessage());
+        }
+          
+        Log::info('Finalizando o processamento da base de conhecimento'); // Adiciona log aqui
+    }
+
+
+
+
+
+
+
+
+
 
 
     public function cron(Request $request)
     {
         try {
-            $ProjectFiles = ProjectFiles::where('status', "processado")
+            $ProjectFiles = ProjectFiles::where('status', "em processamento")
             ->with('bundles')
             ->get();
             
@@ -555,7 +637,7 @@ class ProjectController extends Controller
                     'Accept' => 'application/json',
                 ],
             ]);
-    
+
             $requestsHook = function () use ($ProjectFiles, $clientHookIA) {
                 foreach ($ProjectFiles as $File) {
                     // Pega os IDs dos bundles vinculados
@@ -571,26 +653,37 @@ class ProjectController extends Controller
                     $agents = Agent::whereIn('id', $agentIds)->get();
 
                     if($agents[0]->search_engine == "Open IA"){
-    
 
-                        $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
+                        $Records = ProjectRecord::with('bundles')
+                            ->where('project_records.project_file_id', $File->id)
                             ->where('project_records.status', "processando")
                             //->join('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
                             ->get();
 
+
                         foreach ($Records as $Record) {
+            
                             //$Agent = Agent::where('id', $Record->agent_id)->first();
                             $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
                             $BundlesProcess = $Processo->rfpBundles;
 
+
+                            $ProdutosPrioritarios = '';
                             foreach ($BundlesProcess as $bundleProcess) {
                                 $DadosAgentePrioritario = Agent::where('id', $bundleProcess->agent_id)->first();
+
+                                // Se a string estiver vazia, adicione direto
+                                if (empty($ProdutosPrioritarios)) {
+                                    $ProdutosPrioritarios = $bundleProcess->bundle; // ou outro campo que queira
+                                } else {
+                                    // Se já tiver conteúdo, adicione com vírgula
+                                    $ProdutosPrioritarios .= ', ' . $bundleProcess->bundle;
+                                }
                             }
 
                             //$ProdutosPrioritarios = $Records->rfpBundles->pluck('bundle')->implode(', ');
 
-                            $ProdutosPrioritarios = $bundles->pluck('bundle')->unique()->implode(', ');
-                           
+                            $ProdutosAdicionais = $bundles->pluck('bundle')->unique()->implode(', ');
                             
                             $agentIds = $bundles->pluck('agent_id')->unique();
                             $agentsList = Agent::whereIn('id', $agentIds)->get();
@@ -632,7 +725,6 @@ class ProjectController extends Controller
                                 }
                             }
 
-
                             $requisito = $Record->requisito;
                             $processo = $Processo->process;
     
@@ -644,14 +736,19 @@ class ProjectController extends Controller
                                 'query' => json_encode([
                                         'requisito' => $requisito,
                                         'processo' => $processo,
-                                        'produto' => $ProdutosPrioritarios
-                                ]),
+                                        'produto' => $ProdutosPrioritarios,
+                                        'produtos_adicionais' => $ProdutosAdicionais
+                                ], JSON_UNESCAPED_UNICODE),
                                 'response_mode' => 'blocking',
                                 "conversation_id" => "",
-                                "user" => "RFP-API",
+                                "user" => "RFP-API-PROD",
                                 "files" => [],
                             ];  
                             
+
+                            //TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, TOTVS Agendamentos, TOTVS Logística TMS, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS WMS SaaS, TOTVS YMS, TOTVS Frete Embarcador
+                            //TOTVS Analytics, TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, Planejamento Orçamentário by Prophix, RD Station CRM, TOTVS Agendamentos, TOTVS Backoffice Portal de Vendas, TOTVS Cloud IaaS, TOTVS Comércio Exterior, TOTVS CRM Automação da Força de Vendas - SFA, TOTVS Fluig, TOTVS Frete Embarcador, TOTVS Gestão de Frotas - Linha Protheus, TOTVS Logística TMS, TOTVS Manufatura - Linha Protheus, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS Transmite, TOTVS Varejo Lojas - Linha Protheus, TOTVS WMS SaaS, TOTVS YMS, Universidade TOTVS, Analytics by GoodData
+
                             yield function () use ($clientHookIA, $body, $Record) { 
                                 return $clientHookIA->postAsync('/v1/chat-messages', [
                                     'json' => $body,
@@ -669,7 +766,7 @@ class ProjectController extends Controller
            
     
             $pool = new Pool($clientHookIA, $requestsHook(), [
-                'concurrency' => 10,
+                'concurrency' => 1,
                 'fulfilled' => function ($result, $index) {
                     Log::info("Resposta Recebida");
 
@@ -681,6 +778,8 @@ class ProjectController extends Controller
                     $DadosResposta->user_id = $Record->user_id;
                     $DadosResposta->requisito_id = $Record->id;
                     $DadosResposta->requisito = $Record->requisito;
+
+                    dd($data);
     
                     $Answer = json_decode($data['answer']);
                     $Referencia = json_encode($data['metadata']['retriever_resources']);
