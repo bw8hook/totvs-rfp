@@ -563,7 +563,7 @@
                     url: url,
                     method: 'GET',
                     success: function (response) {
-                        console.log(response);
+                        console.log(response.ProjectAnswer);
 
                         $('#ModalEdit .loading').hide();
                         $('#ModalEdit form').show();
@@ -574,6 +574,8 @@
                         $('#modulo').val(response.ProjectAnswer.modulo);
                         $('#observacao').val(response.ProjectAnswer.observacao);
                         $('#produto').val(response.ProjectAnswer.bundle_id);
+
+
 
                         // Atualizar tabela
                         let rows = '';

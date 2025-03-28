@@ -188,14 +188,16 @@ class UploadProjectToAnswerHook extends Command
                     $Record = $result['record'];
                     $data = json_decode($response->getBody(), true);
                     $DadosResposta = new ProjectAnswer;
-                    $DadosResposta->bundle_id = $Record->bundle_id;
-                    $DadosResposta->user_id = $Record->user_id;
-                    $DadosResposta->requisito_id = $Record->id;
-                    $DadosResposta->requisito = $Record->requisito;
-    
+
                     $Answer = json_decode($data['answer']);
                     $Referencia = json_encode($data['metadata']['retriever_resources']);
-    
+                    
+                    $bundleId = RfpBundle::where('bundle', 'like', '%' . $Answer->linha_produto . '%')->first();
+
+                    $DadosResposta->bundle_id = $bundleId ?? null;
+                    $DadosResposta->user_id = $Record->user_id;
+                    $DadosResposta->requisito_id = $Record->id;
+                    $DadosResposta->requisito = $Record->requisito;    
                     $DadosResposta->aderencia_na_mesma_linha = $Answer->aderencia_na_mesma_linha ?? null;
                     $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
                     $DadosResposta->resposta = $Answer->resposta ?? null;
