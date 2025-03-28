@@ -192,8 +192,6 @@ class UploadProjectToAnswerHook extends Command
                     $DadosResposta->user_id = $Record->user_id;
                     $DadosResposta->requisito_id = $Record->id;
                     $DadosResposta->requisito = $Record->requisito;
-
-                    dd($data);
     
                     $Answer = json_decode($data['answer']);
                     $Referencia = json_encode($data['metadata']['retriever_resources']);
