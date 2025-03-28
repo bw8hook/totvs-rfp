@@ -521,10 +521,8 @@ class ProjectController extends Controller
         try {
             $ProjectFiles = ProjectFiles::where('status', "em processamento")->get();
                 foreach ($ProjectFiles as $File) {
-                    $Records = ProjectRecord::whereNotNull('project_records.bundle_id')
-                        ->where('project_records.project_file_id', $File->id)
+                    $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
                         ->where('project_records.status', "processando")
-                        ->join('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
                         ->count();
             
                         if($Records == 0){
