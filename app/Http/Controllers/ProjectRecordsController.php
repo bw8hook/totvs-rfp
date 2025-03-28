@@ -856,7 +856,7 @@ class ProjectRecordsController extends Controller
         $Project = ProjectRecord::findOrFail($id);
         if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             //$query = ProjectRecord::query()->with('rfp_bundles');
-            $ProjectAnswer = ProjectAnswer::where('id', '=', $Project->project_answer_id)->first()->toArray();
+            $ProjectAnswer = ProjectAnswer::with('bundle')->where('id', '=', $Project->project_answer_id)->first()->toArray();
 
             if($ProjectAnswer['aderencia_na_mesma_linha'] != 'Desconhecido'){
                 $RfpAnswer = RfpAnswer::where('anwser', '=', $ProjectAnswer['aderencia_na_mesma_linha'])->first();
