@@ -185,38 +185,39 @@ class UploadProjectToAnswerHook extends Command
                     $response = $result['response'];
                     $Record = $result['record'];
                     $data = json_decode($response->getBody(), true);
-                    $DadosResposta = new ProjectAnswer;
-
+                    
                     $Answer = json_decode($data['answer']);
                     $Referencia = json_encode($data['metadata']['retriever_resources']);
                     
                     $bundleId = RfpBundle::where('bundle', 'like', '%' . $Answer->linha_produto . '%')->first();
+                   
+                    $Record = $result['record'];
+                    $Record->ia_attempts = intval($Record->ia_attempts) + 1;
+                    $Record->save();
                     
-                    $DadosResposta->bundle_id = $bundleId->bundle_id ?? null;
-                    $DadosResposta->user_id = $Record->user_id;
-                    $DadosResposta->requisito_id = $Record->id;
-                    $DadosResposta->requisito = $Record->requisito;    
-                    $DadosResposta->aderencia_na_mesma_linha = $Answer->aderencia_na_mesma_linha ?? null;
-                    $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
-                    $DadosResposta->resposta = $Answer->resposta ?? null;
-                    $DadosResposta->modulo = $Answer->modulo ?? null;
-                    $DadosResposta->referencia = $Answer->referencia ?? null;
-                    $DadosResposta->retriever_resources = $Referencia ?? null;
-                    $DadosResposta->observacao = $Answer->observacao ?? null;
-                    $DadosResposta->acuracidade_porcentagem = $Answer->acuracidade_porcentagem ?? null;
-                    $DadosResposta->acuracidade_explicacao = $Answer->acuracidade_explicacao ?? null;
-
-                    $DadosResposta->save();
-
-                    $TentativasIA = intval($Record->ia_attempts)+1;
-                    $Record->update(['ia_attempts' =>  $TentativasIA]);
-                    
-    
                     // Atualizar o status do Record
-                    if($Answer->aderencia_na_mesma_linha != 'Desconhecido' || $TentativasIA > 3){
+                    if($Answer->aderencia_na_mesma_linha != 'Desconhecido' || $Record->ia_attempts >= 3){
 
+                        $DadosResposta = new ProjectAnswer;
+                        $DadosResposta->bundle_id = $bundleId->bundle_id ?? null;
+                        $DadosResposta->user_id = $Record->user_id;
+                        $DadosResposta->requisito_id = $Record->id;
+                        $DadosResposta->requisito = $Record->requisito;    
+                        $DadosResposta->aderencia_na_mesma_linha = $Answer->aderencia_na_mesma_linha ?? null;
+                        $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
+                        $DadosResposta->resposta = $Answer->resposta ?? null;
+                        $DadosResposta->modulo = $Answer->modulo ?? null;
+                        $DadosResposta->referencia = $Answer->referencia ?? null;
+                        $DadosResposta->retriever_resources = $Referencia ?? null;
+                        $DadosResposta->observacao = $Answer->observacao ?? null;
+                        $DadosResposta->acuracidade_porcentagem = $Answer->acuracidade_porcentagem ?? null;
+                        $DadosResposta->acuracidade_explicacao = $Answer->acuracidade_explicacao ?? null;
+    
+                        $DadosResposta->save();
+                        
                         $Record->update(['status' => 'respondido ia']);
                         $Record->update(['project_answer_id' => $DadosResposta->id]);
+                        $Record->save();
     
                         // $ProjectFile = ProjectFiles::where('id', $Record->project_id)->first();
                         // if($ProjectFile->status == "processando"){
