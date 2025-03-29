@@ -155,7 +155,7 @@ class UploadProjectToAnswerHook extends Command
                                 ], JSON_UNESCAPED_UNICODE),
                                 'response_mode' => 'blocking',
                                 "conversation_id" => "",
-                                "user" => "RFP-API-PROD",
+                                "user" => "RFP-API-PRODUCAO",
                                 "files" => [],
                             ];  
                             
@@ -180,7 +180,7 @@ class UploadProjectToAnswerHook extends Command
            
     
             $pool = new Pool($clientHookIA, $requestsHook(), [
-                'concurrency' => 10,
+                'concurrency' => 5,
                 'fulfilled' => function ($result, $index) {
                     Log::info("Resposta Recebida");
 
@@ -193,8 +193,8 @@ class UploadProjectToAnswerHook extends Command
                     $Referencia = json_encode($data['metadata']['retriever_resources']);
                     
                     $bundleId = RfpBundle::where('bundle', 'like', '%' . $Answer->linha_produto . '%')->first();
-
-                    $DadosResposta->bundle_id = $bundleId ?? null;
+                    
+                    $DadosResposta->bundle_id = $bundleId->bundle_id ?? null;
                     $DadosResposta->user_id = $Record->user_id;
                     $DadosResposta->requisito_id = $Record->id;
                     $DadosResposta->requisito = $Record->requisito;    
