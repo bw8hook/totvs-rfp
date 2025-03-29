@@ -207,12 +207,15 @@ class UploadProjectToAnswerHook extends Command
                     $DadosResposta->acuracidade_explicacao = $Answer->acuracidade_explicacao ?? null;
 
                     $DadosResposta->save();
+
+                    $TentativasIA = intval($Record->ia_attempts)+1;
+                    $Record->update(['ia_attempts' =>  $TentativasIA]);
+                    
     
                     // Atualizar o status do Record
-                    if($Answer->aderencia_na_mesma_linha != 'Desconhecido'){
+                    if($Answer->aderencia_na_mesma_linha != 'Desconhecido' || $TentativasIA > 3){
 
                         $Record->update(['status' => 'respondido ia']);
-                        $Record->update(['ia_try' => $Record->ia_try++]);
                         $Record->update(['project_answer_id' => $DadosResposta->id]);
     
                         // $ProjectFile = ProjectFiles::where('id', $Record->project_id)->first();
