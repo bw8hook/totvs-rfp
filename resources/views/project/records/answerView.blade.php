@@ -3,7 +3,7 @@
         <div class="max-w-full mx-auto">
 
             <div id="titleComponent_KnowledgeBase" style=" padding-top: 20px; min-height: 100px; height: auto; justify-content: space-between; align-items: flex-start;" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative" >  
-                <div class="block" style="width: 50%;">    
+                <div class="block" style="width: 100%;">    
                     <div class="flex" style="width: 100%;">
                     <img src="{{ asset('icons/base_conhecimento.svg') }}" alt="Upload Icon" style="height: 33%; padding-right: 18px;">
                         <span>{{$Project->name}}</span>
@@ -16,7 +16,7 @@
                                 {{$ProjectFile->rfp_bundles->bundle}}
                             @else
                                 @foreach ($ProjectFile->bundles as $bundleProject)
-                                    <span style="background: #ececec; padding: 5px 10px; margin-left: 5px; border-radius: 5px;">{{$bundleProject->bundle}}</span>
+                                    <span class="produto_answer" style="background: #ececec; padding: 5px 10px; margin-left: 5px; border-radius: 5px;">{{$bundleProject->bundle}}</span>
                                 @endforeach
                             @endisset
                         </span></div>

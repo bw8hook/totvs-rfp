@@ -43,6 +43,7 @@ class UploadProjectToAnswerHook extends Command
             ->with('bundles')
             ->get();
             
+
             $clientHookIA = new Client([
                 'base_uri' => 'https://totvs-ia.hook.app.br/v1/',
                 'timeout' => 60,
@@ -155,7 +156,7 @@ class UploadProjectToAnswerHook extends Command
                                 ], JSON_UNESCAPED_UNICODE),
                                 'response_mode' => 'blocking',
                                 "conversation_id" => "",
-                                "user" => "RFP-API-PRODUCAO",
+                                "user" => "RFP-API-CRON-1",
                                 "files" => [],
                             ];  
                             
