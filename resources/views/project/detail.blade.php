@@ -257,8 +257,8 @@
 
 
                                         `;
-                        } else   if (record.status === 'em processamento') {
-                            status = '<div style="background: #d5edff; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #2196F3; width: auto; padding: 0px 20px; position: relative; display: inline-block;">'+record.status+'</div>';
+                        } else   if (record.status === 'em processamento' || record.status === 'na fila') {
+                            status = '<div style="background: #d5edff; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #2196F3; width: auto; padding: 0px 20px; position: relative; display: inline-block;"> em processamento </div>';
                             btnEdit = `<div style="margin: 0px; float:left; min-width:70px;">
                                             
                                         </div>`;

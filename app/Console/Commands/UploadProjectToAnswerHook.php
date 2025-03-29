@@ -42,7 +42,6 @@ class UploadProjectToAnswerHook extends Command
             $ProjectFiles = ProjectFiles::where('status', "em processamento")
             ->with('bundles')
             ->get();
-            
 
             $clientHookIA = new Client([
                 'base_uri' => 'https://totvs-ia.hook.app.br/v1/',
@@ -81,7 +80,6 @@ class UploadProjectToAnswerHook extends Command
                             //$Agent = Agent::where('id', $Record->agent_id)->first();
                             $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
                             $BundlesProcess = $Processo->rfpBundles;
-
 
                             $ProdutosPrioritarios = '';
                             foreach ($BundlesProcess as $bundleProcess) {
@@ -156,11 +154,10 @@ class UploadProjectToAnswerHook extends Command
                                 ], JSON_UNESCAPED_UNICODE),
                                 'response_mode' => 'blocking',
                                 "conversation_id" => "",
-                                "user" => "RFP-API-CRON-1",
+                                "user" => "RFP-API-CRON-2",
                                 "files" => [],
                             ];  
                             
-
                             //TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, TOTVS Agendamentos, TOTVS Logística TMS, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS WMS SaaS, TOTVS YMS, TOTVS Frete Embarcador
                             //TOTVS Analytics, TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, Planejamento Orçamentário by Prophix, RD Station CRM, TOTVS Agendamentos, TOTVS Backoffice Portal de Vendas, TOTVS Cloud IaaS, TOTVS Comércio Exterior, TOTVS CRM Automação da Força de Vendas - SFA, TOTVS Fluig, TOTVS Frete Embarcador, TOTVS Gestão de Frotas - Linha Protheus, TOTVS Logística TMS, TOTVS Manufatura - Linha Protheus, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS Transmite, TOTVS Varejo Lojas - Linha Protheus, TOTVS WMS SaaS, TOTVS YMS, Universidade TOTVS, Analytics by GoodData
 
@@ -212,8 +209,10 @@ class UploadProjectToAnswerHook extends Command
                     $DadosResposta->save();
     
                     // Atualizar o status do Record
-                    if($Answer->aderencia_na_mesma_linha != 'desconhecido'){
+                    if($Answer->aderencia_na_mesma_linha != 'Desconhecido'){
+
                         $Record->update(['status' => 'respondido ia']);
+                        $Record->update(['ia_try' => $Record->ia_try++]);
                         $Record->update(['project_answer_id' => $DadosResposta->id]);
     
                         // $ProjectFile = ProjectFiles::where('id', $Record->project_id)->first();
