@@ -695,11 +695,13 @@ class ProjectRecordsController extends Controller
     { 
         if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             $Project = ProjectFiles::findOrFail($id);
-            $query = ProjectRecord::query()->with('rfp_bundles')->with('answers');
+            $query = ProjectRecord::query()->with('bundles')->with('answers');
 
+            
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
             $query->where('project_file_id', '=', $Project->id);
             
+            dd($query);
             // Aplicar filtros
             if ($request->has('keyWord') && !empty($request->keyWord)) {
                 $query->where(function ($q) use ($request) {

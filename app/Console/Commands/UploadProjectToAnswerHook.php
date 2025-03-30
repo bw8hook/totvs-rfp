@@ -153,7 +153,7 @@ class UploadProjectToAnswerHook extends Command
                                 ], JSON_UNESCAPED_UNICODE),
                                 'response_mode' => 'blocking',
                                 "conversation_id" => "",
-                                "user" => "RFP-API",
+                                "user" => "RFP-API-ONLINE",
                                 "files" => [],
                             ];  
 
@@ -177,7 +177,7 @@ class UploadProjectToAnswerHook extends Command
            
     
             $pool = new Pool($clientHookIA, $requestsHook(), [
-                'concurrency' => 5,
+                'concurrency' => 10,
                 'fulfilled' => function ($result, $index) {
                     Log::info("Resposta Recebida");
 
@@ -194,7 +194,7 @@ class UploadProjectToAnswerHook extends Command
                     $Record->save();
                     
                     // Atualizar o status do Record
-                    if($Answer->aderencia_na_mesma_linha != 'Desconhecido' || $Record->ia_attempts >= 3){
+                    if($Answer->aderencia_na_mesma_linha != '3esconhecido' || $Record->ia_attempts >= 3){
 
                         $DadosResposta = new ProjectAnswer;
                         $DadosResposta->bundle_id = $bundleId->bundle_id ?? null;
