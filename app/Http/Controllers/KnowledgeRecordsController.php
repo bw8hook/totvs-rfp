@@ -352,10 +352,22 @@ class KnowledgeRecordsController extends Controller
 
             
             // Pelo menos uma das três condições opcionais deve ser verdadeira
-            $query->where(function($q) {
+            $query->where(function($q) use ($request) {
                 $q->where(function($subQ) {
+                    // Condição 1: Resposta não padrão ou nula
                     $subQ->whereNotIn('resposta', ['Atende', 'Não Atende', 'Atende Parcial', 'Customizável'])
                         ->orWhereNull('resposta');
+                })
+                ->orWhere(function($subQ) {
+                    // Condição 2: Processo ID nulo
+                    $subQ->whereNull('processo_id');
+                })
+                ->orWhere(function($subQ) {
+                    // Condição 3: Bundles nulos
+                    $subQ->whereDoesntHave('bundles')
+                         ->orWhereHas('bundles', function($bundleQuery) {
+                             $bundleQuery->whereNull('knowledge_records_bundles.bundle_id');
+                         });
                 });
             });
 

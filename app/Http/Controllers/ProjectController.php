@@ -528,7 +528,6 @@ class ProjectController extends Controller
                         ->where('project_records.status', "processando")
                         ->count();
 
-                        dd($Records);
             
                         if($Records == 0){
                             $File->status = 'processado';
@@ -550,10 +549,12 @@ class ProjectController extends Controller
         Log::info('Iniciando o processamento da base de conhecimento');
         try {
             $ProjectFiles = ProjectFiles::where('status', "processado")
+            ->where('id', 24)
             ->with('bundles')
             ->get();
 
             foreach ($ProjectFiles as $ProjectFile) {
+
                 // $Records = ProjectRecord::whereNotNull('project_records.bundle_id')
                 //     ->where('project_records.bundle_id', $bundle->bundle_id)
                 //     ->where('project_records.status', 'user edit')
@@ -567,14 +568,16 @@ class ProjectController extends Controller
                     file_put_contents($tempInputFile, $contents);
         
                      // Criar instância de importação
-                    $import = new DownloadAnsweredProjectImport();
+                    $import = new DownloadAnsweredProjectImport($ProjectFile->id);
 
                     // Importar arquivo
-                    Excel::import($import, $tempInputFile);
+                    Excel::import($import, $tempInputFile, null, \Maatwebsite\Excel\Excel::XLSX);
 
                     // Salvar arquivo processado
-                    $tempOutputFile = tempnam(sys_get_temp_dir(), 'excel');
-                    $writer = new Xlsx($import->getSpreadsheet());
+                    $tempOutputFile = tempnam(sys_get_temp_dir(), 'excel') . '.xlsx';
+                    
+                    // Usar IOFactory para criar writer
+                    $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($import->getSpreadsheet(), 'Xlsx');
                     $writer->save($tempOutputFile);
 
                     // Enviar arquivo processado para S3
@@ -629,6 +632,9 @@ class ProjectController extends Controller
             ->with('bundles')
             ->get();
             
+
+           
+
             $clientHookIA = new Client([
                 'base_uri' => 'https://totvs-ia.hook.app.br/v1/',
                 'timeout' => 60,
@@ -657,9 +663,7 @@ class ProjectController extends Controller
                         $Records = ProjectRecord::with('bundles')
                             ->where('project_records.project_file_id', $File->id)
                             ->where('project_records.status', "processando")
-                            //->join('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
                             ->get();
-
 
                         foreach ($Records as $Record) {
             
@@ -741,10 +745,9 @@ class ProjectController extends Controller
                                 ], JSON_UNESCAPED_UNICODE),
                                 'response_mode' => 'blocking',
                                 "conversation_id" => "",
-                                "user" => "RFP-API-PROD",
+                                "user" => "RFP-API-CRON",
                                 "files" => [],
                             ];  
-                            
 
                             //TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, TOTVS Agendamentos, TOTVS Logística TMS, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS WMS SaaS, TOTVS YMS, TOTVS Frete Embarcador
                             //TOTVS Analytics, TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, Planejamento Orçamentário by Prophix, RD Station CRM, TOTVS Agendamentos, TOTVS Backoffice Portal de Vendas, TOTVS Cloud IaaS, TOTVS Comércio Exterior, TOTVS CRM Automação da Força de Vendas - SFA, TOTVS Fluig, TOTVS Frete Embarcador, TOTVS Gestão de Frotas - Linha Protheus, TOTVS Logística TMS, TOTVS Manufatura - Linha Protheus, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS Transmite, TOTVS Varejo Lojas - Linha Protheus, TOTVS WMS SaaS, TOTVS YMS, Universidade TOTVS, Analytics by GoodData
@@ -771,41 +774,40 @@ class ProjectController extends Controller
                     Log::info("Resposta Recebida");
 
                     $response = $result['response'];
-                    $Record = $result['record'];
+                    
                     $data = json_decode($response->getBody(), true);
-                    $DadosResposta = new ProjectAnswer;
-                    $DadosResposta->bundle_id = $Record->bundle_id;
-                    $DadosResposta->user_id = $Record->user_id;
-                    $DadosResposta->requisito_id = $Record->id;
-                    $DadosResposta->requisito = $Record->requisito;
-
-                    dd($data);
-    
                     $Answer = json_decode($data['answer']);
                     $Referencia = json_encode($data['metadata']['retriever_resources']);
-    
-                    $DadosResposta->aderencia_na_mesma_linha = $Answer->aderencia_na_mesma_linha ?? null;
-                    $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
-                    $DadosResposta->resposta = $Answer->resposta ?? null;
-                    $DadosResposta->modulo = $Answer->modulo ?? null;
-                    $DadosResposta->referencia = $Answer->referencia ?? null;
-                    $DadosResposta->retriever_resources = $Referencia ?? null;
-                    $DadosResposta->observacao = $Answer->observacao ?? null;
-                    $DadosResposta->acuracidade_porcentagem = $Answer->acuracidade_porcentagem ?? null;
-                    $DadosResposta->acuracidade_explicacao = $Answer->acuracidade_explicacao ?? null;
-
-                    $DadosResposta->save();
-    
+                    
+                    $bundleId = RfpBundle::where('bundle', 'like', '%' . $Answer->linha_produto . '%')->first();
+                    
+                    $Record = $result['record'];
+                    $Record->ia_attempts = intval($Record->ia_attempts) + 1;
+                    $Record->save();
+                    
                     // Atualizar o status do Record
-                    if($Answer->aderencia_na_mesma_linha != 'desconhecido'){
+                    if($Answer->aderencia_na_mesma_linha != 'Desconhecido' || $Record->ia_attempts >= 3){
+
+                        $DadosResposta = new ProjectAnswer;
+                        $DadosResposta->bundle_id = $bundleId->bundle_id ?? null;
+                        $DadosResposta->user_id = $Record->user_id;
+                        $DadosResposta->requisito_id = $Record->id;
+                        $DadosResposta->requisito = $Record->requisito;    
+                        $DadosResposta->aderencia_na_mesma_linha = $Answer->aderencia_na_mesma_linha ?? null;
+                        $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
+                        $DadosResposta->resposta = $Answer->resposta ?? null;
+                        $DadosResposta->modulo = $Answer->modulo ?? null;
+                        $DadosResposta->referencia = $Answer->referencia ?? null;
+                        $DadosResposta->retriever_resources = $Referencia ?? null;
+                        $DadosResposta->observacao = $Answer->observacao ?? null;
+                        $DadosResposta->acuracidade_porcentagem = $Answer->acuracidade_porcentagem ?? null;
+                        $DadosResposta->acuracidade_explicacao = $Answer->acuracidade_explicacao ?? null;
+    
+                        $DadosResposta->save();
+                        
                         $Record->update(['status' => 'respondido ia']);
                         $Record->update(['project_answer_id' => $DadosResposta->id]);
-    
-                        // $ProjectFile = ProjectFiles::where('id', $Record->project_id)->first();
-                        // if($ProjectFile->status == "processando"){
-                        //     $ProjectFile->status = 'processado';
-                        //     $ProjectFile->save();
-                        // }
+                        $Record->save();
                     }
 
                     Log::info("Processamento de todos os arquivos concluído com sucesso");
