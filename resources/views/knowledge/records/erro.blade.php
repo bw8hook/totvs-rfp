@@ -336,6 +336,7 @@
                     success: function(response) {
 
                         Record.parent().parent().removeClass("highlighted_error");
+                        Record.removeClass("highlighted_error_select");
 
                         // Verifica se já existe um alerta visível e fecha ele
                         if ($('#success-alert').length) {
@@ -413,7 +414,8 @@
                     success: function(response) {
 
                         Record.parent().parent().removeClass("highlighted_error");
-
+                        Record.removeClass("highlighted_error_select");
+                        
                         // Verifica se já existe um alerta visível e fecha ele
                         if ($('#success-alert').length) {
                             $('#success-alert').remove();

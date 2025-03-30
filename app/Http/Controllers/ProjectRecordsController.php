@@ -600,6 +600,15 @@ class ProjectRecordsController extends Controller
                 })
                 ->groupBy('aderencia_na_mesma_linha')
                 ->pluck('aderencia_na_mesma_linha');
+
+
+                $ListProdutosRecebidos = ProjectAnswer::whereHas('requisito', function($query) use ($id) {
+                    $query->where('project_file_id', $id);
+                })
+                ->whereNotNull('linha_produto')
+                ->where('linha_produto', '!=', '')
+                ->groupBy('linha_produto')
+                ->pluck('linha_produto');
         
                 $UsersDepartaments = UsersDepartaments::where('departament_type', '!=', 'Admin')->orderBy('departament', 'asc')->get();
 
@@ -654,6 +663,7 @@ class ProjectRecordsController extends Controller
                     'UsersDepartaments' => $UsersDepartaments,
                     'ListClassificacao' => $ListClassificacaoRecebidas,
                     'ListRespostaRecebidas' => $ListRespostaRecebidas,
+                    'ListProdutosRecebidos' => $ListProdutosRecebidos,
                     'ListProdutos' => $ListProdutos,
                     'AllBundles' => $AllBundles,
                     'AllModules' => $AllModules,
@@ -708,12 +718,23 @@ class ProjectRecordsController extends Controller
                 $query->where('processo', 'like', '%' . $request->processo . '%');
             }
              
+            
             $resposta = $request->answer === "null" ? null : $request->answer;
             if (filled($resposta)) {
                 $query->whereHas('answers', function($q) use ($request) {
                     $q->where('aderencia_na_mesma_linha', 'like', '%' . $request->answer . '%');
                 });
             }
+
+
+            $bundle = $request->bundle === "null" ? null : $request->bundle;
+            if (filled($bundle)) {
+                $query->whereHas('answers', function($q) use ($request) {
+                    $q->where('linha_produto', 'like', '%' . $request->bundle . '%');
+                });
+            }
+
+
 
             $product = $request->product === "null" ? null : $request->product;
             if (filled($product)) {
@@ -754,98 +775,130 @@ class ProjectRecordsController extends Controller
             $ReferenciasResources = json_decode($ProjectAnswer->referencia);
             $Referencias = $ProjectAnswer->referencia;
 
-            //$linhas = array_map('trim', explode("\n", $Referencia));
 
-            // $linhas = preg_split('/[\n;]+/', $Referencia, -1, PREG_SPLIT_NO_EMPTY);
-            // $linhas = array_map('trim', $linhas);
 
-            
+            $Referencias = $ProjectAnswer->referencia;
+
             $dados = [];
             $KnowledgeRecords = [];
 
+            // Dividir referências por ponto e vírgula
             $ListaReferencia = explode(';', $Referencias);
 
             foreach($ListaReferencia as $index => $Referencia) {
-                if(!empty($Referencia)) {
-                
-
-                    $partes = explode(',', $Referencia, 2);
-
-                    if(count($partes) == 2) {
-                        $documentoParte = trim($partes[0]);
-                        $registroParte = trim($partes[1]);
-                        
-                        preg_match('/Documento \d+: (.+)/', $documentoParte, $matchesDocumento);
-                        $dados[$index]['Documento'] = $matchesDocumento[1] ?? $documentoParte;
-                        
-                        preg_match('/Id (\d+):/', $registroParte, $matchesId);
-                        $dados[$index]['Id'] = $matchesId[1] ?? null;
-                        
-                        preg_match('/ID Registro: (\d+)/', $registroParte, $matchesRegistro);
-                        $dados[$index]['ID Registro'] = $matchesRegistro[1] ?? null;
-                    }
-
-                  
+                if(!empty(trim($Referencia))) {
+                    $dados[$index] = $this->parseReferencia($Referencia);
                     
-                    $KnowledgeAll = KnowledgeRecord::with('bundles')->where('id_record', '=', $dados[$index]['ID Registro'])->get();
-                    
-
+                    // Buscar Knowledge Records
+                    if (!empty($dados[$index]['ID Registro'])) {
+                        $KnowledgeAll = KnowledgeRecord::with('bundles')
+                            ->where('id_record', '=', $dados[$index]['ID Registro'])
+                            ->get();
+                        
                         if(count($KnowledgeAll) >= 1 ){
-                            foreach ($KnowledgeAll as $key => $Knowledge) {
+                            foreach ($KnowledgeAll as $Knowledge) {
                                 $KnowledgeRecords[] = $Knowledge->toArray();  
                             }
-                        }else{
-
-                           
-                            // $KnowledgeAll = ProjectRecord::with('bundles')->where('id', '=', $dados[[$index]]['ID Registro'])->get();
-                            // foreach ($KnowledgeAll as $key => $Knowledge) {
-                            //     $KnowledgeRecords[] = $Knowledge->toArray();               
-                            // }
                         }
-
+                    }
                 }
-            }         
+            }
 
-            // foreach($ReferenciasResources as $index => $Referencia) {
+
+            $data = array(
+                'ReferenciasIA' => $dados,
+                'ReferenciasBanco' => $KnowledgeRecords,
+            );
+            
+
+            return response()->json($data);
+
+            
+            // $dados = [];
+            // $KnowledgeRecords = [];
+
+            // $ListaReferencia = explode(';', $Referencias);
+
+            // foreach($ListaReferencia as $index => $Referencia) {
             //     if(!empty($Referencia)) {
-                  
-            //         $ListaReferencia = explode(';', $Referencia->content);
-                   
-            //         foreach ($ListaReferencia as $key => $ListaReferenciaValue) {
-            //             $partes = explode(':', $ListaReferenciaValue, 2);
-            //             if(count($partes) == 2) {
-            //                 $chave = trim($partes[0]);
-            //                 $valor = trim($partes[1]);
-            //                 $dados[$index][$chave] = $valor;
-            //             }
+
+            //         $partes = explode(',', $Referencia, 2);
+
+            //         if(count($partes) == 2) {
+            //             $documentoParte = trim($partes[0]);
+            //             $registroParte = trim($partes[1]);
+                        
+            //             preg_match('/Documento \d+: (.+)/', $documentoParte, $matchesDocumento);
+            //             $dados[$index]['Documento'] = $matchesDocumento[1] ?? $documentoParte;
+                        
+            //             preg_match('/Id (\d+):/', $registroParte, $matchesId);
+            //             $dados[$index]['Id'] = $matchesId[1] ?? null;
+                        
+            //             preg_match('/ID Registro: (\d+)/', $registroParte, $matchesRegistro);
+            //             $dados[$index]['ID Registro'] = $matchesRegistro[1] ?? null;
             //         }
 
+                  
+                    
             //         $KnowledgeAll = KnowledgeRecord::with('bundles')->where('id_record', '=', $dados[$index]['ID Registro'])->get();
-                   
-            
+                    
+
             //             if(count($KnowledgeAll) >= 1 ){
             //                 foreach ($KnowledgeAll as $key => $Knowledge) {
             //                     $KnowledgeRecords[] = $Knowledge->toArray();  
-            //                 }
-            //             }else{
-            //                 $KnowledgeAll = ProjectRecord::with('bundles')->where('id', '=', $dados['ID Registro'])->get();
-            //                 foreach ($KnowledgeAll as $key => $Knowledge) {
-            //                     $KnowledgeRecords[] = $Knowledge->toArray();               
             //                 }
             //             }
 
             //     }
             // }         
 
-            $data = array(
-                'ReferenciasIA' => $dados,
-                'ReferenciasBanco' => $KnowledgeRecords,
-            );
+            // $data = array(
+            //     'ReferenciasIA' => $dados,
+            //     'ReferenciasBanco' => $KnowledgeRecords,
+            // );
 
   
-            // Retornar dados em JSON
-            return response()->json($data);
+            // // Retornar dados em JSON
+            // return response()->json($data);
         }
+    }
+
+
+
+    // Método para parsear diferentes formatos de referência
+    private function parseReferencia($referencia)
+    {
+        $parsed = [
+            'Documento' => null,
+            'Id' => null,
+            'ID Registro' => null,
+            'Processo' => null,
+            'Requisito' => null,
+            'Resposta' => null,
+            'Módulo' => null,
+            'Produto Principal' => null
+        ];
+
+        // Formato 1: Documento e ID Registro
+        if (preg_match('/Documento \d+: (.+), Id \d+: ID Registro: (\d+)/', $referencia, $matches)) {
+            $parsed['Documento'] = trim($matches[1]);
+            $parsed['ID Registro'] = trim($matches[2]);
+        }
+        // Formato 2: Detalhes do Registro
+        elseif (preg_match('/ID Registro: (\d+); Processo: (.+); Requisito: (.+); Resposta: (.+); Módulo: (.+); Produto Principal: (.+)/', $referencia, $matches)) {
+            $parsed['ID Registro'] = trim($matches[1]);
+            $parsed['Processo'] = trim($matches[2]);
+            $parsed['Requisito'] = trim($matches[3]);
+            $parsed['Resposta'] = trim($matches[4]);
+            $parsed['Módulo'] = trim($matches[5]);
+            $parsed['Produto Principal'] = trim($matches[6]);
+        }
+        // Formato alternativo com menos detalhes
+        elseif (preg_match('/ID Registro: (\d+)/', $referencia, $matches)) {
+            $parsed['ID Registro'] = trim($matches[1]);
+        }
+
+        return $parsed;
     }
 
 

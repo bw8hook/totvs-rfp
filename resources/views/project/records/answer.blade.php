@@ -103,6 +103,17 @@
                         
 
                         <div class="inputField" style="width: 300px;">
+                            <label>Produto:</label>
+                            <select name="bundle">
+                                <option value="null" selected>Selecione</option>
+                                @foreach($ListProdutosRecebidos as $ListProdutoRecebido)
+                                    <option value="{{$ListProdutoRecebido}}">{{$ListProdutoRecebido}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+
+                        <div class="inputField" style="width: 300px;">
                             <label>Acuracidade:</label>
                             <div class="btn" id="acertividade-btn" data-bs-toggle="popover" data-trigger="focus" data-bs-placement="bottom" data-bs-html="true">
                                 <span id="min-value">0%</span> - <span id="max-value">100%</span>
