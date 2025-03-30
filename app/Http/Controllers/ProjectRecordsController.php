@@ -700,8 +700,7 @@ class ProjectRecordsController extends Controller
             
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
             $query->where('project_file_id', '=', $Project->id);
-            
-            dd($query);
+
             // Aplicar filtros
             if ($request->has('keyWord') && !empty($request->keyWord)) {
                 $query->where(function ($q) use ($request) {

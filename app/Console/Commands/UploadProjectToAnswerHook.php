@@ -41,6 +41,7 @@ class UploadProjectToAnswerHook extends Command
         try {
             $ProjectFiles = ProjectFiles::where('status', "em processamento")
             ->with('bundles')
+            ->orderBy('id', 'asc')
             ->get();
             
             $clientHookIA = new Client([
@@ -71,6 +72,7 @@ class UploadProjectToAnswerHook extends Command
                         $Records = ProjectRecord::with('bundles')
                             ->where('project_records.project_file_id', $File->id)
                             ->where('project_records.status', "processando")
+                            ->orderBy('id', 'asc')
                             ->get();
 
                         foreach ($Records as $Record) {
@@ -153,7 +155,7 @@ class UploadProjectToAnswerHook extends Command
                                 ], JSON_UNESCAPED_UNICODE),
                                 'response_mode' => 'blocking',
                                 "conversation_id" => "",
-                                "user" => "RFP-API-ONLINE",
+                                "user" => "RFP-API-LOCAL",
                                 "files" => [],
                             ];  
 
