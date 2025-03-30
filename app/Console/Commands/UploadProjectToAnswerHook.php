@@ -42,7 +42,7 @@ class UploadProjectToAnswerHook extends Command
             $ProjectFiles = ProjectFiles::where('status', "em processamento")
             ->with('bundles')
             ->get();
-
+            
             $clientHookIA = new Client([
                 'base_uri' => 'https://totvs-ia.hook.app.br/v1/',
                 'timeout' => 60,
@@ -71,15 +71,14 @@ class UploadProjectToAnswerHook extends Command
                         $Records = ProjectRecord::with('bundles')
                             ->where('project_records.project_file_id', $File->id)
                             ->where('project_records.status', "processando")
-                            //->join('rfp_bundles', 'project_records.bundle_id', '=', 'rfp_bundles.bundle_id')
                             ->get();
-
 
                         foreach ($Records as $Record) {
             
                             //$Agent = Agent::where('id', $Record->agent_id)->first();
                             $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
                             $BundlesProcess = $Processo->rfpBundles;
+
 
                             $ProdutosPrioritarios = '';
                             foreach ($BundlesProcess as $bundleProcess) {
@@ -154,10 +153,10 @@ class UploadProjectToAnswerHook extends Command
                                 ], JSON_UNESCAPED_UNICODE),
                                 'response_mode' => 'blocking',
                                 "conversation_id" => "",
-                                "user" => "RFP-API-CRON-2",
+                                "user" => "RFP-API",
                                 "files" => [],
                             ];  
-                            
+
                             //TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, TOTVS Agendamentos, TOTVS Logística TMS, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS WMS SaaS, TOTVS YMS, TOTVS Frete Embarcador
                             //TOTVS Analytics, TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, Planejamento Orçamentário by Prophix, RD Station CRM, TOTVS Agendamentos, TOTVS Backoffice Portal de Vendas, TOTVS Cloud IaaS, TOTVS Comércio Exterior, TOTVS CRM Automação da Força de Vendas - SFA, TOTVS Fluig, TOTVS Frete Embarcador, TOTVS Gestão de Frotas - Linha Protheus, TOTVS Logística TMS, TOTVS Manufatura - Linha Protheus, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS Transmite, TOTVS Varejo Lojas - Linha Protheus, TOTVS WMS SaaS, TOTVS YMS, Universidade TOTVS, Analytics by GoodData
 
@@ -178,19 +177,18 @@ class UploadProjectToAnswerHook extends Command
            
     
             $pool = new Pool($clientHookIA, $requestsHook(), [
-                'concurrency' => 5,
+                'concurrency' => 1,
                 'fulfilled' => function ($result, $index) {
                     Log::info("Resposta Recebida");
 
                     $response = $result['response'];
-                    $Record = $result['record'];
-                    $data = json_decode($response->getBody(), true);
                     
+                    $data = json_decode($response->getBody(), true);
                     $Answer = json_decode($data['answer']);
                     $Referencia = json_encode($data['metadata']['retriever_resources']);
                     
                     $bundleId = RfpBundle::where('bundle', 'like', '%' . $Answer->linha_produto . '%')->first();
-                   
+                    
                     $Record = $result['record'];
                     $Record->ia_attempts = intval($Record->ia_attempts) + 1;
                     $Record->save();
@@ -218,12 +216,6 @@ class UploadProjectToAnswerHook extends Command
                         $Record->update(['status' => 'respondido ia']);
                         $Record->update(['project_answer_id' => $DadosResposta->id]);
                         $Record->save();
-    
-                        // $ProjectFile = ProjectFiles::where('id', $Record->project_id)->first();
-                        // if($ProjectFile->status == "processando"){
-                        //     $ProjectFile->status = 'processado';
-                        //     $ProjectFile->save();
-                        // }
                     }
 
                     Log::info("Processamento de todos os arquivos concluído com sucesso");
