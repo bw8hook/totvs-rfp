@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Exports\KnowledgeBaseExport;
 use App\Exports\KnowledgeCorrectionExport;
+use App\Imports\ProductTestImport;
 use App\Models\Agent;
 use App\Models\ProjectAnswer;
 use App\Models\ProjectFiles;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exceptions\RDStationMentoria\RDStationMentoria;
 use GuzzleHttp\Client;
@@ -358,7 +360,6 @@ class KnowledgeController extends Controller
                         //$item->save();
                     }
 
-
                 } else {
                     Log::error("Erro ao processar a base de conhecimento");
                 }
@@ -377,6 +378,84 @@ class KnowledgeController extends Controller
 
 
 
+
+
+    public function InserirProdutos(){
+         
+        $TotvsERP = 0;
+
+        try {
+            $filePath = 'listaprodutos.xlsx';
+            
+            // Adicionar log de início
+            Log::info('Iniciando importação do arquivo: ' . $filePath);
+        
+            // Verificar existência do arquivo
+            if (!Storage::disk('s3')->exists($filePath)) {
+                throw new \Exception('Arquivo não encontrado no S3');
+            }
+        
+            // Criar instância de importação com mais detalhes
+            $import = new ProductTestImport();
+        
+            // Executa a importação com opções adicionais
+            $Excel = Excel::import($import, $filePath, 's3');
+        
+            // Log de conclusão
+            Log::info('Importação concluída');
+            
+                // Em vez de dd(), usar um log
+            Log::info('Detalhes da importação', [
+                'total_rows_processed' => $import->getRowCount(),
+                'successful_imports' => $import->getSuccessCount(),
+                'failed_imports' => $import->getFailedCount()
+            ]);
+        
+        } catch (ValidationException $e) {
+            // Log de erro de validação
+            Log::error('Erro de validação na importação', [
+                'errors' => $e->errors(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
+            dd($e);
+        
+        } catch (\Exception $e) {
+            // Log de erro geral
+            Log::error('Erro na importação', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            dd($e);
+        }
+
+
+
+
+    }
+
+
+
+
+    private function countExcelRows($filePath)
+    {
+        try {
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(Storage::disk('s3')->path($filePath));
+            $worksheet = $spreadsheet->getActiveSheet();
+            return $worksheet->getHighestRow();
+        } catch (\Exception $e) {
+            Log::error('Erro ao contar linhas', ['message' => $e->getMessage()]);
+            return 0;
+        }
+    }
+
+
+
+
+
     public function cron2(){
         Log::info('Iniciando o processamento da base de conhecimento'); // Adiciona log aqui
         $KnowledgeBase = KnowledgeBase::where('status', "processando")->get();
@@ -389,6 +468,8 @@ class KnowledgeController extends Controller
                         
                         $Records = KnowledgeRecord::where('knowledge_base_id', $item->id)
                         ->where('knowledge_records.status', 'aguardando')
+                        ->join('knowledge_records_bundles', 'knowledge_records.id_record', '=', 'knowledge_records_bundles.knowledge_record_id')
+                        ->where('knowledge_records_bundles.bundle_id', $bundle->bundle_id) // Filtrar pelo bundle específico
                         ->select(
                             'knowledge_records.id_record',
                             'knowledge_records.processo',

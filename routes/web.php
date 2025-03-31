@@ -53,6 +53,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/knowledge/cron', [KnowledgeController::class,'cron2'])->name('knowledge.cron');
 
 
+    Route::get('/knowledge/inserir-produtos', [KnowledgeController::class,'InserirProdutos'])->name('knowledge.produtos');
+
+    
+
     // REGISTROS DA BASE DE CONHECIMENTO
         //AJAX
         Route::get('/knowledge/records/filter/{id}', [KnowledgeRecordsController::class,'filter'])->name('knowledge.recordsFilter');
@@ -87,8 +91,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/project/update-infos/{id}', [ProjectController::class,'updateInfos'])->name('project.updateInfos');
     
         //CRON PARA AUTOMATIZAR  SUBIDA PARA IA
-    Route::get('/project/cron', [ProjectController::class,'cron'])->name('knowledge.cron');
+    Route::get('/project/cron', [ProjectController::class,'cron'])->name('project.cron');
+    Route::get('/project/cron2', [ProjectController::class,'cron2'])->name('project.cron2');
 
+
+    Route::get('/project/export', [ProjectController::class,'projectExport'])->name('project.export');
+
+
+    
     // REGISTROS DA BASE DE CONHECIMENTO
     Route::get('/project/answers/{id}', [ProjectRecordsController::class,'answer'])->name('project.answer');
     Route::get('/project/answers-errors/{id}', [ProjectRecordsController::class,'answerErrors'])->name('project.answer.errors');
