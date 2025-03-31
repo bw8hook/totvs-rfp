@@ -202,7 +202,7 @@
                                         ${AnwserOptions}
                                     </select>
                                 </td>
-                                <td style="width:11%;  display: flex; align-items: center;  word-wrap: break-word; white-space: normal;overflow: visible; text-align: left;">${record.resposta2 ? record.resposta2 : '-'}</td>
+                                <td style="width:11%;  display: flex; align-items: center;  word-wrap: break-word; white-space: normal;overflow: visible; text-align: left;">${record.modulo ? record.modulo : '-'}</td>
                                 <td style="width:13%;  display: flex; align-items: center;">
                                      <select name="bundle" style="border-radius: 8px; width:100%" disabled>
                                         ${bundleOptions}

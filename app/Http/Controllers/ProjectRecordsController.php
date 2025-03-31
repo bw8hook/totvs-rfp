@@ -697,7 +697,6 @@ class ProjectRecordsController extends Controller
             $Project = ProjectFiles::findOrFail($id);
             $query = ProjectRecord::query()->with('bundles')->with('answers');
 
-            
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
             $query->where('project_file_id', '=', $Project->id);
 
@@ -705,12 +704,11 @@ class ProjectRecordsController extends Controller
             if ($request->has('keyWord') && !empty($request->keyWord)) {
                 $query->where(function ($q) use ($request) {
                     $q->where('requisito', 'like', '%' . $request->keyWord . '%')
-                      ->orWhere('observacao', 'like', '%' . $request->keyWord . '%')
                       ->orWhere('processo', 'like', '%' . $request->keyWord . '%')
-                      ->orWhere('subprocesso', 'like', '%' . $request->keyWord . '%')
-                      ->orWhere('resposta', 'like', '%' . $request->keyWord . '%')
-                      ->orWhere('modulo', 'like', '%' . $request->keyWord . '%')
-                      ->orWhere('bundle_old', 'like', '%' . $request->keyWord . '%');
+                      ->orWhere('subprocesso', 'like', '%' . $request->keyWord . '%')  
+                      ->orWhereRelation('answers', 'observacao', 'like', '%' . $request->keyWord . '%')
+                      ->orWhereRelation('answers', 'resposta', 'like', '%' . $request->keyWord . '%')
+                      ->orWhereRelation('answers', 'modulo', 'like', '%' . $request->keyWord . '%');
                 });
             }
             
@@ -718,8 +716,12 @@ class ProjectRecordsController extends Controller
             if (filled($processo)) {
                 $query->where('processo', 'like', '%' . $request->processo . '%');
             }
-             
-            
+
+            $process = $request->process === "null" ? null : $request->process;
+            if (filled($process)) {
+                $query->where('processo', 'like', '%' . $request->process . '%');
+            }
+                       
             $resposta = $request->answer === "null" ? null : $request->answer;
             if (filled($resposta)) {
                 $query->whereHas('answers', function($q) use ($request) {
@@ -727,15 +729,12 @@ class ProjectRecordsController extends Controller
                 });
             }
 
-
             $bundle = $request->bundle === "null" ? null : $request->bundle;
             if (filled($bundle)) {
                 $query->whereHas('answers', function($q) use ($request) {
                     $q->where('linha_produto', 'like', '%' . $request->bundle . '%');
                 });
             }
-
-
 
             $product = $request->product === "null" ? null : $request->product;
             if (filled($product)) {

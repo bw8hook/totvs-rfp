@@ -548,19 +548,11 @@ class ProjectController extends Controller
     {
         Log::info('Iniciando o processamento da base de conhecimento');
         try {
-            $ProjectFiles = ProjectFiles::where('status', "processado")
-            ->where('id', 24)
+            $ProjectFiles = ProjectFiles::where('status', "concluído")
             ->with('bundles')
             ->get();
 
             foreach ($ProjectFiles as $ProjectFile) {
-
-                // $Records = ProjectRecord::whereNotNull('project_records.bundle_id')
-                //     ->where('project_records.bundle_id', $bundle->bundle_id)
-                //     ->where('project_records.status', 'user edit')
-                //     ->whereNull('project_records.retroalimentacao')
-                //     ->get();
-
                 try {
                     // Baixar arquivo do S3 para processamento local
                     $tempInputFile = tempnam(sys_get_temp_dir(), 'excel');
@@ -581,21 +573,32 @@ class ProjectController extends Controller
                     $writer->save($tempOutputFile);
 
                     // Enviar arquivo processado para S3
-                    $outputFilePath = 'caminho/no/s3/arquivo_processado.xlsx';
+                    $FileName = time() . '_' . uniqid() . '.xlsx';
+                    $outputFilePath = 'cdn/projects_answereds/'.$FileName;
                     Storage::disk('s3')->put(
                         $outputFilePath, 
                         file_get_contents($tempOutputFile)
                     );
+            
+                    // Gerar URL completa
+                    $urlCompleta = Storage::disk('s3')->url($outputFilePath);
+                    $ProjectFile->answered_file = $urlCompleta;
+                    $ProjectFile->save();
+
+                    // Opcional: Excluir arquivo temporário
+                    if (file_exists($tempOutputFile)) {
+                        unlink($tempOutputFile);
+                    }
 
                     // Preparar download
-                    return response()->download(
-                        $tempOutputFile, 
-                        'arquivo_processado.xlsx', 
-                        [
-                            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                            'Content-Disposition' => 'attachment; filename="arquivo_processado.xlsx"'
-                        ]
-                    )->deleteFileAfterSend(true);
+                    // return response()->download(
+                    //     $tempOutputFile, 
+                    //     $FileName,
+                    //     [
+                    //         'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    //         'Content-Disposition' => 'attachment; filename="arquivo_processado.xlsx"'
+                    //     ]
+                    // )->deleteFileAfterSend(true);
 
                 } catch (\Exception $e) {
 
