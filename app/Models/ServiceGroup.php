@@ -43,4 +43,11 @@ class ServiceGroup extends Model
     {
         return $this->status === self::STATUS_ATIVO;
     }
+
+     // Tem muitos (Has Many)
+     public function bundles()
+     {
+         return $this->hasMany(RfpBundle::class, 'service_group_id', 'id');
+     }
+     
 }

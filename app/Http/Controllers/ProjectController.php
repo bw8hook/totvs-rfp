@@ -380,7 +380,7 @@ class ProjectController extends Controller
         $Project = Project::findOrFail($id);
         if($Project){
             if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage', 'projects.all.add', 'projects.my.manage', 'projects.my.add'])) {     
-                $Bundles = RfpBundle::with(['agent', 'category', 'type', 'lineOfProduct', 'segments'])->get(); 
+                $Bundles = RfpBundle::with(['agent', 'category', 'type', 'lineOfProduct', 'serviceGroup', 'segments'])->get(); 
 
                 $lines = LineOfProduct::all();
 
