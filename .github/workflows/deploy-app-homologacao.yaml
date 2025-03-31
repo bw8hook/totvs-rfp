@@ -1,0 +1,75 @@
+name: Implantação da Aplicação Totvs
+
+on:
+  workflow_dispatch:  
+  push:
+    tags:
+      - "v0.5.0"  
+
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
+
+env:
+  SSH_CONN: "root@smartrfp.bw8.tech"
+  SSH_OPTS: "-o StrictHostKeyChecking=no"
+  SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+  DOCKER_IMAGE: ghcr.io/bw8hook/totvs:0.5.0
+  APP_PATH: /apps/smartrfp.bw8.tech
+
+jobs:
+  docker-image:
+    uses: ./.github/workflows/build-and-publish-image.yaml
+
+  deploy-app:
+    runs-on: ubuntu-latest
+    needs:
+      - docker-image
+
+    steps:
+      - name: checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar chave SSH
+        run: |
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.BW8_DEV_SSH_KEY }}"
+          HOST=$(echo "${{ env.SSH_CONN }}" | cut -d'@' -f2)
+          ssh-keyscan $HOST
+
+      - name: Preparar arquivo .env
+        run: |
+          cp .env.pre-production .env
+          HOST=$(echo "${{ env.SSH_CONN }}" | cut -d'@' -f2)
+          echo "APP_ENV=production" >> .env
+          echo "APP_URL=https://$HOST" >> .env
+          echo "APP_KEY=${{ secrets.DEV_APP_KEY }}" >> .env
+          echo "DB_HOST=${{ secrets.DEV_DB_HOST }}" >> .env
+          echo "DB_DATABASE=${{ secrets.DEV_DB_DATABASE }}" >> .env
+          echo "DB_USERNAME=${{ secrets.DEV_DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DEV_DB_PASSWORD }}" >> .env
+          echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.TOTVS_RFP_AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.TOTVS_RFP_AWS_SECRET_ACCESS_KEY }}" >> .env
+
+      - name: Implantar arquivos
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_CONN }} 'mkdir -p ${{ env.APP_PATH }}'
+          sed -i 's/dev/${{ github.ref_name }}/' docker-compose.yml
+          sed -i 's/8080/80/' docker-compose.yml
+          scp ${{ env.SSH_OPTS }} ./docker-compose.yaml  ${{ env.SSH_CONN }}:${{ env.APP_PATH }}
+          scp ${{ env.SSH_OPTS }} ./.env  ${{ env.SSH_CONN }}:${{ env.APP_PATH }}
+
+      - name: Baixar imagem mais recente
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_CONN }} 'docker pull ${{ env.DOCKER_IMAGE }}'
+
+      - name: Parar contêiner em execução
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_CONN }} 'cd ${{ env.APP_PATH }} ; docker compose stop'
+
+      - name: Iniciar novo contêiner
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_CONN }} 'cd ${{ env.APP_PATH }} ; docker compose up -d &>/dev/null & disown'
