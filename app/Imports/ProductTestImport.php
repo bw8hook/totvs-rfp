@@ -101,51 +101,53 @@ class ProductTestImport implements ToCollection, WithStartRow, WithEvents, WithM
                     //$Type = Type::where('name', $row[0])->first();
                     //$Category = Category::where('name', $row[3])->first();
                     //$ServiceGroup = ServiceGroup::where('name', $row[4])->first();   
-                    $Agent = Agent::where('agent_name', $row[5])->first();
+                    //$Agent = Agent::where('agent_name', $row[5])->first();
 
-                    $Type = Type::firstOrCreate(
-                        ['name' => $row[0]], 
-                        ['status' => 'ativo' ]
-                    );
+                    // $Type = Type::firstOrCreate(
+                    //     ['name' => $row[0]], 
+                    //     ['status' => 'ativo' ]
+                    // );
                     
-                    $Category = Category::firstOrCreate(
-                        ['name' => $row[5]], 
-                        ['status' => 'ativo' ]
-                    );
+                    // $Category = Category::firstOrCreate(
+                    //     ['name' => $row[5]], 
+                    //     ['status' => 'ativo' ]
+                    // );
 
-                    if(!empty($row[6])){
-                        $ServiceGroup = ServiceGroup::firstOrCreate(
-                            ['name' => $row[6]], 
-                            ['status' => 'ativo' ]
-                        );
-                    }else{
-                        $ServiceGroup = null;
-                    }
-                   
+                    // if(!empty($row[6])){
+                    //     $ServiceGroup = ServiceGroup::firstOrCreate(
+                    //         ['name' => $row[6]], 
+                    //         ['status' => 'ativo' ]
+                    //     );
+                    // }else{
+                    //     $ServiceGroup = null;
+                    // }
+                
+                    // $Agent = Agent::firstOrCreate(
+                    //     ['agent_name' => $row[7]], 
+                    //     ['status' => 'ativo' ]
+                    // );
 
-                    $Agent = Agent::firstOrCreate(
-                        ['agent_name' => $row[7]], 
-                        ['status' => 'ativo' ]
-                    );
+                    // // Criar ou encontrar Bundle
+                    // $Bundle = RfpBundle::firstOrCreate(
+                    //     [
+                    //         'bundle' => $row[1],
+                    //     ],
+                    //     [
+                    //         'agent_id' => $Agent->id,
+                    //         'type_id' => $Type->id ?? null,
+                    //         'category_id' => $Category->id ?? null,
+                    //         'service_group_id' => $ServiceGroup->id ?? null,
+                    //         'working_group_id' => 0,
+                    //         'status_totvs' => 'Ativo',
+                    //         'status' => 'active'
+                    //     ]
+                    // );
 
-                    // Criar ou encontrar Bundle
-                    $Bundle = RfpBundle::firstOrCreate(
-                        [
-                            'bundle' => $row[1],
-                        ],
-                        [
-                            'agent_id' => $Agent->id,
-                            'type_id' => $Type->id ?? null,
-                            'category_id' => $Category->id ?? null,
-                            'service_group_id' => $ServiceGroup->id ?? null,
-                            'working_group_id' => 0,
-                            'status_totvs' => 'Ativo',
-                            'status' => 'active'
-                        ]
-                    );
+                    $Bundle = RfpBundle::where('bundle', $row[1])->first();
+
 
                     // Verificar se Bundle foi criado/encontrado
-                    if ($Bundle->exists) {
+                    if ($Bundle->bundle_id) {
                         
                         // Associar Linha de Produto
                         $this->attachLineOfProduct($Bundle);
@@ -158,9 +160,7 @@ class ProductTestImport implements ToCollection, WithStartRow, WithEvents, WithM
                         Log::info('Linha: Criada' .$this->rowCount);
                     } else {
                         Log::warning('Não foi possível criar/encontrar Bundle', [
-                            'row' => $row,
-                            'agent' => $Agent
-                        ]);
+                            'row' => $row,                        ]);
                     }
     
                 } catch (\Exception $e) {
@@ -193,9 +193,9 @@ class ProductTestImport implements ToCollection, WithStartRow, WithEvents, WithM
 private function attachLineOfProduct($Bundle)
 {
     try {
-        $lineOfProduct = LineOfProduct::find(1);
+        $lineOfProduct = LineOfProduct::find(5);
         if ($lineOfProduct) {
-            $Bundle->lineOfProduct()->syncWithoutDetaching(1);
+            $Bundle->lineOfProduct()->syncWithoutDetaching(5);
         }
     } catch (\Exception $e) {
         Log::error('Erro ao associar Linha de Produto', [
@@ -209,18 +209,18 @@ private function attachLineOfProduct($Bundle)
 private function attachSegments($Bundle, $segmentString)
 {
     $segmentsMap = [
-        'Agro' => 1,
-        'Construção' => 2,
-        'Distribuição' => 3,
-        'Educacional' => 4,
-        'Financial Services' => 5,
-        'Hotelaria' => 6,
-        'Jurídico' => 7,
-        'Manufatura' => 8,
-        'Logística' => 9,
-        'Prestadores de Serviços' => 10,
-        'Saúde' => 11,
-        'Varejo' => 12
+        'Agro' => 14,
+        'Construção' => 15,
+        'Distribuição' => 16,
+        'Educacional' => 17,
+        'Financial Services' => 18,
+        'Hotelaria' => 19,
+        'Jurídico' => 20,
+        'Manufatura' => 21,
+        'Logística' => 22,
+        'Prestadores de Serviços' => 23,
+        'Saúde' => 24,
+        'Varejo' => 25
     ];
 
     $segmentsToAttach = [];
