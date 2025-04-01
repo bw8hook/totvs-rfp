@@ -57,8 +57,8 @@ jobs:
       - name: Implantar arquivos
         run: |
           ssh ${{ env.SSH_OPTS }} ${{ env.SSH_CONN }} 'mkdir -p ${{ env.APP_PATH }}'
-          sed -i 's/dev/${{ github.ref_name }}/' docker-compose.yml
-          sed -i 's/8080/80/' docker-compose.yml
+          sed -i 's/dev/0.5.0/' docker-compose.yml
+          sed -i 's/8083/80/' docker-compose.yaml
           scp ${{ env.SSH_OPTS }} ./docker-compose.yaml  ${{ env.SSH_CONN }}:${{ env.APP_PATH }}
           scp ${{ env.SSH_OPTS }} ./.env  ${{ env.SSH_CONN }}:${{ env.APP_PATH }}
 
