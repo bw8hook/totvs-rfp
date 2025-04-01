@@ -24,7 +24,7 @@ class RfpBundle extends Model
         'status_totvs',
         'status'
     ];
-    
+
 
     // Defina o relacionamento com o modelo Agent
     public function type()
@@ -51,6 +51,13 @@ class RfpBundle extends Model
     {
         return $this->hasMany(KnowledgeRecord::class, 'bundle_id', 'bundle_id');
     }
+
+
+   // Pertence a (Belongs To)
+   public function serviceGroup()
+   {
+       return $this->belongsTo(ServiceGroup::class, 'service_group_id', 'id');
+   }
 
 
     public function rfpProcesses()

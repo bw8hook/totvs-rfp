@@ -11,7 +11,7 @@
                     <div class="relative block items-center" style="padding-bottom: 12px; padding-left:7px;">        
                         <div class="info_details" style="color:#3A57E8"> {{$ProjectFile->filename_original}} </div>
                         <div class="info_details"> Requisitos:<span> {{$CountCountRecordsResultado}}</span></div>
-                        <div class="info_details" style="width: 100%;"> Produto:<span>
+                        <div class="info_details" style="width: 98%;"> Produto:<span>
                             @isset($ProjectFile->rfp_bundles->bundle)
                                 {{$ProjectFile->rfp_bundles->bundle}}
                             @else

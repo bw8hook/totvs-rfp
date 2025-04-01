@@ -263,8 +263,7 @@
                         <div class="search_agente">AGENTE:</div>
                     </div>
                     <div class="SearchBody">
-                        @foreach($bundles as $bundleItem)
-        
+                        @foreach($bundles as $bundleItem)        
                             <div class="listItem" data-id="{{ $bundleItem->bundle_id }}" data-line-ids="{{ $bundleItem->lineOfProduct->pluck('id')->join(',') }}" data-segment-ids="{{ $bundleItem->segments->pluck('id')->join(',') }}">
                                 <input type="checkbox"  class="form-check-input segment-checkbox" name="selected_bundles[]" value="{{ $bundleItem->bundle_id }}">  
                                 <div class="search_nome">{{$bundleItem->bundle}}</div>
@@ -285,7 +284,11 @@
                                         {{ $bundleItem->category['name'] }}
                                     @endif
                                 </div>
-                                <div class="search_grupo">Lorem Immpsum</div>
+                                <div class="search_grupo">
+                                    @if(isset($bundleItem->serviceGroup) && isset($bundleItem->serviceGroup->name))
+                                        {{ $bundleItem->serviceGroup->name}}
+                                    @endif
+                                </div>
                                 <div class="search_agente">
                                     @if(isset($bundleItem->agent) && isset($bundleItem->agent->agent_name))
                                         {{ $bundleItem->agent->agent_name}}
