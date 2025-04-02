@@ -13,7 +13,7 @@
                     </div>
                 </div>
                
-                <a href="{{route('knowledge.create')}}" type="button" class="btn flex items-center justify-center  py-3 rounded-lg font-semibold transition mb-6 bg-#5570F1" style="box-shadow: 0px 19px 34px -20px #43BBED; background-color: #5570F1; color: white; padding: 0px 24px; height: 45px; font-size: 15px; text-transform: uppercase; letter-spacing: 0px; margin-top: 28px; border-radius: 8px;">
+                <a href="{{route('knowledge.create')}}" type="button" class="btn flex items-center justify-center  py-3 rounded-lg font-semibold transition mb-6 bg-#5570F1" style="min-width: 250px; box-shadow: 0px 19px 34px -20px #43BBED; background-color: #5570F1; color: white; padding: 0px 24px; height: 45px; font-size: 15px; text-transform: uppercase; letter-spacing: 0px; margin-top: 28px; border-radius: 8px;">
                     <img src="{{ asset('icons/btn_nova_base.svg') }}" alt="Upload Icon" style="height: 22px; padding-right: 18px;">    
                     Enviar nova base
                 </a>
@@ -237,8 +237,8 @@
                                     <td style="width:17%;"> 
                                         <div style="background: #E0E0E0; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #141824; width: auto; padding: 5px 20px; position: relative; display: inline-block;">${record.user.name}</div>
                                     </td>
-                                    <td style="width:15%;">${status}</td>
-                                    <td style="width:6%; margin-left:2%;"> 
+                                    <td style="width:15%; overflow:visible;">${status}</td>
+                                    <td style="width:6%; margin-left:2%; min-width: 70px;"> 
                                         ${btnEdit}
                                     </td>
                                 </tr>
