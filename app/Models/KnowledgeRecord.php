@@ -18,6 +18,12 @@ class KnowledgeRecord extends Model
         'status',
     ];
 
+     // Relacionamento com KnowledgeBase
+     public function knowledgeBase()
+     {
+         return $this->belongsTo(KnowledgeBase::class, 'knowledge_base_id', 'id');
+     }
+
     public function bundles()
     {
         return $this->belongsToMany(RfpBundle::class, 

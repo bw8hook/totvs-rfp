@@ -39,7 +39,7 @@
                             @if(isset($lastUpdated))
                                 <div class="ultimaAtualizacao" style="border: 1px solid #CCC; border-radius: 10px; width: 362px; height:60px; display: flex;">
                                     <img src="{{ asset('icons/calendar-lines.svg') }}" alt="Upload Icon" style="height: 22px; padding-right: 18px; margin-top: 17px; margin-left: 15px;">    
-                                    <div style="display: flex;" title="o último arquivo atualizado foi o {{$lastUpdated->name}}.{{$lastUpdated->file_extension}} no dia {{$lastUpdatedDate}} as {{$lastUpdatedTime}} ">
+                                    <div style="display: flex; min-width: 320px;" title="o último arquivo atualizado foi o {{$lastUpdated->name}}.{{$lastUpdated->file_extension}} no dia {{$lastUpdatedDate}} as {{$lastUpdatedTime}} ">
                                         <span style="color: #525B75; font-size:16px;line-height: 55px;">Última Atualização:</span>
                                         <h2 style="color: #141824; font-size:16px; line-height: 55px; margin-left:5px; font-weight:400;">{{$lastUpdatedTime}}</h2>
                                         <div style="color: #525B75; font-size:16px; line-height: 55px; margin-left:5px;">|</div>
@@ -67,8 +67,11 @@
                         
                         <div class="inputField">
                             <label>Selecione o Status:</label>
-                            <select name="product">
-                                <option value="null" selected>Selecione</opt>
+                            <select name="status">
+                                <option value="" selected>Selecione</opt>
+                                <option value="não enviado">Não Enviado</opt>
+                                <option value="processando">Processando</opt>
+                                <option value="processado">Processado</opt>
                                     
                             </select>
                         </div>
@@ -151,6 +154,20 @@
                 success: function (response) {
                     // Atualizar tabela
                     let rows = '';
+                    if(response.data.length == 0){
+
+                        rows += `
+                            <tr class="listaTabela" style="min-height:60px; max-height: 100%;">
+                                <td style="width:100%; margin-left:2%; min-width: 70px;"> 
+                                    <div id="lottie-empty" style="width: 100px; height:100px; position: absolute; top: 50%; left: 50%; transform: translate(-50px, -50px);"></div>
+                                     Nenhum item encontrado
+                                </td>
+                            </tr>
+                        `;
+
+                        $('#TableExcel .body_table').html(rows);
+
+                    }
                     response.data.forEach(record => {
                         console.log(record);
                         // Converter a data para um objeto Date

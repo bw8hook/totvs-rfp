@@ -28,6 +28,7 @@ use App\Http\Controllers\PermissionsController;
 use App\Http\Controllers\MentoriaController;
 
 
+use App\Models\KnowledgeRecord;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -49,25 +50,26 @@ Route::middleware('auth')->group(function () {
         //AJAX
         Route::get('/knowledge/filter', [KnowledgeController::class,'filter'])->name('knowledge.filter');
         Route::post('/knowledge/update-infos/{id}', [KnowledgeController::class,'updateInfos'])->name('knowledge.updateInfos');
+    
     //CRON PARA AUTOMATIZAR  SUBIDA PARA IA
     Route::get('/knowledge/cron', [KnowledgeController::class,'cron2'])->name('knowledge.cron');
-
-
     Route::get('/knowledge/inserir-produtos', [KnowledgeController::class,'InserirProdutos'])->name('knowledge.produtos');
 
-    
 
     // REGISTROS DA BASE DE CONHECIMENTO
         //AJAX
-        Route::get('/knowledge/records/filter/{id}', [KnowledgeRecordsController::class,'filter'])->name('knowledge.recordsFilter');
+        Route::get('/knowledge/records/filter/{id?}', [KnowledgeRecordsController::class,'filter'])->name('knowledge.recordsFilter');
         Route::delete('/knowledge/records/{id}', [KnowledgeRecordsController::class,'filterRemove'])->name('knowledge.recordsFilterRemove');
         Route::post('/knowledge/update-record/{id}', [KnowledgeRecordsController::class,'updateDetails'])->name('knowledge.records.update');
         Route::get('/knowledge/records-errors/filter/{id}', [KnowledgeRecordsController::class,'filterError'])->name('knowledge.recordsFilterErrors');
     Route::get('/knowledge/records/view/{id}', [KnowledgeRecordsController::class,'view'])->name('knowledge.records.view');
     Route::get('/knowledge/records/errors/{id}', [KnowledgeRecordsController::class,'errors'])->name('knowledge.recordsErrors');
     Route::get('/knowledge/records/processing/{id}', [KnowledgeRecordsController::class,'processing'])->name('knowledge.records.processing');
+    Route::get('/knowledge/records/references/{id}', [KnowledgeRecordsController::class,'references'])->name('knowledge.records.references');
+
 
     // Rota genérica com parâmetro opcional por último
+    Route::get('/knowledge/records/', [KnowledgeRecordsController::class, 'ListAllReferences'])->name('knowledge.records.all'); 
     Route::get('/knowledge/records/{id}/{record_id?}', [KnowledgeRecordsController::class, 'index'])->name('knowledge.records')->where(['id' => '[0-9]+', 'record_id' => '[0-9]+']); // Restringe id e record_id a números
 });
 
@@ -95,7 +97,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/project/cron2', [ProjectController::class,'cron2'])->name('project.cron2');
 
 
-    Route::get('/project/export', [ProjectController::class,'projectExport'])->name('project.export');
+    Route::get('/project/{id}/export', [ProjectController::class,'projectExport'])->name('project.export');
 
 
     

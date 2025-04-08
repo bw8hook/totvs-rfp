@@ -97,18 +97,94 @@ class KnowledgeRecordsController extends Controller
         }
     }
 
-    public function filter(Request $request, string $id)
+      /**
+    * Valida as Informações Gerais de um REGISTRO ESPECIFICO
+    */
+    public function ListAllReferences()
+    {
+        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
+            $KnowledgeBases = KnowledgeBase::all();
+            foreach ($KnowledgeBases as $key => $KnowledgeBase) {
+               
+                $ListClassificacaoRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('processo')->pluck('processo');
+                $ListRespostaRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('resposta')->pluck('resposta');
+                //$ListProdutosRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('bundle_old')->pluck('bundle_old');
+                $UsersDepartaments = UsersDepartaments::where('departament_type', '!=', 'Admin')->orderBy('departament', 'asc')->get();
+
+                $ListProdutosRecebidas = DB::table('knowledge_records as kr')
+                ->join('knowledge_records_bundles as krb', 'kr.id_record', '=', 'krb.knowledge_record_id')
+                ->join('rfp_bundles as rb', 'krb.bundle_id', '=', 'rb.bundle_id')
+                ->where('kr.knowledge_base_id', $KnowledgeBase->id)
+                ->distinct()
+                ->pluck('rb.bundle');
+
+                $AllAnswers =  RfpAnswer::orderBy('order', 'asc')->get();
+                $AllProcess =  RfpProcess::orderBy('order', 'asc')->get();
+                $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
+
+                $ListProdutos = DB::table('knowledge_records as kr')
+                ->leftJoin('knowledge_records_bundles as krb', 'kr.id_record', '=', 'krb.knowledge_record_id')
+                ->leftJoin('rfp_bundles as rb', 'krb.bundle_id', '=', 'rb.bundle_id')
+                ->where('kr.knowledge_base_id', $KnowledgeBase->id)
+                ->select(
+                    'kr.*',
+                    'krb.bundle_id',
+                    'krb.old_bundle',
+                    'krb.bundle_status',
+                    'rb.bundle as bundle_name'
+                )
+                ->distinct('krb.bundle_id')
+                ->get();
+
+                $Records = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->get();
+                $CountRecords = 0;
+
+                foreach ($Records as $key => $Record) {
+                    $CountRecords++;
+                }
+
+                $data = array(
+                    'title' => 'Todos Arquivos',
+                    'KnowledgeBase' => $KnowledgeBase,
+                    'UsersDepartaments' => $UsersDepartaments,
+                    'ListClassificacao' => $ListClassificacaoRecebidas,
+                    'ListResposta' => $ListRespostaRecebidas,
+                    'ListProdutosRecebidas' => $ListProdutosRecebidas,
+                    'ListProdutos' => $ListProdutos,
+                    'AllBundles' => $AllBundles,
+                    'AllAnswers' => $AllAnswers,
+                    'AllProcess' => $AllProcess,
+                    'CountCountRecordsResultado' => $CountRecords,
+                );
+                
+              
+                return view('knowledge.records.viewAll')->with($data);
+                                
+            } 
+        }
+    }
+
+
+    
+    public function filter(Request $request, string $id = null)
     { 
         $Record_id = $request->record_id;
         $perPage = 100; // Seu número de itens por página
-        $KnowledgeBase = KnowledgeBase::findOrFail($id);
+        if(isset($id)){
+            $KnowledgeBase = KnowledgeBase::findOrFail($id);
+        }
+       
 
         if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
             
-            $query = KnowledgeRecord::query()->with('bundles');
-            
             // Filtro base
-            $query->where('knowledge_base_id', $KnowledgeBase->id);
+            if(isset($id)){
+                $query = KnowledgeRecord::query()->with('bundles');
+                $query->where('knowledge_base_id', $KnowledgeBase->id);
+            }else{
+                $query = KnowledgeRecord::query()->with('bundles')->with('knowledgeBase');
+            }
+            
             
             // Filtro de palavra-chave
             if ($request->filled('keyWord')) {
@@ -424,6 +500,18 @@ class KnowledgeRecordsController extends Controller
         }
     }
 
+
+
+
+    public function references(string $id)
+    { 
+        $KnowledgeRecord = KnowledgeRecord::query()->with('bundles')->with('knowledgeBase')->findOrFail($id);
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {    
+            $data = array( $KnowledgeRecord);
+        
+            return response()->json($KnowledgeRecord);
+        }
+    }
 
 
     /**
