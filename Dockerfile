@@ -27,6 +27,8 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY --from=builder /app/public/build /var/www/public/build
 
 COPY --chown=www-data . .
+COPY ./docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf.default
+COPY ./docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 COPY ./docker/nginx/nginx.conf /etc/nginx/nginx.conf
