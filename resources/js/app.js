@@ -20,7 +20,6 @@ document.addEventListener("DOMContentLoaded", function () {
         path: "/icons/lottie/loading.json", // Caminho gerado pelo Storage
     });
 
-
     lottie.loadAnimation({
         container: document.getElementById("lottie-container2"),
         renderer: "svg",
@@ -28,6 +27,15 @@ document.addEventListener("DOMContentLoaded", function () {
         autoplay: true,
         path: "/icons/lottie/loading.json", // Caminho gerado pelo Storage
     });
+
+    lottie.loadAnimation({
+        container: document.getElementById("lottie-empty"),
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+        path: "/icons/lottie/empty_list.json", // Caminho gerado pelo Storage
+    });
+
 
     window.showAlertBootstrap = function (type, message, autoclose = true ) {
         let alertContainer = $("#alert-global");
@@ -64,7 +72,25 @@ document.addEventListener("DOMContentLoaded", function () {
 $( document ).ready(function() {
 
     
-    
+
+    function handleResponsiveMenu() {
+        if ($(window).width() < 1280) {
+            $(".side_menu_big").addClass("menu_hidden").removeClass("menu_visible");
+            $(".side_menu_small").addClass("menu_visible").removeClass("menu_hidden");
+        } else {
+            $(".side_menu_big").removeClass("menu_hidden").addClass("menu_visible");
+            $(".side_menu_small").removeClass("menu_visible").addClass("menu_hidden");
+        }
+    }
+
+    // Executar no carregamento
+    handleResponsiveMenu();
+
+    // Executar no resize
+    $(window).resize(handleResponsiveMenu);
+
+
+
 
     $("#rowAdder").on('click', function(){
 

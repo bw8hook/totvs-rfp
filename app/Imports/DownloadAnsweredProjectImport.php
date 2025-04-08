@@ -21,9 +21,12 @@ class DownloadAnsweredProjectImport implements  ToCollection, WithHeadingRow
     private $processedData = [];
     protected $id;
 
-    public function __construct($id)
+    protected $ProjectRecords;
+
+    public function __construct($id, $ProjectRecords = [])
     {
         $this->id = $id;
+        $this->ProjectRecords = $ProjectRecords;
         $this->spreadsheet = new Spreadsheet();
     }
     
@@ -44,14 +47,52 @@ class DownloadAnsweredProjectImport implements  ToCollection, WithHeadingRow
             'PRODUTOS ADICIONAIS'
         ];
 
-        // Adicionar cabeçalhos
-        foreach ($headers as $colIndex => $header) {
-            $worksheet->setCellValueByColumnAndRow($colIndex + 1, 1, $header);
+         // Adicionar cabeçalhos
+    foreach ($headers as $col => $header) {
+        $worksheet->setCellValueByColumnAndRow($col + 1, 1, $header);
+    }
+
+        // Estilizar linha de cabeçalho
+        $headerRange = 'A1:' . $worksheet->getHighestColumn() . '1';
+        
+        $worksheet->getStyle($headerRange)->applyFromArray([
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'color' => ['rgb' => '4F81BD'] // Azul corporativo
+            ],
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'], // Texto branco
+                'size' => 12
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
+        ]);
+
+        // // Adicionar cabeçalhos
+        // foreach ($headers as $colIndex => $header) {
+        //     $worksheet->setCellValueByColumnAndRow($colIndex + 1, 1, $header);
+        // }
+
+        // Ajustar largura das colunas automaticamente
+        foreach (range('A', $worksheet->getHighestColumn()) as $columnID) {
+            $worksheet->getColumnDimension($columnID)->setAutoSize(true);
         }
+
+        // Adicionar dados
+        $rowNumber = 2; // Começar da segunda linha
+
 
         // Processar linhas
         foreach ($rows as $index => $row) {
-
             // Valores originais
             $processo = $row['processo'] ?? '';
             $subprocesso = $row['subprocesso'] ?? '';

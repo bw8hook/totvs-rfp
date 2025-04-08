@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 use App\Imports\DownloadAnsweredProjectImport;
+use App\Models\ProjectDownloadHistory;
 use App\Models\Segments;
 use App\Models\Type;
 use Carbon\Carbon;
@@ -26,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use App\Http\Controllers\MentoriaController;
 use App\Models\LineOfProduct;
@@ -490,7 +492,9 @@ class ProjectController extends Controller
                     return redirect()->back()->with('error', 'Erro ao excluir arquivo.');
                 }
             }else{
+                
                 return redirect()->back()->with('error', 'Arquivo não encontrado.');
+
             }
         } else {
             return redirect()->back()->with('error', 'Usuário sem permissão para excluir.');
@@ -544,26 +548,106 @@ class ProjectController extends Controller
 
     
 
-    public function projectExport(Request $request)
+    public function projectExport(Request $request, $id)
     {
         Log::info('Iniciando o processamento da base de conhecimento');
         try {
-            $ProjectFiles = ProjectFiles::where('status', "concluído")
+            $ProjectFile = ProjectFiles::where('id', $id)
             ->with('bundles')
-            ->get();
+            ->first();
 
-            foreach ($ProjectFiles as $ProjectFile) {
+            if($ProjectFile->status == 'processado' || $ProjectFile->status == 'concluído' ){
                 try {
-                    // Baixar arquivo do S3 para processamento local
-                    $tempInputFile = tempnam(sys_get_temp_dir(), 'excel');
-                    $contents = Storage::disk('s3')->get($ProjectFile->filepath);
-                    file_put_contents($tempInputFile, $contents);
-        
-                     // Criar instância de importação
-                    $import = new DownloadAnsweredProjectImport($ProjectFile->id);
 
-                    // Importar arquivo
-                    Excel::import($import, $tempInputFile, null, \Maatwebsite\Excel\Excel::XLSX);
+                    if($ProjectFile->status == 'concluído'){
+                         // Baixar arquivo do S3 para processamento local
+                        $tempInputFile = tempnam(sys_get_temp_dir(), 'excel');
+                        $contents = Storage::disk('s3')->get($ProjectFile->filepath);
+                        file_put_contents($tempInputFile, $contents);
+
+                        // Criar instância de importação
+                        $import = new DownloadAnsweredProjectImport($ProjectFile->id);
+
+                        // Importar arquivo
+                        Excel::import($import, $tempInputFile, null, \Maatwebsite\Excel\Excel::XLSX);
+
+                    }else{
+                        $ProjectRecords = ProjectRecord::where('project_file_id', $ProjectFile->id)
+                        ->with('answers')
+                        ->orderBy('id')
+                        ->get();
+
+
+                        // Criar planilha
+                        $spreadsheet = new Spreadsheet();
+                        $sheet = $spreadsheet->getActiveSheet();
+
+                        // Adicionar cabeçalhos
+                        $headers = [
+                            'PROCESSO', 
+                            'SUBPROCESSO', 
+                            'DESCRIÇÃO DO REQUISITO',
+                            'RESPOSTA',
+                            'MÓDULOS',
+                            'PRODUTO PRINCIPAL',
+                            'OBSERVAÇÕES',
+                            'PRODUTOS ADICIONAIS'
+                        ];
+
+                        // Adicionar cabeçalhos
+                        foreach ($headers as $col => $header) {
+                            $sheet->setCellValueByColumnAndRow($col + 1, 1, $header);
+                        }
+
+                        // Adicionar dados
+                        $rowNumber = 2;
+                        foreach ($ProjectRecords as $record) {
+                            $sheet->setCellValueByColumnAndRow(1, $rowNumber, $record->processo);
+                            $sheet->setCellValueByColumnAndRow(2, $rowNumber, $record->subprocesso);
+                            $sheet->setCellValueByColumnAndRow(3, $rowNumber, $record->requisito);
+                            $sheet->setCellValueByColumnAndRow(4, $rowNumber, $record->answers->aderencia_na_mesma_linha);
+                            $sheet->setCellValueByColumnAndRow(5, $rowNumber, $record->answers->modulo);
+                            $sheet->setCellValueByColumnAndRow(6, $rowNumber, $record->answers->linha_produto);
+                            $sheet->setCellValueByColumnAndRow(7, $rowNumber, $record->answers->observacao);
+                            $sheet->setCellValueByColumnAndRow(8, $rowNumber, '');
+
+                            // Adicionar outros campos...
+                            $rowNumber++;
+                        }
+
+                        // Método alternativo de escrita
+                        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+                        
+                        // Criar caminho do arquivo
+                        $tempFile = tempnam(sys_get_temp_dir(), 'import_');
+                        $tempFile = $tempFile . '.xlsx';
+                        
+                        // Tentar salvar
+                        $writer->save($tempFile);
+
+
+                        // $dataArray = $ProjectRecords->map(function($record) {
+                        //     return [
+                        //         'PROCESSO' => $record->processo,
+                        //         'SUBPROCESSO' => $record->subprocesso,
+                        //         'DESCRIÇÃO DO REQUISITO' => $record->requisito,
+                        //         'RESPOSTA' => optional($record->answers)->aderencia_na_mesma_linha,
+                        //         'MÓDULOS' => $record->answers->modulo,
+                        //         'PRODUTO PRINCIPAL' => $record->answers->linha_produto,
+                        //         'OBSERVAÇÕES' => $record->answers->observacao,
+                        //         'PRODUTOS ADICIONAIS' => ''
+                        //     ];
+                        // })->toArray();
+
+                        // Criar instância de importação
+                        $import = new DownloadAnsweredProjectImport($ProjectFile->id);
+                        
+
+                        // Importar arquivo
+                        Excel::import($import, $tempFile);
+                    }                    
+
+                   
 
                     // Salvar arquivo processado
                     $tempOutputFile = tempnam(sys_get_temp_dir(), 'excel') . '.xlsx';
@@ -571,38 +655,49 @@ class ProjectController extends Controller
                     // Usar IOFactory para criar writer
                     $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($import->getSpreadsheet(), 'Xlsx');
                     $writer->save($tempOutputFile);
-
-                    // Enviar arquivo processado para S3
-                    $FileName = time() . '_' . uniqid() . '.xlsx';
-                    $outputFilePath = 'cdn/projects_answereds/'.$FileName;
-                    Storage::disk('s3')->put(
-                        $outputFilePath, 
-                        file_get_contents($tempOutputFile)
-                    );
+                    $FileName = $ProjectFile->id.'_'.$ProjectFile->status.'_'.time() . '_' . uniqid() . '.xlsx';
             
-                    // Gerar URL completa
-                    $urlCompleta = Storage::disk('s3')->url($outputFilePath);
-                    $ProjectFile->answered_file = $urlCompleta;
-                    $ProjectFile->save();
+                    if($ProjectFile->status == 'concluído' ){
+                        // Enviar arquivo processado para S3
+                       
+                        $outputFilePath = 'cdn/projects_answereds/'.$FileName;
+                        Storage::disk('s3')->put(
+                            $outputFilePath, 
+                            file_get_contents($tempOutputFile)
+                        );
 
-                    // Opcional: Excluir arquivo temporário
-                    if (file_exists($tempOutputFile)) {
-                        unlink($tempOutputFile);
+                        // Gerar URL completa
+                        $urlCompleta = Storage::disk('s3')->url($outputFilePath);
+                        $ProjectFile->answered_file = $urlCompleta;
+                        $ProjectFile->save();
+                        //Opcional: Excluir arquivo temporário
+                        if (file_exists($tempOutputFile)) {
+                            unlink($tempOutputFile);
+                        }
+                    }else{
+
+                        // Registrar um download
+                        $download = ProjectDownloadHistory::recordDownload( Auth::id(),  $ProjectFile->id, $FileName);
+
+                        // Preparar download
+                        return response()->download(
+                            $tempOutputFile, 
+                            $FileName,
+                            [
+                                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'Content-Disposition' => 'attachment; filename="arquivo_processado.xlsx"'
+                            ]
+                        )->deleteFileAfterSend(true);
                     }
-
-                    // Preparar download
-                    // return response()->download(
-                    //     $tempOutputFile, 
-                    //     $FileName,
-                    //     [
-                    //         'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    //         'Content-Disposition' => 'attachment; filename="arquivo_processado.xlsx"'
-                    //     ]
-                    // )->deleteFileAfterSend(true);
+                    
+                   
+                   
 
                 } catch (\Exception $e) {
 
-                    dd($e->getMessage());
+                    dd($e);
+
+
                     Log::error('Erro no processamento do Excel', [
                         'message' => $e->getMessage(),
                         'trace' => $e->getTraceAsString()

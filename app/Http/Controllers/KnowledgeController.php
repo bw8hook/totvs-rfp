@@ -125,13 +125,21 @@ class KnowledgeController extends Controller
             $query = KnowledgeBase::query()->with('user')->withCount('knowledgeRecords');;
             
             // Aplicar filtros
-            if ($request->has('filter')) {
-                foreach ($request->filter as $field => $value) {
-                    if (!empty($value)) {
-                        $query->where($field, 'like', '%' . $value . '%');
-                    }
-                }
+            if ($request->has('keyWord') && !empty($request->keyWord)) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('name', 'like', '%' . $request->keyWord . '%');
+                });
             }
+
+
+            // Aplicar filtros
+            if ($request->has('status') && !empty($request->status)) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('status', 'like', '%' . $request->status . '%');
+                });
+            }
+
+            
 
             // Aplicar ordenação
             if ($request->has('sort_by') && $request->has('sort_order')) {
@@ -871,10 +879,13 @@ function fazerRequisicao($url, $metodo = 'GET', $dados = null, $headers = []) {
                 }else{
                     KnowledgeRecord::where('knowledge_base_id', $id)->delete();// 
                     KnowledgeBase::where('id', $id)->delete();// Exclui o usuário do banco de dados
-                    return response()->json(['status' => 'error', 'message' => 'Erro ao excluir arquivo']);
+                    return response()->json(['status' => 'success', 'message' => 'Arquivo excluído com sucesso!']);
                 }
             }else{
-                return response()->json(['status' => 'error', 'message' => 'Arquivo não encontrado']);
+                // Arquivo não encontrado só faz a remoção de tudo que estava vinculado
+                KnowledgeRecord::where('knowledge_base_id', $id)->delete();// 
+                KnowledgeBase::where('id', $id)->delete();// Exclui o usuário do banco de dados
+                return response()->json(['status' => 'success', 'message' => 'Arquivo excluído com sucesso!']);
             }
         } else {
             return response()->json(['status' => 'error', 'message' => 'Usuário sem permissão para excluir']);

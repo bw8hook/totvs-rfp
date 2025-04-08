@@ -14,7 +14,7 @@
                     </div>
                 </div>
 
-                <a href="https://docs.google.com/spreadsheets/d/1DMFxJXIKM4up3Tocm_zGWEeKyp4qdCHr809rjhi1qNc/edit?usp=drive_link" style="background-color: #5570F1; border-radius: 50px; color: white; padding: 8px 21px; font-size: 14px; font-weight: 600; margin: auto; float: right; margin-top: -4px;" download> 
+                <a href="https://docs.google.com/spreadsheets/d/1DMFxJXIKM4up3Tocm_zGWEeKyp4qdCHr809rjhi1qNc/edit?usp=drive_linkArquivo não encontrado" style="background-color: #5570F1; border-radius: 50px; color: white; padding: 8px 21px; font-size: 14px; font-weight: 600; margin: auto; float: right; margin-top: -4px;" download> 
                     <div style="">
                         <img src="{{ asset('icons/download_2.svg') }}" alt="Upload Icon" style="height: 18px; padding-right: 12px; float: left; margin-top: 5px;">
                         <span>Baixar planilha modelo</span>
