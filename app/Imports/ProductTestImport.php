@@ -122,10 +122,10 @@ class ProductTestImport implements ToCollection, WithStartRow, WithEvents, WithM
                     //     $ServiceGroup = null;
                     // }
                 
-                    // $Agent = Agent::firstOrCreate(
-                    //     ['agent_name' => $row[7]], 
-                    //     ['status' => 'ativo' ]
-                    // );
+                    $Agent = Agent::firstOrCreate(
+                        ['agent_name' => $row[13]], 
+                        ['status' => 'ativo' ]
+                    );
 
                     // // Criar ou encontrar Bundle
                     // $Bundle = RfpBundle::firstOrCreate(
@@ -134,34 +134,47 @@ class ProductTestImport implements ToCollection, WithStartRow, WithEvents, WithM
                     //     ],
                     //     [
                     //         'agent_id' => $Agent->id,
-                    //         'type_id' => $Type->id ?? null,
-                    //         'category_id' => $Category->id ?? null,
-                    //         'service_group_id' => $ServiceGroup->id ?? null,
-                    //         'working_group_id' => 0,
-                    //         'status_totvs' => 'Ativo',
-                    //         'status' => 'active'
                     //     ]
                     // );
 
+
                     $Bundle = RfpBundle::where('bundle', $row[1])->first();
+
+                    
+
+                    if ($Bundle->id > 660) {
+
+                        dd($Bundle);
+                        
+                        $Bundle->agent_id = $Agent->id;
+                        $Bundle->save();
+                    }
+
+
+
+                    //$Bundle = RfpBundle::where('bundle', $row[1])->update(['agent_id' => $Agent->id]);
+
+                   
+
+                    //$Bundle = RfpBundle::where('bundle', $row[1])->first();
 
 
                     // Verificar se Bundle foi criado/encontrado
-                    if ($Bundle->bundle_id) {
+                    // if ($Bundle->bundle_id) {
                         
-                        // Associar Linha de Produto
-                        $this->attachLineOfProduct($Bundle);
+                    //     // Associar Linha de Produto
+                    //     $this->attachLineOfProduct($Bundle);
     
-                        // Associar Segmentos
-                        $this->attachSegments($Bundle, $row[4]);
+                    //     // Associar Segmentos
+                    //     $this->attachSegments($Bundle, $row[4]);
     
-                        $this->successCount++;
+                    //     $this->successCount++;
 
-                        Log::info('Linha: Criada' .$this->rowCount);
-                    } else {
-                        Log::warning('Não foi possível criar/encontrar Bundle', [
-                            'row' => $row,                        ]);
-                    }
+                    //     Log::info('Linha: Criada' .$this->rowCount);
+                    // } else {
+                    //     Log::warning('Não foi possível criar/encontrar Bundle', [
+                    //         'row' => $row,                        ]);
+                    // }
     
                 } catch (\Exception $e) {
                     Log::error('Erro ao processar linha', [
