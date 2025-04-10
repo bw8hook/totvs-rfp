@@ -102,19 +102,18 @@ class KnowledgeRecordsController extends Controller
     */
     public function ListAllReferences()
     {
-        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage', 'projects.all.add', 'projects.my.manage', 'projects.my.add'])) {     
             $KnowledgeBases = KnowledgeBase::all();
-            foreach ($KnowledgeBases as $key => $KnowledgeBase) {
+            //foreach ($KnowledgeBases as $key => $KnowledgeBase) {
                
-                $ListClassificacaoRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('processo')->pluck('processo');
-                $ListRespostaRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('resposta')->pluck('resposta');
+                $ListClassificacaoRecebidas = KnowledgeRecord::groupBy('processo')->pluck('processo');
+                $ListRespostaRecebidas = KnowledgeRecord::groupBy('resposta')->pluck('resposta');
                 //$ListProdutosRecebidas = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->groupBy('bundle_old')->pluck('bundle_old');
                 $UsersDepartaments = UsersDepartaments::where('departament_type', '!=', 'Admin')->orderBy('departament', 'asc')->get();
 
                 $ListProdutosRecebidas = DB::table('knowledge_records as kr')
                 ->join('knowledge_records_bundles as krb', 'kr.id_record', '=', 'krb.knowledge_record_id')
                 ->join('rfp_bundles as rb', 'krb.bundle_id', '=', 'rb.bundle_id')
-                ->where('kr.knowledge_base_id', $KnowledgeBase->id)
                 ->distinct()
                 ->pluck('rb.bundle');
 
@@ -125,7 +124,6 @@ class KnowledgeRecordsController extends Controller
                 $ListProdutos = DB::table('knowledge_records as kr')
                 ->leftJoin('knowledge_records_bundles as krb', 'kr.id_record', '=', 'krb.knowledge_record_id')
                 ->leftJoin('rfp_bundles as rb', 'krb.bundle_id', '=', 'rb.bundle_id')
-                ->where('kr.knowledge_base_id', $KnowledgeBase->id)
                 ->select(
                     'kr.*',
                     'krb.bundle_id',
@@ -136,7 +134,7 @@ class KnowledgeRecordsController extends Controller
                 ->distinct('krb.bundle_id')
                 ->get();
 
-                $Records = KnowledgeRecord::where('knowledge_base_id', $KnowledgeBase->id)->get();
+                $Records = KnowledgeRecord::get();
                 $CountRecords = 0;
 
                 foreach ($Records as $key => $Record) {
@@ -145,7 +143,6 @@ class KnowledgeRecordsController extends Controller
 
                 $data = array(
                     'title' => 'Todos Arquivos',
-                    'KnowledgeBase' => $KnowledgeBase,
                     'UsersDepartaments' => $UsersDepartaments,
                     'ListClassificacao' => $ListClassificacaoRecebidas,
                     'ListResposta' => $ListRespostaRecebidas,
@@ -160,7 +157,7 @@ class KnowledgeRecordsController extends Controller
               
                 return view('knowledge.records.viewAll')->with($data);
                                 
-            } 
+            //} 
         }
     }
 
@@ -173,9 +170,9 @@ class KnowledgeRecordsController extends Controller
         if(isset($id)){
             $KnowledgeBase = KnowledgeBase::findOrFail($id);
         }
-       
+      
 
-        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
+        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete', 'projects.all', 'projects.my', 'projects.all.manage', 'projects.all.add', 'projects.my.manage', 'projects.my.add'])) {
             
             // Filtro base
             if(isset($id)){

@@ -183,13 +183,13 @@
                         });
 
                         rows += `
-                             <tr class="listaTabela ${existsInListProducts ? '' : 'highlighted_error'}"  data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
+                             <tr class="listaTabela  data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
                                 <td style="width:3%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
                                 <td style="width:11%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.processo ? record.processo : '-'}</td>
                                 <td style="width:11%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.subprocesso ? record.subprocesso : '-'}</td>
                                 <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.requisito ? record.requisito : '-'}</td>
                                 <td style="width:10%; display: flex; align-items: center;">
-                                    <select name="resposta" class="${existsInList ? '' : 'highlighted_error_select'}""  style="border-radius: 8px; width:100%" disabled>
+                                    <select name="resposta" style="border-radius: 8px; width:100%" disabled>
                                         ${AnwserOptions}
                                     </select>
                                 </td>

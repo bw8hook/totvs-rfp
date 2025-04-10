@@ -122,10 +122,10 @@ class ProductTestImport implements ToCollection, WithStartRow, WithEvents, WithM
                     //     $ServiceGroup = null;
                     // }
                 
-                    $Agent = Agent::firstOrCreate(
-                        ['agent_name' => $row[13]], 
-                        ['status' => 'ativo' ]
-                    );
+                    // $Agent = Agent::firstOrCreate(
+                    //     ['agent_name' => $row[13]], 
+                    //     ['status' => 'ativo' ]
+                    // );
 
                     // // Criar ou encontrar Bundle
                     // $Bundle = RfpBundle::firstOrCreate(
@@ -137,18 +137,18 @@ class ProductTestImport implements ToCollection, WithStartRow, WithEvents, WithM
                     //     ]
                     // );
 
-
                     $Bundle = RfpBundle::where('bundle', $row[1])->first();
 
+                    if($row[14] != 'Sim'){
+                        $this->DeattachLineOfProduct($Bundle);
+                        //dd($row);
+                    }
                     
 
-                    if ($Bundle->id > 660) {
-
-                        dd($Bundle);
-                        
-                        $Bundle->agent_id = $Agent->id;
-                        $Bundle->save();
-                    }
+                    // if ($Bundle->bundle_id > 660) {
+                    //     $Bundle->agent_id = $Agent->id;
+                    //     $Bundle->save();
+                    // }
 
 
 
@@ -164,6 +164,7 @@ class ProductTestImport implements ToCollection, WithStartRow, WithEvents, WithM
                         
                     //     // Associar Linha de Produto
                     //     $this->attachLineOfProduct($Bundle);
+                    
     
                     //     // Associar Segmentos
                     //     $this->attachSegments($Bundle, $row[4]);
@@ -217,6 +218,20 @@ private function attachLineOfProduct($Bundle)
         ]);
     }
 }
+
+private function DeattachLineOfProduct($Bundle)
+{
+    try {
+        $Bundle->lineOfProduct()->detach(5);
+       
+    } catch (\Exception $e) {
+        Log::error('Erro ao associar Linha de Produto', [
+            'bundle_id' => $Bundle->id,
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
 
 // Método para associar Segmentos
 private function attachSegments($Bundle, $segmentString)
