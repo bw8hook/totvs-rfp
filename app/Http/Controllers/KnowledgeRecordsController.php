@@ -102,7 +102,7 @@ class KnowledgeRecordsController extends Controller
     */
     public function ListAllReferences()
     {
-        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage', 'projects.all.add', 'projects.my.manage', 'projects.my.add'])) {     
             $KnowledgeBases = KnowledgeBase::all();
             foreach ($KnowledgeBases as $key => $KnowledgeBase) {
                
@@ -173,9 +173,9 @@ class KnowledgeRecordsController extends Controller
         if(isset($id)){
             $KnowledgeBase = KnowledgeBase::findOrFail($id);
         }
-       
+      
 
-        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
+        if (Auth::user()->hasAnyPermission(['knowledge.manage', 'knowledge.add', 'knowledge.edit', 'knowledge.delete', 'projects.all', 'projects.my', 'projects.all.manage', 'projects.all.add', 'projects.my.manage', 'projects.my.add'])) {
             
             // Filtro base
             if(isset($id)){
