@@ -685,11 +685,11 @@
 <script>
 $(document).ready(function() {
     function populateSelects() {
-        populateSelect('filter-tipo', 'search_tipo');
-        populateSelect('filter-segmento', 'search_segmento');
-        populateSelect('filter-categoria', 'search_categoria');
-        populateSelect('filter-grupo', 'search_grupo');
-        populateSelect('filter-agente', 'search_agente');
+        // populateSelect('filter-tipo', 'search_tipo');
+        // populateSelect('filter-segmento', 'search_segmento');
+        // populateSelect('filter-categoria', 'search_categoria');
+        // populateSelect('filter-grupo', 'search_grupo');
+        // populateSelect('filter-agente', 'search_agente');
     }
 
     function populateSelect(selectId, className) {
