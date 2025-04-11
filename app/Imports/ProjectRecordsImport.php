@@ -52,7 +52,7 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
 
     public function chunkSize(): int
     {
-        return 400; // Ajuste conforme necessário
+        return 1000; // Ajuste conforme necessário
     }
 
 
@@ -116,9 +116,8 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
                 if ($ProjectRecord->save()) {
                     // Vincula os Produtos com o RECORD
                     $ProjectRecord->bundles()->sync($this->bundles);
-                    //$this->updatedRows[$index]['final'] = $row[2];
                 }else{
-                    dd($row);        
+                    //dd($row);        
                 }   
             }
         } catch (Exception $e) {

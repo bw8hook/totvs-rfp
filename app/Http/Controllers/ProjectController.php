@@ -444,6 +444,7 @@ class ProjectController extends Controller
             // Retornar a URL como resposta JSON
             return response()->json([
                 'success' => true,
+                'excel' => $Excel,
                 'message' => 'Arquivo atualizado com sucesso!',
                 'redirectUrl' => '/project/records/'.$ProjectFile->id,
             ]);
@@ -480,24 +481,56 @@ class ProjectController extends Controller
         // Encontrar o usuário pelo ID
         $Arquivo = Project::where('id', $id)->first();
         if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage', 'projects.all.delete', 'projects.my.manage', 'projects.my.delete'])) {     
-            if (Storage::disk('s3')->exists($Arquivo->filepath)) {
-                if (Storage::disk('s3')->delete($Arquivo->filepath)) {
-                    ProjectRecord::where('project_file_id', $id)->delete();
-                    Project::where('id', $id)->delete();
+            if (Storage::exists($Arquivo->filepath)){
+                if (Storage::delete($Arquivo->filepath)){
+                    ProjectRecord::where('project_file_id', $id)->delete();// 
+                    Project::where('id', $id)->delete();// Exclui o usuário do banco de dados
                     return redirect()->back()->with('success', 'Arquivo excluído com sucesso.');
-                } else {
-                    ProjectRecord::where('project_file_id', $id)->delete();
-                    Project::where('id', $id)->delete();
+                }else{
+                    ProjectRecord::where('project_file_id', $id)->delete();// 
+                    Project::where('id', $id)->delete();// Exclui o usuário do banco de dados
                     return redirect()->back()->with('error', 'Erro ao excluir arquivo.');
                 }
-            } else {
+            }else{
+                
                 return redirect()->back()->with('error', 'Arquivo não encontrado.');
-            }
 
+            }
         } else {
             return redirect()->back()->with('error', 'Usuário sem permissão para excluir.');
         }
     }
+
+
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroyFile(string $id)
+    {
+        // Encontrar o usuário pelo ID
+        $Arquivo = ProjectFiles::where('id', $id)->first();
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage', 'projects.all.delete', 'projects.my.manage', 'projects.my.delete'])) {     
+            if (Storage::exists($Arquivo->filepath)){
+                if (Storage::delete($Arquivo->filepath)){
+                    ProjectRecord::where('project_file_id', $id)->delete();// 
+                    ProjectFiles::where('id', $id)->delete();// Exclui o usuário do banco de dados
+                    return redirect()->back()->with('success', 'Arquivo excluído com sucesso.');
+                }else{
+                    ProjectRecord::where('project_file_id', $id)->delete();// 
+                    ProjectFiles::where('id', $id)->delete();// Exclui o usuário do banco de dados
+                    return redirect()->back()->with('error', 'Erro ao excluir arquivo.');
+                }
+            }else{
+                
+                return redirect()->back()->with('error', 'Arquivo não encontrado.');
+
+            }
+        } else {
+            return redirect()->back()->with('error', 'Usuário sem permissão para excluir.');
+        }
+    }
+
 
 
     private function validarEConverterData($data) {
