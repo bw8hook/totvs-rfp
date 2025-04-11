@@ -28,7 +28,7 @@ use Maatwebsite\Excel\Events\AfterImport;
 
 use Exception;
 
-class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, WithMultipleSheets
+class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, WithMultipleSheets, WithChunkReading
 {
     use RegistersEventListeners;
     use Importable;
@@ -49,6 +49,12 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
          $this->bundles = $bundles;
         // $this->idpacote = $idpacote; // Define o ID recebido no construtor
     }
+
+    public function chunkSize(): int
+    {
+        return 400; // Ajuste conforme necessário
+    }
+
 
 
     // Validação apenas da primeira aba
@@ -100,8 +106,7 @@ class ProjectRecordsImport implements ToCollection, WithStartRow, WithEvents, Wi
                     }else{
                         $ProjectRecord->processo_id = $processIDFound;
                     }
-                    
-                    //$ProjectRecord->bundle_id = $this->idbundle;
+    
                     $ProjectRecord->processo = $row[0];
                     $ProjectRecord->subprocesso = $row[1];
                     $ProjectRecord->requisito = $row[2];
