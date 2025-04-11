@@ -479,22 +479,22 @@ class ProjectController extends Controller
     public function destroy(string $id)
     {
         // Encontrar o usuário pelo ID
-        $Arquivo = Project::where('id', $id)->first();
+        $Arquivo = ProjectFiles::where('id', $id)->first();
         if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage', 'projects.all.delete', 'projects.my.manage', 'projects.my.delete'])) {     
             if (Storage::exists($Arquivo->filepath)){
                 if (Storage::delete($Arquivo->filepath)){
                     ProjectRecord::where('project_file_id', $id)->delete();// 
-                    Project::where('id', $id)->delete();// Exclui o usuário do banco de dados
+                    ProjectFiles::where('id', $id)->delete();// Exclui o usuário do banco de dados
                     return redirect()->back()->with('success', 'Arquivo excluído com sucesso.');
                 }else{
                     ProjectRecord::where('project_file_id', $id)->delete();// 
-                    Project::where('id', $id)->delete();// Exclui o usuário do banco de dados
-                    return redirect()->back()->with('error', 'Erro ao excluir arquivo.');
+                    ProjectFiles::where('id', $id)->delete();// Exclui o usuário do banco de dados
+                    return redirect()->back()->with('success', 'Arquivo excluído com sucesso.');
                 }
             }else{
-                
-                return redirect()->back()->with('error', 'Arquivo não encontrado.');
-
+                ProjectRecord::where('project_file_id', $id)->delete();// 
+                ProjectFiles::where('id', $id)->delete();// Exclui o usuário do banco de dados
+                return redirect()->back()->with('success', 'Arquivo excluído com sucesso.');
             }
         } else {
             return redirect()->back()->with('error', 'Usuário sem permissão para excluir.');
@@ -757,13 +757,13 @@ class ProjectController extends Controller
     public function cron(Request $request)
     {
         try {
-            $ProjectFiles = ProjectFiles::where('status', "em processamento")
+            //$ProjectFiles = ProjectFiles::where('status', "em processamento")
+
+            $ProjectFiles = ProjectFiles::where('id', "18")
             ->with('bundles')
+            ->orderBy('id', 'asc')
             ->get();
             
-
-           
-
             $clientHookIA = new Client([
                 'base_uri' => 'https://totvs-ia.hook.app.br/v1/',
                 'timeout' => 60,
@@ -789,35 +789,40 @@ class ProjectController extends Controller
 
                     if($agents[0]->search_engine == "Open IA"){
 
-                        $Records = ProjectRecord::with('bundles')
-                            ->where('project_records.project_file_id', $File->id)
-                            ->where('project_records.status', "processando")
+                        $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
+                            ->where('project_records.status', "aguardando")
+                            ->orderBy('id', 'asc')
                             ->get();
 
                         foreach ($Records as $Record) {
-            
+
                             //$Agent = Agent::where('id', $Record->agent_id)->first();
                             $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
                             $BundlesProcess = $Processo->rfpBundles;
 
-
                             $ProdutosPrioritarios = '';
+                            $ListaAgentesPrioritarios = '';
+                            $FiltroProdutos = [];
+                            $FiltroAgentes = [];
                             foreach ($BundlesProcess as $bundleProcess) {
                                 $DadosAgentePrioritario = Agent::where('id', $bundleProcess->agent_id)->first();
 
+                                $FiltroProdutos[] = $bundleProcess->bundle;
+                                $FiltroAgentes[] = $DadosAgentePrioritario->knowledge_id_hook;
                                 // Se a string estiver vazia, adicione direto
                                 if (empty($ProdutosPrioritarios)) {
+                                    $ListaAgentesPrioritarios = $DadosAgentePrioritario->knowledge_id_hook;
                                     $ProdutosPrioritarios = $bundleProcess->bundle; // ou outro campo que queira
                                 } else {
                                     // Se já tiver conteúdo, adicione com vírgula
+                                    $ListaAgentesPrioritarios .= ', ' . $DadosAgentePrioritario->knowledge_id_hook;
                                     $ProdutosPrioritarios .= ', ' . $bundleProcess->bundle;
                                 }
                             }
 
                             //$ProdutosPrioritarios = $Records->rfpBundles->pluck('bundle')->implode(', ');
-
                             $ProdutosAdicionais = $bundles->pluck('bundle')->unique()->implode(', ');
-                            
+
                             $agentIds = $bundles->pluck('agent_id')->unique();
                             $agentsList = Agent::whereIn('id', $agentIds)->get();
                             $AgentesPrioritarios = $agentsList->pluck('knowledge_id_hook')->filter()->implode(', ');
@@ -851,7 +856,7 @@ class ProjectController extends Controller
                                             break;
                                         }
                                     }
-                                    
+                    
                                     if ($nextExists) {
                                         $agentsString .= ', ';
                                     }
@@ -860,11 +865,16 @@ class ProjectController extends Controller
 
                             $requisito = $Record->requisito;
                             $processo = $Processo->process;
-    
+
+                            // Pego os itens Primarios, removo da lista de secundarios, e transformo em string para enviar novamente.
+                            $AgentesSecundariosExplode = explode(',', $AgentesPrioritarios);
+                            $AgentesSecundarios = array_filter( array_map('trim', str_replace($FiltroAgentes, '', $AgentesSecundariosExplode)));
+                            $AgentesSecundariosString = implode(', ', $AgentesSecundarios);
+                        
                             $body = [
                                 'inputs' =>  [
-                                    'base_id_primarios' => $DadosAgentePrioritario->knowledge_id_hook,
-                                    'base_id_secundarios' => $AgentesPrioritarios,    
+                                    'base_id_primarios' => $ListaAgentesPrioritarios,
+                                    'base_id_secundarios' => $AgentesSecundariosString,    
                                 ],
                                 'query' => json_encode([
                                         'requisito' => $requisito,
@@ -874,9 +884,12 @@ class ProjectController extends Controller
                                 ], JSON_UNESCAPED_UNICODE),
                                 'response_mode' => 'blocking',
                                 "conversation_id" => "",
-                                "user" => "RFP-API-CRON",
+                                "user" => "RFP-API-LOCAL",
                                 "files" => [],
                             ];  
+
+
+                            dd($body);
 
                             //TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, TOTVS Agendamentos, TOTVS Logística TMS, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS WMS SaaS, TOTVS YMS, TOTVS Frete Embarcador
                             //TOTVS Analytics, TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, Planejamento Orçamentário by Prophix, RD Station CRM, TOTVS Agendamentos, TOTVS Backoffice Portal de Vendas, TOTVS Cloud IaaS, TOTVS Comércio Exterior, TOTVS CRM Automação da Força de Vendas - SFA, TOTVS Fluig, TOTVS Frete Embarcador, TOTVS Gestão de Frotas - Linha Protheus, TOTVS Logística TMS, TOTVS Manufatura - Linha Protheus, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS Transmite, TOTVS Varejo Lojas - Linha Protheus, TOTVS WMS SaaS, TOTVS YMS, Universidade TOTVS, Analytics by GoodData
@@ -898,7 +911,7 @@ class ProjectController extends Controller
            
     
             $pool = new Pool($clientHookIA, $requestsHook(), [
-                'concurrency' => 1,
+                'concurrency' => 10,
                 'fulfilled' => function ($result, $index) {
                     Log::info("Resposta Recebida");
 
@@ -915,7 +928,7 @@ class ProjectController extends Controller
                     $Record->save();
                     
                     // Atualizar o status do Record
-                    if($Answer->aderencia_na_mesma_linha != 'Desconhecido' || $Record->ia_attempts >= 3){
+                    if($Answer->aderencia_na_mesma_linha != '3esconhecido' || $Record->ia_attempts >= 3){
 
                         $DadosResposta = new ProjectAnswer;
                         $DadosResposta->bundle_id = $bundleId->bundle_id ?? null;
