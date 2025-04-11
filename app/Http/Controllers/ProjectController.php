@@ -411,7 +411,6 @@ class ProjectController extends Controller
         //$RfpBundle = RfpBundle::findOrFail($request->bundle);
         $ProjectData = Project::findOrFail($id);
 
-
         // Faz o upload para o S3 (Para BACKUP)
         $File = $request->file('file');
         $fileName = $request->name;
@@ -481,21 +480,20 @@ class ProjectController extends Controller
         // Encontrar o usuário pelo ID
         $Arquivo = Project::where('id', $id)->first();
         if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage', 'projects.all.delete', 'projects.my.manage', 'projects.my.delete'])) {     
-            if (Storage::exists($Arquivo->filepath)){
-                if (Storage::delete($Arquivo->filepath)){
-                    ProjectRecord::where('project_file_id', $id)->delete();// 
-                    Project::where('id', $id)->delete();// Exclui o usuário do banco de dados
+            if (Storage::disk('s3')->exists($Arquivo->filepath)) {
+                if (Storage::disk('s3')->delete($Arquivo->filepath)) {
+                    ProjectRecord::where('project_file_id', $id)->delete();
+                    Project::where('id', $id)->delete();
                     return redirect()->back()->with('success', 'Arquivo excluído com sucesso.');
-                }else{
-                    ProjectRecord::where('project_file_id', $id)->delete();// 
-                    Project::where('id', $id)->delete();// Exclui o usuário do banco de dados
+                } else {
+                    ProjectRecord::where('project_file_id', $id)->delete();
+                    Project::where('id', $id)->delete();
                     return redirect()->back()->with('error', 'Erro ao excluir arquivo.');
                 }
-            }else{
-                
+            } else {
                 return redirect()->back()->with('error', 'Arquivo não encontrado.');
-
             }
+
         } else {
             return redirect()->back()->with('error', 'Usuário sem permissão para excluir.');
         }
