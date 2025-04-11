@@ -69,8 +69,7 @@ class UploadProjectToAnswerHook extends Command
 
                     if($agents[0]->search_engine == "Open IA"){
 
-                        $Records = ProjectRecord::with('bundles')
-                            ->where('project_records.project_file_id', $File->id)
+                        $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
                             ->where('project_records.status', "processando")
                             ->orderBy('id', 'asc')
                             ->get();
@@ -83,14 +82,19 @@ class UploadProjectToAnswerHook extends Command
 
 
                             $ProdutosPrioritarios = '';
+                            $ListaAgentesPrioritarios = '';
+                            $FiltroProdutos = [];
                             foreach ($BundlesProcess as $bundleProcess) {
                                 $DadosAgentePrioritario = Agent::where('id', $bundleProcess->agent_id)->first();
 
+                                $FiltroProdutos[] = $bundleProcess->bundle;
                                 // Se a string estiver vazia, adicione direto
                                 if (empty($ProdutosPrioritarios)) {
+                                    $ListaAgentesPrioritarios = $DadosAgentePrioritario->knowledge_id_hook;
                                     $ProdutosPrioritarios = $bundleProcess->bundle; // ou outro campo que queira
                                 } else {
                                     // Se já tiver conteúdo, adicione com vírgula
+                                    $ListaAgentesPrioritarios .= ', ' . $DadosAgentePrioritario->knowledge_id_hook;
                                     $ProdutosPrioritarios .= ', ' . $bundleProcess->bundle;
                                 }
                             }
@@ -144,7 +148,7 @@ class UploadProjectToAnswerHook extends Command
     
                             $body = [
                                 'inputs' =>  [
-                                    'base_id_primarios' => $DadosAgentePrioritario->knowledge_id_hook,
+                                    'base_id_primarios' => $ListaAgentesPrioritarios,
                                     'base_id_secundarios' => $AgentesPrioritarios,    
                                 ],
                                 'query' => json_encode([
