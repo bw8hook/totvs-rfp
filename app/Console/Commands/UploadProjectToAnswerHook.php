@@ -159,7 +159,7 @@ class UploadProjectToAnswerHook extends Command
                                 ], JSON_UNESCAPED_UNICODE),
                                 'response_mode' => 'blocking',
                                 "conversation_id" => "",
-                                "user" => "RFP-API-LOCAL",
+                                "user" => "RFP-API-ONLINE",
                                 "files" => [],
                             ];  
 
