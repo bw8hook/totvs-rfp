@@ -69,114 +69,71 @@ class UploadProjectToAnswerHook extends Command
 
                     if($agents[0]->search_engine == "Open IA"){
 
-                        $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
+                         $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
                             ->where('project_records.status', "processando")
                             ->orderBy('id', 'asc')
                             ->get();
 
-                        foreach ($Records as $Record) {
-            
-                            //$Agent = Agent::where('id', $Record->agent_id)->first();
-                            $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
-                            $BundlesProcess = $Processo->rfpBundles;
+                            foreach ($Records as $Record) {
 
-
-                            $ProdutosPrioritarios = '';
-                            $ListaAgentesPrioritarios = '';
-                            $FiltroProdutos = [];
-                            foreach ($BundlesProcess as $bundleProcess) {
-                                $DadosAgentePrioritario = Agent::where('id', $bundleProcess->agent_id)->first();
-
-                                $FiltroProdutos[] = $bundleProcess->bundle;
-                                // Se a string estiver vazia, adicione direto
-                                if (empty($ProdutosPrioritarios)) {
-                                    $ListaAgentesPrioritarios = $DadosAgentePrioritario->knowledge_id_hook;
-                                    $ProdutosPrioritarios = $bundleProcess->bundle; // ou outro campo que queira
-                                } else {
-                                    // Se já tiver conteúdo, adicione com vírgula
-                                    $ListaAgentesPrioritarios .= ', ' . $DadosAgentePrioritario->knowledge_id_hook;
-                                    $ProdutosPrioritarios .= ', ' . $bundleProcess->bundle;
-                                }
-                            }
-
-                            //$ProdutosPrioritarios = $Records->rfpBundles->pluck('bundle')->implode(', ');
-
-                            $ProdutosAdicionais = $bundles->pluck('bundle')->unique()->implode(', ');
-                            
-                            $agentIds = $bundles->pluck('agent_id')->unique();
-                            $agentsList = Agent::whereIn('id', $agentIds)->get();
-                            $AgentesPrioritarios = $agentsList->pluck('knowledge_id_hook')->filter()->implode(', ');
-                            
-                            $agentsString = $agents->slice(1) // Ignora o primeiro elemento
-                                ->pluck('knowledge_id_hook') // ou o campo que você quer
-                                ->implode(', ' ); // Junta com vírgula
-
-                            // OU de forma mais detalhada:
-                            $agentsString = '';
-                            foreach($agents->slice(1) as $key => $agent) {
-                                $agentsString .= $agent->knowledge_id_hook;
-                                if($key < $agents->count() - 2) { // -2 porque começamos do segundo elemento
-                                    $agentsString .= ', ';
-                                }
-                            }
-
-                            $prioritariosArray = array_map('trim', explode(',', $AgentesPrioritarios));
-                            $agentsString = '';
-
-                            foreach($agents->slice(1) as $key => $agent) {
-                                // Só adiciona se não estiver no array de prioritários
-                                if (!in_array($agent->knowledge_id_hook, $prioritariosArray)) {
-                                    $agentsString .= $agent->knowledge_id_hook;
-                                    
-                                    // Verifica se há próximo item válido para adicionar vírgula
-                                    $nextExists = false;
-                                    foreach($agents->slice($key + 2) as $nextAgent) {
-                                        if (!in_array($nextAgent->knowledge_id_hook, $prioritariosArray)) {
-                                            $nextExists = true;
-                                            break;
-                                        }
-                                    }
-                                    
-                                    if ($nextExists) {
-                                        $agentsString .= ', ';
-                                    }
-                                }
-                            }
-
-                            $requisito = $Record->requisito;
-                            $processo = $Processo->process;
+                                //$Agent = Agent::where('id', $Record->agent_id)->first();
+                                $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
+                                $BundlesProcess = $Processo->rfpBundles;
     
-                            $body = [
-                                'inputs' =>  [
-                                    'base_id_primarios' => $ListaAgentesPrioritarios,
-                                    'base_id_secundarios' => $AgentesPrioritarios,    
-                                ],
-                                'query' => json_encode([
-                                        'requisito' => $requisito,
-                                        'processo' => $processo,
-                                        'produto' => $ProdutosPrioritarios,
-                                        'produtos_adicionais' => $ProdutosAdicionais
-                                ], JSON_UNESCAPED_UNICODE),
-                                'response_mode' => 'blocking',
-                                "conversation_id" => "",
-                                "user" => "RFP-API-ONLINE",
-                                "files" => [],
-                            ];  
-
-                            //TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, TOTVS Agendamentos, TOTVS Logística TMS, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS WMS SaaS, TOTVS YMS, TOTVS Frete Embarcador
-                            //TOTVS Analytics, TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, Planejamento Orçamentário by Prophix, RD Station CRM, TOTVS Agendamentos, TOTVS Backoffice Portal de Vendas, TOTVS Cloud IaaS, TOTVS Comércio Exterior, TOTVS CRM Automação da Força de Vendas - SFA, TOTVS Fluig, TOTVS Frete Embarcador, TOTVS Gestão de Frotas - Linha Protheus, TOTVS Logística TMS, TOTVS Manufatura - Linha Protheus, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS Transmite, TOTVS Varejo Lojas - Linha Protheus, TOTVS WMS SaaS, TOTVS YMS, Universidade TOTVS, Analytics by GoodData
-
-                            yield function () use ($clientHookIA, $body, $Record) { 
-                                return $clientHookIA->postAsync('/v1/chat-messages', [
-                                    'json' => $body,
-                                    'headers' => ['Content-Type' => 'application/json'],
-                                ])->then(function ($response) use ($Record) {
-                                    Log::info("Enviado");
-                                    return ['response' => $response, 'record' => $Record];
-                                    
-                                });
-                            };               
-                        }
+                                $ProdutosArray = [];
+                                $AgentesArray = [];
+    
+                                foreach ($BundlesProcess as $bundleProcess) {
+                                    $DadosAgentePrioritario = Agent::where('id', $bundleProcess->agent_id)->first();
+    
+                                    $ProdutosArray[] = $bundleProcess->bundle;
+                                    $AgentesArray[] = $DadosAgentePrioritario->knowledge_id_hook;
+                                }
+    
+                                // Pega os AGENTES e remove os itens repetidos e converte pra string
+                                $AgentesUnique = array_values(array_unique($AgentesArray));
+                                $AgentesPrimarios = implode(',', $AgentesUnique);
+                                    $agentIds = $bundles->pluck('agent_id')->unique();
+                                    $agentsList = Agent::whereIn('id', $agentIds)->get();
+                                    $AgentesSecundarios = $agentsList->pluck('knowledge_id_hook')->filter()->diff($AgentesUnique)->implode(', ');
+    
+                                // Pega os PRODUTOS e remove os itens repetidos e converte pra string
+                                $ProdutosUnique = array_values(array_unique($ProdutosArray));
+                                $ProdutosPrimarios = implode(',', $ProdutosUnique);
+                                    $ProdutosAdicionais = collect($bundles->pluck('bundle')->unique())->diff($ProdutosUnique)->implode(', ');
+    
+                                $requisito = $Record->requisito;
+                                $processo = $Processo->process;
+    
+                   
+                                $body = [
+                                    'inputs' =>  [
+                                        'base_id_primarios' => $AgentesPrimarios,
+                                        'base_id_secundarios' => $AgentesSecundarios,    
+                                    ],
+                                    'query' => json_encode([
+                                            'requisito' => $requisito,
+                                            'processo' => $processo,
+                                            'produto' => $ProdutosPrimarios,
+                                            'produtos_adicionais' => $ProdutosAdicionais
+                                    ], JSON_UNESCAPED_UNICODE),
+                                    'response_mode' => 'blocking',
+                                    "conversation_id" => "",
+                                    "user" => "RFP-API-ONLINE",
+                                    "files" => [],
+                                ];  
+    
+                                yield function () use ($clientHookIA, $body, $Record) { 
+                                    return $clientHookIA->postAsync('/v1/chat-messages', [
+                                        'json' => $body,
+                                        'headers' => ['Content-Type' => 'application/json'],
+                                    ])->then(function ($response) use ($Record) {
+                                        Log::info("Enviado");
+                                        return ['response' => $response, 'record' => $Record];
+                                        
+                                    });
+                                };               
+                            }
                     }
                 }
             };
