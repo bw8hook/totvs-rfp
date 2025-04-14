@@ -45,13 +45,22 @@ class UploadProjectToAnswerHook extends Command
             ->get();
             
             $clientHookIA = new Client([
-                'base_uri' => 'https://totvs-ia.hook.app.br/v1/',
+                'base_uri' => 'http://57.129.138.26/v1/',
                 'timeout' => 60,
                 'headers' => [
-                    'Authorization' => 'Bearer app-y133Gvf5qZvY8yM3gyojkOzR',
+                    'Authorization' => 'Bearer app-yS9ZY7Rc1GR9Y19IKpX22XRO',
                     'Accept' => 'application/json',
                 ],
             ]);
+
+            // $clientHookIA = new Client([
+            //     'base_uri' => 'https://totvs-ia.hook.app.br/v1/',
+            //     'timeout' => 60,
+            //     'headers' => [
+            //         'Authorization' => 'Bearer app-y133Gvf5qZvY8yM3gyojkOzR',
+            //         'Accept' => 'application/json',
+            //     ],
+            // ]);
 
             $requestsHook = function () use ($ProjectFiles, $clientHookIA) {
                 foreach ($ProjectFiles as $File) {
