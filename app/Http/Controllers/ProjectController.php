@@ -759,7 +759,7 @@ class ProjectController extends Controller
         try {
             //$ProjectFiles = ProjectFiles::where('status', "em processamento")
 
-            $ProjectFiles = ProjectFiles::where('id', "18")
+            $ProjectFiles = ProjectFiles::where('id', "19")
             ->with('bundles')
             ->orderBy('id', 'asc')
             ->get();
@@ -787,12 +787,15 @@ class ProjectController extends Controller
                     // Depois busca os agents
                     $agents = Agent::whereIn('id', $agentIds)->get();
 
+                 
+
                     if($agents[0]->search_engine == "Open IA"){
 
                         $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
-                            ->where('project_records.status', "aguardando")
+                            ->where('project_records.status', "processando")
                             ->orderBy('id', 'asc')
                             ->get();
+
 
                         foreach ($Records as $Record) {
 
@@ -800,86 +803,45 @@ class ProjectController extends Controller
                             $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
                             $BundlesProcess = $Processo->rfpBundles;
 
-                            $ProdutosPrioritarios = '';
-                            $ListaAgentesPrioritarios = '';
-                            $FiltroProdutos = [];
-                            $FiltroAgentes = [];
+                            $ProdutosArray = [];
+                            $AgentesArray = [];
+
                             foreach ($BundlesProcess as $bundleProcess) {
                                 $DadosAgentePrioritario = Agent::where('id', $bundleProcess->agent_id)->first();
 
-                                $FiltroProdutos[] = $bundleProcess->bundle;
-                                $FiltroAgentes[] = $DadosAgentePrioritario->knowledge_id_hook;
-                                // Se a string estiver vazia, adicione direto
-                                if (empty($ProdutosPrioritarios)) {
-                                    $ListaAgentesPrioritarios = $DadosAgentePrioritario->knowledge_id_hook;
-                                    $ProdutosPrioritarios = $bundleProcess->bundle; // ou outro campo que queira
-                                } else {
-                                    // Se já tiver conteúdo, adicione com vírgula
-                                    $ListaAgentesPrioritarios .= ', ' . $DadosAgentePrioritario->knowledge_id_hook;
-                                    $ProdutosPrioritarios .= ', ' . $bundleProcess->bundle;
-                                }
+                                $ProdutosArray[] = $bundleProcess->bundle;
+                                $AgentesArray[] = $DadosAgentePrioritario->knowledge_id_hook;
                             }
 
-                            //$ProdutosPrioritarios = $Records->rfpBundles->pluck('bundle')->implode(', ');
-                            $ProdutosAdicionais = $bundles->pluck('bundle')->unique()->implode(', ');
+                            // Pega os AGENTES e remove os itens repetidos e converte pra string
+                            $AgentesUnique = array_values(array_unique($AgentesArray));
+                            $AgentesPrimarios = implode(',', $AgentesUnique);
 
+                            // Pega os PRODUTOS e remove os itens repetidos e converte pra string
+                            $ProdutosUnique = array_values(array_unique($ProdutosArray));
+                            $ProdutosPrimarios = implode(',', $ProdutosUnique);
+                            
+                            $ProdutosAdicionais = collect($bundles->pluck('bundle')->unique())->diff($ProdutosUnique)->implode(', ');
+
+                          
                             $agentIds = $bundles->pluck('agent_id')->unique();
                             $agentsList = Agent::whereIn('id', $agentIds)->get();
-                            $AgentesPrioritarios = $agentsList->pluck('knowledge_id_hook')->filter()->implode(', ');
-                            
-                            $agentsString = $agents->slice(1) // Ignora o primeiro elemento
-                                ->pluck('knowledge_id_hook') // ou o campo que você quer
-                                ->implode(', ' ); // Junta com vírgula
+                            $AgentesSecundarios = $agentsList->pluck('knowledge_id_hook')->filter()->diff($AgentesUnique)->implode(', ');
 
-                            // OU de forma mais detalhada:
-                            $agentsString = '';
-                            foreach($agents->slice(1) as $key => $agent) {
-                                $agentsString .= $agent->knowledge_id_hook;
-                                if($key < $agents->count() - 2) { // -2 porque começamos do segundo elemento
-                                    $agentsString .= ', ';
-                                }
-                            }
-
-                            $prioritariosArray = array_map('trim', explode(',', $AgentesPrioritarios));
-                            $agentsString = '';
-
-                            foreach($agents->slice(1) as $key => $agent) {
-                                // Só adiciona se não estiver no array de prioritários
-                                if (!in_array($agent->knowledge_id_hook, $prioritariosArray)) {
-                                    $agentsString .= $agent->knowledge_id_hook;
-                                    
-                                    // Verifica se há próximo item válido para adicionar vírgula
-                                    $nextExists = false;
-                                    foreach($agents->slice($key + 2) as $nextAgent) {
-                                        if (!in_array($nextAgent->knowledge_id_hook, $prioritariosArray)) {
-                                            $nextExists = true;
-                                            break;
-                                        }
-                                    }
-                    
-                                    if ($nextExists) {
-                                        $agentsString .= ', ';
-                                    }
-                                }
-                            }
 
                             $requisito = $Record->requisito;
                             $processo = $Processo->process;
 
-                            // Pego os itens Primarios, removo da lista de secundarios, e transformo em string para enviar novamente.
-                            $AgentesSecundariosExplode = explode(',', $AgentesPrioritarios);
-                            $AgentesSecundarios = array_filter( array_map('trim', str_replace($FiltroAgentes, '', $AgentesSecundariosExplode)));
-                            $AgentesSecundariosString = implode(', ', $AgentesSecundarios);
-                        
+               
                             $body = [
                                 'inputs' =>  [
-                                    'base_id_primarios' => $ListaAgentesPrioritarios,
-                                    'base_id_secundarios' => $AgentesSecundariosString,    
+                                    'base_id_primarios' => $AgentesPrimarios,
+                                    'base_id_secundarios' => $AgentesSecundarios,    
                                 ],
                                 'query' => json_encode([
                                         'requisito' => $requisito,
                                         'processo' => $processo,
-                                        'produto' => $ProdutosPrioritarios,
+                                        'produto' => $ProdutosPrimarios,
                                         'produtos_adicionais' => $ProdutosAdicionais
                                 ], JSON_UNESCAPED_UNICODE),
                                 'response_mode' => 'blocking',
