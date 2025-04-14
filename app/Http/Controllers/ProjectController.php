@@ -759,7 +759,7 @@ class ProjectController extends Controller
         try {
             //$ProjectFiles = ProjectFiles::where('status', "em processamento")
 
-            $ProjectFiles = ProjectFiles::where('id', "19")
+            $ProjectFiles = ProjectFiles::where('status', "em processamento")
             ->with('bundles')
             ->orderBy('id', 'asc')
             ->get();
