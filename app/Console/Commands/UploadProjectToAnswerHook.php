@@ -128,7 +128,7 @@ class UploadProjectToAnswerHook extends Command
                                     ], JSON_UNESCAPED_UNICODE),
                                     'response_mode' => 'blocking',
                                     "conversation_id" => "",
-                                    "user" => "RFP-API-ONLINE",
+                                    "user" => "RFP-API-ONLINE-1",
                                     "files" => [],
                                 ];  
     
@@ -149,7 +149,7 @@ class UploadProjectToAnswerHook extends Command
            
     
             $pool = new Pool($clientHookIA, $requestsHook(), [
-                'concurrency' => 10,
+                'concurrency' => 1,
                 'fulfilled' => function ($result, $index) {
                     Log::info("Resposta Recebida");
 
