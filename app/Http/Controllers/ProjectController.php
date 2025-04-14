@@ -765,10 +765,10 @@ class ProjectController extends Controller
             ->get();
             
             $clientHookIA = new Client([
-                'base_uri' => 'https://totvs-ia.hook.app.br/v1/',
+                'base_uri' => 'http://57.129.138.26/v1/',
                 'timeout' => 60,
                 'headers' => [
-                    'Authorization' => 'Bearer app-y133Gvf5qZvY8yM3gyojkOzR',
+                    'Authorization' => 'Bearer app-yS9ZY7Rc1GR9Y19IKpX22XRO',
                     'Accept' => 'application/json',
                 ],
             ]);
@@ -786,8 +786,6 @@ class ProjectController extends Controller
 
                     // Depois busca os agents
                     $agents = Agent::whereIn('id', $agentIds)->get();
-
-                 
 
                     if($agents[0]->search_engine == "Open IA"){
 
@@ -816,18 +814,14 @@ class ProjectController extends Controller
                             // Pega os AGENTES e remove os itens repetidos e converte pra string
                             $AgentesUnique = array_values(array_unique($AgentesArray));
                             $AgentesPrimarios = implode(',', $AgentesUnique);
+                                $agentIds = $bundles->pluck('agent_id')->unique();
+                                $agentsList = Agent::whereIn('id', $agentIds)->get();
+                                $AgentesSecundarios = $agentsList->pluck('knowledge_id_hook')->filter()->diff($AgentesUnique)->implode(', ');
 
                             // Pega os PRODUTOS e remove os itens repetidos e converte pra string
                             $ProdutosUnique = array_values(array_unique($ProdutosArray));
                             $ProdutosPrimarios = implode(',', $ProdutosUnique);
-                            
-                            $ProdutosAdicionais = collect($bundles->pluck('bundle')->unique())->diff($ProdutosUnique)->implode(', ');
-
-                          
-                            $agentIds = $bundles->pluck('agent_id')->unique();
-                            $agentsList = Agent::whereIn('id', $agentIds)->get();
-                            $AgentesSecundarios = $agentsList->pluck('knowledge_id_hook')->filter()->diff($AgentesUnique)->implode(', ');
-
+                                $ProdutosAdicionais = collect($bundles->pluck('bundle')->unique())->diff($ProdutosUnique)->implode(', ');
 
                             $requisito = $Record->requisito;
                             $processo = $Processo->process;
@@ -846,15 +840,10 @@ class ProjectController extends Controller
                                 ], JSON_UNESCAPED_UNICODE),
                                 'response_mode' => 'blocking',
                                 "conversation_id" => "",
-                                "user" => "RFP-API-LOCAL",
+                                "user" => "RFP-API-TESTE",
                                 "files" => [],
                             ];  
 
-
-                            dd($body);
-
-                            //TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, TOTVS Agendamentos, TOTVS Logística TMS, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS WMS SaaS, TOTVS YMS, TOTVS Frete Embarcador
-                            //TOTVS Analytics, TOTVS Backoffice - Linha Protheus, Minha Coleta e Entrega, Planejamento Orçamentário by Prophix, RD Station CRM, TOTVS Agendamentos, TOTVS Backoffice Portal de Vendas, TOTVS Cloud IaaS, TOTVS Comércio Exterior, TOTVS CRM Automação da Força de Vendas - SFA, TOTVS Fluig, TOTVS Frete Embarcador, TOTVS Gestão de Frotas - Linha Protheus, TOTVS Logística TMS, TOTVS Manufatura - Linha Protheus, TOTVS OMS, TOTVS Roteirização e Entregas, TOTVS Transmite, TOTVS Varejo Lojas - Linha Protheus, TOTVS WMS SaaS, TOTVS YMS, Universidade TOTVS, Analytics by GoodData
 
                             yield function () use ($clientHookIA, $body, $Record) { 
                                 return $clientHookIA->postAsync('/v1/chat-messages', [
