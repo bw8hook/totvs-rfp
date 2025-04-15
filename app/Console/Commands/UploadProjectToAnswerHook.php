@@ -133,6 +133,10 @@ class UploadProjectToAnswerHook extends Command
                                 ];  
     
                                 yield function () use ($clientHookIA, $body, $Record) { 
+
+                                    $Record->update(['status' => 'enviado']);
+                                    $Record->save();
+
                                     return $clientHookIA->postAsync('/v1/chat-messages', [
                                         'json' => $body,
                                         'headers' => ['Content-Type' => 'application/json'],
@@ -149,7 +153,7 @@ class UploadProjectToAnswerHook extends Command
            
     
             $pool = new Pool($clientHookIA, $requestsHook(), [
-                'concurrency' => 1,
+                'concurrency' => 2,
                 'fulfilled' => function ($result, $index) {
                     Log::info("Resposta Recebida");
 
