@@ -102,10 +102,21 @@ class DownloadAnsweredProjectImport implements  ToCollection, WithHeadingRow
 
                 // Buscar informações adicionais
                 $BuscaResposta = $this->buscarResposta($processo, $subprocesso, $descricaoRequisito);
-                $resposta = $BuscaResposta->aderencia_na_mesma_linha;
-                $modulos = $BuscaResposta->modulo;
-                $produtoPrincipal = $BuscaResposta->linha_produto;
-                $observacoes = $BuscaResposta->observacao;
+                // Verifica se $BuscaResposta não é null antes de acessar suas propriedades
+                if ($BuscaResposta !== null) {
+                    // Validação para cada propriedade individualmente usando o operador de coalescência nula
+                    $resposta = $BuscaResposta->aderencia_na_mesma_linha ?? '';
+                    $modulos = $BuscaResposta->modulo ?? '';
+                    $produtoPrincipal = $BuscaResposta->linha_produto ?? '';
+                    $observacoes = $BuscaResposta->observacao ?? '';
+                } else {
+                    // Se $BuscaResposta for null, inicializa todas as variáveis como string vazia
+                    $resposta = '';
+                    $modulos = '';
+                    $produtoPrincipal = '';
+                    $observacoes = '';
+                }
+
                 $produtosAdicionais = '';
 
                 // Adicionar linha processada
