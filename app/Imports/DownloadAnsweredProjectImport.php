@@ -112,10 +112,10 @@ class DownloadAnsweredProjectImport implements  ToCollection, WithHeadingRow
                 $worksheet->setCellValueByColumnAndRow(1, $index + 2, $processo);
                 $worksheet->setCellValueByColumnAndRow(2, $index + 2, $subprocesso);
                 $worksheet->setCellValueByColumnAndRow(3, $index + 2, $descricaoRequisito);
-                $worksheet->setCellValueByColumnAndRow(4, $index + 2, $resposta);
-                $worksheet->setCellValueByColumnAndRow(5, $index + 2, $modulos);
-                $worksheet->setCellValueByColumnAndRow(6, $index + 2, $produtoPrincipal);
-                $worksheet->setCellValueByColumnAndRow(7, $index + 2, $observacoes);
+                $worksheet->setCellValueByColumnAndRow(4, $index + 2, $resposta ?? '');
+                $worksheet->setCellValueByColumnAndRow(5, $index + 2, $modulos ?? '');
+                $worksheet->setCellValueByColumnAndRow(6, $index + 2, $produtoPrincipal ?? '');
+                $worksheet->setCellValueByColumnAndRow(7, $index + 2, $observacoes ?? '');
                 $worksheet->setCellValueByColumnAndRow(8, $index + 2, $produtosAdicionais);
             }
         }
