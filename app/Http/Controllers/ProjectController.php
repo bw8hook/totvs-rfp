@@ -636,10 +636,10 @@ class ProjectController extends Controller
                             $sheet->setCellValueByColumnAndRow(1, $rowNumber, $record->processo);
                             $sheet->setCellValueByColumnAndRow(2, $rowNumber, $record->subprocesso);
                             $sheet->setCellValueByColumnAndRow(3, $rowNumber, $record->requisito);
-                            $sheet->setCellValueByColumnAndRow(4, $rowNumber, $record->answers->aderencia_na_mesma_linha);
-                            $sheet->setCellValueByColumnAndRow(5, $rowNumber, $record->answers->modulo);
-                            $sheet->setCellValueByColumnAndRow(6, $rowNumber, $record->answers->linha_produto);
-                            $sheet->setCellValueByColumnAndRow(7, $rowNumber, $record->answers->observacao);
+                            $sheet->setCellValueByColumnAndRow(4, $rowNumber, $record->answers?->aderencia_na_mesma_linha ?? '');
+                            $sheet->setCellValueByColumnAndRow(5, $rowNumber, $record->answers?->modulo ?? '');
+                            $sheet->setCellValueByColumnAndRow(6, $rowNumber, $record->answers?->linha_produto ?? '');
+                            $sheet->setCellValueByColumnAndRow(7, $rowNumber, $record->answers?->observacao ?? '');
                             $sheet->setCellValueByColumnAndRow(8, $rowNumber, '');
 
                             // Adicionar outros campos...
