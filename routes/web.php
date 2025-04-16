@@ -17,6 +17,7 @@ use App\Http\Controllers\KnowledgeController;
 use App\Http\Controllers\KnowledgeRecordsController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectRecordsController;
+use App\Http\Controllers\SAMLController;
 use App\Http\Controllers\SegmentsController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\ImportController;
@@ -50,7 +51,7 @@ Route::middleware('auth')->group(function () {
         //AJAX
         Route::get('/knowledge/filter', [KnowledgeController::class,'filter'])->name('knowledge.filter');
         Route::post('/knowledge/update-infos/{id}', [KnowledgeController::class,'updateInfos'])->name('knowledge.updateInfos');
-    
+
     //CRON PARA AUTOMATIZAR  SUBIDA PARA IA
     Route::get('/knowledge/cron', [KnowledgeController::class,'cron2'])->name('knowledge.cron');
     Route::get('/knowledge/inserir-produtos', [KnowledgeController::class,'InserirProdutos'])->name('knowledge.produtos');
@@ -69,7 +70,7 @@ Route::middleware('auth')->group(function () {
 
 
     // Rota genérica com parâmetro opcional por último
-    Route::get('/knowledge/records/', [KnowledgeRecordsController::class, 'ListAllReferences'])->name('knowledge.records.all'); 
+    Route::get('/knowledge/records/', [KnowledgeRecordsController::class, 'ListAllReferences'])->name('knowledge.records.all');
     Route::get('/knowledge/records/{id}/{record_id?}', [KnowledgeRecordsController::class, 'index'])->name('knowledge.records')->where(['id' => '[0-9]+', 'record_id' => '[0-9]+']); // Restringe id e record_id a números
 });
 
@@ -89,9 +90,9 @@ Route::middleware('auth')->group(function () {
         //AJAX
         Route::get('/project/filter', [ProjectController::class,'filter'])->name('project.filter');
         Route::get('/project/filter-detail', [ProjectController::class,'filterDetail'])->name('project.filterDetail');
-        
+
         Route::post('/project/update-infos/{id}', [ProjectController::class,'updateInfos'])->name('project.updateInfos');
-    
+
         //CRON PARA AUTOMATIZAR  SUBIDA PARA IA
     Route::get('/project/cron', [ProjectController::class,'cron'])->name('project.cron');
     Route::get('/project/cron2', [ProjectController::class,'cron2'])->name('project.cron2');
@@ -100,7 +101,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/project/{id}/export', [ProjectController::class,'projectExport'])->name('project.export');
 
 
-    
+
     // REGISTROS DA BASE DE CONHECIMENTO
     Route::get('/project/answers/{id}', [ProjectRecordsController::class,'answer'])->name('project.answer');
     Route::get('/project/answers-errors/{id}', [ProjectRecordsController::class,'answerErrors'])->name('project.answer.errors');
@@ -258,6 +259,11 @@ Route::middleware('auth')->group(function () {
     // Route::get('/users', [ProfileController::class, 'listUsers'])->name('users.list');
     // Route::get('/user/{id}', [ProfileController::class, 'editUser'])->name('users.edit');
 });
+
+Route::get('/saml/login', [SAMLController::class, 'login']);
+Route::post('/saml', [SAMLController::class, 'acs']);
+Route::get('/saml/metadata', [SAMLController::class, 'metadata']);
+
 
 
 require __DIR__.'/auth.php';
