@@ -6,12 +6,12 @@ return [
     'debug' => true,
 
     'sp' => [
-        'entityId' => env('APP_URL') . '/saml/metadata',
+        'entityId' => env('SAML_URL') . '/saml/metadata',
         'assertionConsumerService' => [
-            'url' => env('APP_URL') . '/saml',
+            'url' => env('SAML_URL') . '/saml',
         ],
         'singleLogoutService' => [
-            'url' => env('APP_URL') . '/saml/logout',
+            'url' => env('SAML_URL') . '/saml/logout',
         ],
         'x509cert' => '',
         'privateKey' => '',
@@ -20,10 +20,10 @@ return [
     'idp' => [
         'entityId' => 'https://tdi.customerfi.com/cloudpass/metadata',
         'singleSignOnService' => [
-            'url' => 'https://tdi.customerfi.com/cloudpass/IDPInitSSO/receiveSSORequest',
+            'url' => 'https://tdi.customerfi.com/cloudpass/launchpad/launchApp/99e9d94a0f914ae0974f817277fac0f5/9lndgj53tx3zysjx1410282663331',
         ],
         'singleLogoutService' => [
-            'url' => '', // opcional
+            'url' => 'https://tdi.customerfi.com/cloudpass/login/logout?forward=https://tdi.customerfi.com/cloudpass/launchpad/launchApp/99e9d94a0f914ae0974f817277fac0f5/9lndgj53tx3zysjx1410282663331',
         ],
         'x509cert' => file_get_contents(storage_path('saml/tdi.customerfi.com.crt')),
     ],
