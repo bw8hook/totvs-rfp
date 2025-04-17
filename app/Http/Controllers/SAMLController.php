@@ -32,7 +32,7 @@ class SAMLController extends Controller
         }
 
         if (!$this->auth->isAuthenticated()) {
-            return response()->json(['error' => 'Not authenticated'], 401);
+            return response()->json(['error' => 'Não autenticado'], 401);
         }
 
         $userData = $this->auth->getAttributes();

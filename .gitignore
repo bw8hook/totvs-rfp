@@ -51,3 +51,5 @@ Homestead.json
 auth.json
 cron_test.log
 scheduler.log
+composer.lock
+
