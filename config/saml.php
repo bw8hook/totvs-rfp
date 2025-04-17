@@ -6,12 +6,12 @@ return [
     'debug' => true,
 
     'sp' => [
-        'entityId' => env('SAML_URL') . '/saml/metadata',
+        'entityId' => 'https://totvs.bw8.tech' . '/saml/metadata',
         'assertionConsumerService' => [
-            'url' => env('SAML_URL') . '/saml',
+            'url' => 'https://totvs.bw8.tech' . '/saml',
         ],
         'singleLogoutService' => [
-            'url' => env('SAML_URL') . '/saml/logout',
+            'url' => 'https://totvs.bw8.tech' . '/saml/logout',
         ],
         'x509cert' => '',
         'privateKey' => '',
