@@ -23,6 +23,13 @@
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
+         <!-- Status Error Message -->
+        @error('status')
+            <div class="text-red-500 mt-2">
+                {{ $message }}
+            </div>
+        @enderror
+
         <!-- Remember Me -->
         <div class="block mt-4">
             <label for="remember_me" class="inline-flex items-center">

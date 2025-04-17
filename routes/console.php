@@ -25,6 +25,9 @@ Schedule::command('app:upload-project-to-answer')->everyMinute()->withoutOverlap
 // Pega os requisitos recebidos e envia para o OPEN IA para responder
 Schedule::command('app:upload-project-to-answer-hook')->everyTenMinutes()->withoutOverlapping(30);
 
+// Pega os requisitos que já foram enviados e tenta envia novamente para o OPEN IA para responder
+Schedule::command('app:upload-retry-records')->everyFifteenMinutes()->withoutOverlapping(expiresAt: 30);
+
 // Valida se todos foram respondidos, e atualiza o status do projeto.
 Schedule::command('app:update-processed-project')->everyThreeMinutes();
 

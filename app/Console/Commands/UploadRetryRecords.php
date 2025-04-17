@@ -1,37 +1,35 @@
 <?php
+
 namespace App\Console\Commands;
-use App\Models\RfpBundle;
+
 use Illuminate\Console\Command;
 
+use App\Models\RfpBundle;
 use App\Models\Agent;
 use App\Models\ProjectAnswer;
 use App\Models\RfpProcess;
 use App\Models\ProjectFiles;
 use App\Models\ProjectRecord;
-
 use Illuminate\Support\Facades\Log;
-
 use GuzzleHttp\Client;
 use GuzzleHttp\Pool;
-use GuzzleHttp\Psr7\Request as GuzzleRequest;
-use GuzzleHttp\Exception\RequestException;
 
 
-class UploadProjectToAnswerHook extends Command
+class UploadRetryRecords extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:upload-project-to-answer-hook';
+    protected $signature = 'app:upload-retry-records';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Envia Perguntas para RESPOSTA quando a ENGINE for OPEN IA';
+    protected $description = 'Command description';
 
     /**
      * Execute the console command.
@@ -39,7 +37,7 @@ class UploadProjectToAnswerHook extends Command
     public function handle()
     {
         try {
-            $ProjectFiles = ProjectFiles::where('status', "em processamento")
+            $ProjectFiles = ProjectFiles::where('status', 'em processamento')
             ->with('bundles')
             ->orderBy('id', 'asc')
             ->get();
@@ -52,15 +50,6 @@ class UploadProjectToAnswerHook extends Command
                     'Accept' => 'application/json',
                 ],
             ]);
-
-            // $clientHookIA = new Client([
-            //     'base_uri' => 'https://totvs-ia.hook.app.br/v1/',
-            //     'timeout' => 60,
-            //     'headers' => [
-            //         'Authorization' => 'Bearer app-y133Gvf5qZvY8yM3gyojkOzR',
-            //         'Accept' => 'application/json',
-            //     ],
-            // ]);
 
             $requestsHook = function () use ($ProjectFiles, $clientHookIA) {
                 foreach ($ProjectFiles as $File) {
@@ -76,36 +65,40 @@ class UploadProjectToAnswerHook extends Command
                     // Depois busca os agents
                     $agents = Agent::whereIn('id', $agentIds)->get();
 
-                    if($agents[0]->search_engine == "Open IA"){
+                    $RecordsProcessando = ProjectRecord::where('project_records.project_file_id', $File->id)
+                    ->where('project_records.status', "processando")
+                    ->orderBy('id', 'asc')
+                    ->get();
 
-                         $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
-                            ->where('project_records.status', "processando")
+                    if($agents[0]->search_engine == "Open IA" && count($RecordsProcessando) <= 0){
+
+                        $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
+                            ->where('project_records.status', "enviado")
                             ->orderBy('id', 'asc')
                             ->get();
 
-                            foreach ($Records as $Record) {
+                        foreach ($Records as $Record) {
 
-                                //$Agent = Agent::where('id', $Record->agent_id)->first();
+                            if($Record->ia_attempts <= 1){
                                 $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
                                 $BundlesProcess = $Processo->rfpBundles;
     
                                 $ProdutosArray = [];
                                 $AgentesArray = [];
-    
+        
                                 foreach ($BundlesProcess as $bundleProcess) {
                                     $DadosAgentePrioritario = Agent::where('id', $bundleProcess->agent_id)->first();
-    
                                     $ProdutosArray[] = $bundleProcess->bundle;
                                     $AgentesArray[] = $DadosAgentePrioritario->knowledge_id_hook;
                                 }
-    
+        
                                 // Pega os AGENTES e remove os itens repetidos e converte pra string
                                 $AgentesUnique = array_values(array_unique($AgentesArray));
                                 $AgentesPrimarios = implode(',', $AgentesUnique);
                                     $agentIds = $bundles->pluck('agent_id')->unique();
                                     $agentsList = Agent::whereIn('id', $agentIds)->get();
                                     $AgentesSecundarios = $agentsList->pluck('knowledge_id_hook')->filter()->diff($AgentesUnique)->implode(', ');
-    
+        
                                 // Pega os PRODUTOS e remove os itens repetidos e converte pra string
                                 $ProdutosUnique = array_values(array_unique($ProdutosArray));
                                 $ProdutosPrimarios = implode(',', $ProdutosUnique);
@@ -113,7 +106,7 @@ class UploadProjectToAnswerHook extends Command
     
                                 $requisito = $Record->requisito;
                                 $processo = $Processo->process;
-    
+                    
                                 $body = [
                                     'inputs' =>  [
                                         'base_id_primarios' => $AgentesPrimarios,
@@ -127,26 +120,36 @@ class UploadProjectToAnswerHook extends Command
                                     ], JSON_UNESCAPED_UNICODE),
                                     'response_mode' => 'blocking',
                                     "conversation_id" => "",
-                                    "user" => "RFP-API-ONLINE",
+                                    "user" => "RFP-API-ONLINE-RETRY",
                                     "files" => [],
                                 ];  
-    
+
                                 yield function () use ($clientHookIA, $body, $Record) { 
 
-                                    $Record->update(['status' => 'enviado']);
-                                    $Record->update(['ia_attempts' => 1]);
-                                    $Record->save();
+                                    $Attempts = intval($Record->ia_attempts) + 1;
+
+                                    if ($Record) {
+                                        $Record->status = 'enviado';
+                                        $Record->ia_attempts = $Attempts;
+                                        
+                                        if ($Record->save()) {
+                                           
+                                        }
+                                    }
 
                                     return $clientHookIA->postAsync('/v1/chat-messages', [
                                         'json' => $body,
                                         'headers' => ['Content-Type' => 'application/json'],
                                     ])->then(function ($response) use ($Record) {
                                         Log::info("Enviado");
-                                        return ['response' => $response, 'record' => $Record];
-                                        
+                                        return ['response' => $response, 'record' => $Record];                            
                                     });
-                                };               
-                            }
+                                }; 
+                            }else{
+                                $Record->update(['status' => 'erro']);
+                                $Record->save();
+                            } 
+                        }
                     }
                 }
             };
