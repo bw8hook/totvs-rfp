@@ -182,6 +182,7 @@
                             ProcessOptions += `<option value="${processo.id}" ${processo.process === record.processo ? 'selected' : ''}>${processo.process}</option>`;
                         });
 
+
                         rows += `
                              <tr class="listaTabela  data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
                                 <td style="width:3%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
@@ -201,7 +202,8 @@
                                 </td>
 
                                 <td style="width:18%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px; font-size:14px;">${record.observacao ? record.observacao : '-'}</td>
-
+                                
+                              
                                 <td style="width:5%;  display: flex; align-items: center;">
                                     <div class="btnInfoRecord" style="margin: 0px; float:left; cursor:pointer; width:50%;">
                                         <button type="submit" class="records_info">

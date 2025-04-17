@@ -30,16 +30,21 @@ class UpdateProcessedProject extends Command
     {
         try {
             $ProjectFiles = ProjectFiles::where('status', "em processamento")->get();
-                foreach ($ProjectFiles as $File) {
-                    $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
-                        ->where('project_records.status', "processando")
-                        ->count();
-            
-                        if($Records == 0){
-                            $File->status = 'processado';
-                            $File->save();
-                        }
+            foreach ($ProjectFiles as $File) {
+                $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
+                    ->whereIn('status', ['processando', 'enviado'])
+                    ->count();
+        
+                if($Records == 0){
+                    $File->status = 'processado';
+                    $File->save();
+
+                    // Pega o Próximo arquivo que esta na "fila" e muda para processando
+                    $NextProject = ProjectFiles::where('status', "na fila")->first();
+                    $NextProject->status = 'em processamento';
+                    $NextProject->save();
                 }
+            }
             Log::info("Executado com sucesso");
         } catch (\Exception $e) {
             Log::error("Erro no processamento: " . $e->getMessage());

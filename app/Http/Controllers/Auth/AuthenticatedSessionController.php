@@ -26,7 +26,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request)
     {
 
          // Validação dos dados
@@ -35,14 +35,37 @@ class AuthenticatedSessionController extends Controller
             'password' => 'required|string',
         ]);
 
-        $request->authenticate();
-
         // Verifica as credenciais do usuário
         $user = User::where('email', $request->email)->first();
 
+        // Verifica credenciais
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Credenciais inválidas'], 401);
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors([
+                    'email' => 'As credenciais fornecidas não correspondem aos nossos registros.',
+                ]);
         }
+
+        // Verifica status do usuário
+        if ($user->status == "inativo") {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors([
+                    'status' => 'Sua conta está inativa. Entre em contato com o administrador.',
+                ]);
+        }
+
+        // if (!$user || !Hash::check($request->password, $user->password)) {
+        //     return response()->json(['message' => 'Credenciais inválidas'], 401);
+        // }
+
+        // if($user->status == "inativo"){
+        //     //return redirect()->back()->with('erro','Usuário sem acesso.');
+        //     return redirect()>back()->json(['message' => 'Usuário sem acesso'], 401);
+        // }
+        
+        $request->authenticate();
 
         // Gerar o token com Sanctum
         $token = $user->createToken('API token')->plainTextToken;
