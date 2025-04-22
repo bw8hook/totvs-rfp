@@ -184,7 +184,7 @@
 
 
                         rows += `
-                             <tr class="listaTabela  data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
+                             <tr class="listaTabela" data-id="${record.id_record}" style="min-height:60px; max-height: 100%;">
                                 <td style="width:3%; display: flex; align-items: center;">#${record.spreadsheet_line}</td>
                                 <td style="width:11%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.processo ? record.processo : '-'}</td>
                                 <td style="width:11%; text-align:left; display: flex; align-items: center; word-wrap: break-word; white-space: normal;">${record.subprocesso ? record.subprocesso : '-'}</td>
@@ -268,6 +268,7 @@
             const IdRecord = $(this).parent().parent().data('id');
             $('.ListaReferencia .listAll').html('');
             $('#ModalReferencia .loading').fadeIn();
+
             if (IdRecord) {
                 let url = `{{ route('knowledge.records.references', ':id') }}`.replace(':id', IdRecord);
                 $.ajax({
