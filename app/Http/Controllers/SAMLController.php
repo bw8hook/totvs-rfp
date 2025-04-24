@@ -26,6 +26,8 @@ class SAMLController extends Controller
 
         $errors = $this->auth->getErrors();
 
+
+
         if (!empty($errors)) {
             return response()->json(['errors' => $errors], 500);
         }
@@ -37,7 +39,7 @@ class SAMLController extends Controller
         $userData = $this->auth->getAttributes();
         $nameId = $this->auth->getNameId();
 
-
+        dd($nameId, $userData);
 
         return response()->json([
             'nameId' => $nameId,
