@@ -13,8 +13,8 @@ return [
         'singleLogoutService' => [
             'url' => 'https://totvs.bw8.tech' . '/saml/logout',
         ],
-        'x509cert' => '',
-        'privateKey' => '',
+        'x509cert' => file_get_contents(storage_path('saml/sp.crt')),
+        'privateKey' => file_get_contents(storage_path('saml/sp.key')),
     ],
 
     'idp' => [

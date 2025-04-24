@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use OneLogin\Saml2\Auth;
-use OneLogin\Saml2\Error;
-use OneLogin\Saml2\Utils;
+
 
 class SAMLController extends Controller
 {
@@ -38,8 +37,7 @@ class SAMLController extends Controller
         $userData = $this->auth->getAttributes();
         $nameId = $this->auth->getNameId();
 
-        // Aqui você pode buscar/criar usuário local
-        // e realizar login com Auth::login()
+
 
         return response()->json([
             'nameId' => $nameId,
