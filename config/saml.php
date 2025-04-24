@@ -18,9 +18,9 @@ return [
     ],
 
     'idp' => [
-        'entityId' => 'https://tdi.customerfi.com/cloudpass/metadata',
+        'entityId' => 'TotvsLabs',
         'singleSignOnService' => [
-            'url' => 'https://tdi.customerfi.com/cloudpass/launchpad/launchApp/99e9d94a0f914ae0974f817277fac0f5/9lndgj53tx3zysjx1410282663331',
+            'url' => 'https://tdi.customerfi.com/cloudpass/SPInitRedirect/receiveSSORequest/9lndgj53tx3zysjx1410282663331/99e9d94a0f914ae0974f817277fac0f5',
         ],
         'singleLogoutService' => [
             'url' => 'https://tdi.customerfi.com/cloudpass/login/logout?forward=https://tdi.customerfi.com/cloudpass/launchpad/launchApp/99e9d94a0f914ae0974f817277fac0f5/9lndgj53tx3zysjx1410282663331',
