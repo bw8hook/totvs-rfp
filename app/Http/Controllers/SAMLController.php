@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use OneLogin\Saml2\Auth;
+use OneLogin\Saml2\Utils;
 
 
 class SAMLController extends Controller
@@ -12,6 +13,7 @@ class SAMLController extends Controller
 
     public function __construct()
     {
+        Utils::setProxyVars(true);
         $this->auth = new Auth(config('saml'));
     }
 
