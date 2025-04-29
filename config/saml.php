@@ -6,7 +6,7 @@ return [
     'debug' => true,
 
     'sp' => [
-        'entityId' => 'https://totvs.bw8.tech' . '/saml/metadata',
+        'entityId' => 'https://totvs.bw8.tech' . '/saml',
         'assertionConsumerService' => [
             'url' => 'https://totvs.bw8.tech' . '/saml',
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
