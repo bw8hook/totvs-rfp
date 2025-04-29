@@ -30,7 +30,7 @@ return [
             'url' => 'https://tdi.customerfi.com/cloudpass/login/logout?forward=https://tdi.customerfi.com/cloudpass/launchpad/launchApp/99e9d94a0f914ae0974f817277fac0f5/9lndgj53tx3zysjx1410282663331',
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
         ],
-        'x509cert' => file_get_contents(storage_path('saml/tdi.customerfi.com.crt')),
+        'x509cert' => file_get_contents(storage_path('saml/tdi.crt')),
     ],
     'security' => [
         'nameIdEncrypted' => false,
