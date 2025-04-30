@@ -74,7 +74,7 @@ $( document ).ready(function() {
     
 
     function handleResponsiveMenu() {
-        if ($(window).width() < 1280) {
+        if ($(window).width() < 1281) {
             $(".side_menu_big").addClass("menu_hidden").removeClass("menu_visible");
             $(".side_menu_small").addClass("menu_visible").removeClass("menu_hidden");
         } else {

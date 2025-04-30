@@ -48,7 +48,11 @@ class UserProjectController extends Controller
             $query->where('departament_id', 'like', '%' . $request->departament . '%');
         }
 
-        $query->where('status', 'like', '%' . $request->user_active . '%');
+        if ($request->has('status') && $request->status != "null") {
+            //dd($request);
+            $query->where('status', $request->status);
+            //$query->where('status', 'like', '%' . $request->status . '%');
+        }
         
         if ($request->has('role') && $request->role != "null") {
 
@@ -300,6 +304,7 @@ class UserProjectController extends Controller
             'email' => $request->email,
             'password' => Hash::make($HashPassword),
             'idtotvs' => $request->idtotvs,
+            'position' => $request->position,
             'departament_id' => $request->departament[0],
             'user_role_id' => 1,
         ]);
