@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use OneLogin\Saml2\Auth;
 use OneLogin\Saml2\Utils;
@@ -53,32 +54,39 @@ class SAMLController extends Controller
             }
 
             $userData = $this->auth->getAttributes();
-            $nameId = $this->auth->getNameId();
-            $sessionIndex = $this->auth->getSessionIndex();
+
+            $email = $userData['email'][0];
+
+            $user = User::where('email', $email)->first();
+
+            if (!$user)
+            {
+                return back()
+                    ->withInput($request->only('email'))
+                    ->withErrors([
+                        'email' => 'As credenciais fornecidas não correspondem aos nossos registros.',
+                    ]);
+            }
+
+            if ($user->status == "inativo")
+            {
+                return back()
+                    ->withInput($request->only('email'))
+                    ->withErrors([
+                        'status' => 'Sua conta está inativa. Entre em contato com o administrador.',
+                    ]);
+            }
+
+            $token = $user->createToken('API token')->plainTextToken;
+            session(['sanctum_token' => $token]);
 
 
-            session([
-                'saml_name_id' => $nameId,
-                'saml_session_index' => $sessionIndex,
-                'saml_user_data' => $userData,
-                'saml_authentication_time' => now()->toIso8601String()
-            ]);
+            Auth::login($user);
 
+            $request->session()->regenerate();
 
-            dd([
-                'nameId' => $nameId,
-                'sessionIndex' => $sessionIndex,
-                'userData' => $userData,
-                'lastError' => $this->auth->getLastErrorReason(),
-                'lastRequestID' => $this->auth->getLastRequestID(),
-                'lastResponseXML' => $this->auth->getLastResponseXML()
-            ]);
+            return redirect()->intended(route('knowledge.list'));
 
-            return response()->json([
-                'nameId' => $nameId,
-                'attributes' => $userData,
-                'sessionIndex' => $sessionIndex
-            ]);
 
         } catch (\Exception $e) {
             return response()->json([
