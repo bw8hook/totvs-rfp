@@ -68,11 +68,7 @@ class SAMLController extends Controller
 
             if ($user->status == "inativo")
             {
-                return back()
-                    ->withInput($request->only('email'))
-                    ->withErrors([
-                        'status' => 'Sua conta está inativa. Entre em contato com o administrador.',
-                    ]);
+                return $this->nopermission();
             }
 
             if($user->identity_id == null){
@@ -142,5 +138,9 @@ class SAMLController extends Controller
 
     public function nouser(){
         return view('identity.nouser');
+    }
+
+    public function nopermission(){
+        return view('identity.nopermission');
     }
 }

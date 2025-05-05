@@ -265,7 +265,7 @@ Route::get('/saml/login', [SAMLController::class, 'login']);
 Route::post('/saml', [SAMLController::class, 'acs']);
 Route::get('/saml/metadata', [SAMLController::class, 'metadata']);
 Route::get('/nouser', [SAMLController::class, 'nouser'])->name('nouser');
-
+Route::get('/nopermission', [SAMLController::class, 'nopermission'])->name('nopermission');
 
 
 require __DIR__.'/auth.php';
