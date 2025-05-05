@@ -98,8 +98,7 @@
                         </div>
                     </div>
 
-
-                    @if(!empty($ListFiles))
+                    @if(!empty($CountProject))
                         <table id="TableExcel" class="tabela">
                             <thead>
                                 <tr>
