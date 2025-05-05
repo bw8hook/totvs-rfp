@@ -57,6 +57,7 @@ class SAMLController extends Controller
             $userData = $this->auth->getAttributes();
 
             $email = $userData['email'][0];
+            $identity_id = $userData['userId'][0];
 
             $user = User::where('email', $email)->first();
 
@@ -76,6 +77,11 @@ class SAMLController extends Controller
                     ->withErrors([
                         'status' => 'Sua conta está inativa. Entre em contato com o administrador.',
                     ]);
+            }
+
+            if($user->identity_id == null){
+                $user->identity_id = $identity_id;
+                $user->save();
             }
 
             $token = $user->createToken('API token')->plainTextToken;
