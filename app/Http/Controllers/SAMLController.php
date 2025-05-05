@@ -57,25 +57,23 @@ class SAMLController extends Controller
             $userData = $this->auth->getAttributes();
 
             $email = $userData['email'][0];
+            $identity_id = $userData['userId'][0];
 
             $user = User::where('email', $email)->first();
 
             if (!$user)
             {
-                return back()
-                    ->withInput($request->only('email'))
-                    ->withErrors([
-                        'email' => 'As credenciais fornecidas não correspondem aos nossos registros.',
-                    ]);
+                return $this->nouser();
             }
 
             if ($user->status == "inativo")
             {
-                return back()
-                    ->withInput($request->only('email'))
-                    ->withErrors([
-                        'status' => 'Sua conta está inativa. Entre em contato com o administrador.',
-                    ]);
+                return $this->nopermission();
+            }
+
+            if($user->identity_id == null){
+                $user->identity_id = $identity_id;
+                $user->save();
             }
 
             $token = $user->createToken('API token')->plainTextToken;
@@ -136,5 +134,13 @@ class SAMLController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function nouser(){
+        return view('identity.nouser');
+    }
+
+    public function nopermission(){
+        return view('identity.nopermission');
     }
 }

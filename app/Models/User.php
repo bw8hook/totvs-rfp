@@ -17,7 +17,7 @@ use App\Models\UsersDepartaments;
 class User extends Authenticatable
 {
     use HasRoles, HasFactory, HasApiTokens, HasFactory, Notifiable; // Adicione o HasApiTokens aqui
-    
+
     /**
      * The attributes that are mass assignable.
      *
@@ -28,6 +28,7 @@ class User extends Authenticatable
         'name',
         'email',
         'idtotvs',
+        'identity_id',
         'password',
         'position',
         'departament_id',
@@ -62,14 +63,14 @@ class User extends Authenticatable
     public function toArray()
     {
         $data = parent::toArray();
-    
+
         // Incluir o relacionamento 'role'
         $data['role'] = $this->role ? $this->role->only(['id', 'name']) : null;
-    
+
         return $data;
     }
 
-    
+
      // Relacionamento com UsersDepartaments
     public function departament(){
         return $this->belongsTo(UsersDepartaments::class, 'departament_id');
