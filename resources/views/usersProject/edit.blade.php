@@ -87,15 +87,16 @@
 
   
                <!-- TIPO DE CONTA -->
+
                <div class="mt-4">
                     <x-input-label for="account_type" :value="__('Tipo de Conta')" />
                     <select name="account_type[]"  class="form-control">
                         @foreach($roles as $role) 
-                          
-                         
-                           
-                                <option value="{{$role->name}}" >{{$role->name}}</option>
-                          
+                          @if($user_role[0] == $role->name)
+                              <option value="{{$role->name}}" selected>{{$role->name}}</option>
+                          @else
+                            <option value="{{$role->name}}" >{{$role->name}}</option>
+                          @endif
                         @endforeach
                     </select>
                     <x-input-error :messages="$errors->get('account_type')" class="mt-2" />

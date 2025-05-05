@@ -53,7 +53,15 @@
                             </div>
 
 
-                            <div class="toggle-container">
+                            <div class="inputField">
+                                <select name="status">
+                                    <option value="null" selected>Usuário Ativo ?</option>
+                                    <option value="ativo">Sim</option>
+                                    <option value="inativo">Não</option>
+                                </select>
+                            </div>
+
+                            <!-- <div class="toggle-container">
                                 <span class="toggle-label">Usuário ativo?</span>
                                 <div class="toggle-wrapper">
                                     <span class="toggle-option">Não</span>
@@ -63,7 +71,7 @@
                                     </label>
                                     <span class="toggle-option">Sim</span>
                                 </div>
-                            </div>
+                            </div> -->
 
                                                     
                            
@@ -106,8 +114,8 @@
     $(document).ready(function () {
         function fetchUsers(url = "{{ route('users.filter') }}") {
             var formData = $("#filterFormList").serialize();
-            var isActive = $('#toggleSwitch').is(':checked') ? 'ativo' : 'inativo';
-            formData += '&user_active=' + isActive;
+            // var isActive = $('#toggleSwitch').is(':checked') ? 'ativo' : 'inativo';
+            // formData += '&user_active=' + isActive;
             
             $.ajax({
                 url: url,
