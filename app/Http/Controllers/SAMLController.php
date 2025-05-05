@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use OneLogin\Saml2\Auth;
 use OneLogin\Saml2\Utils;
+use Illuminate\Support\Facades\Auth as LaravelAuth;
 
 
 class SAMLController extends Controller
@@ -81,7 +82,7 @@ class SAMLController extends Controller
             session(['sanctum_token' => $token]);
 
 
-            Auth::login($user);
+            LaravelAuth::login($user);
 
             $request->session()->regenerate();
 
