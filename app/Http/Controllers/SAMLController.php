@@ -140,7 +140,8 @@ class SAMLController extends Controller
         return view('identity.nouser');
     }
 
-    public function nopermission(){
+    public function nopermission()
+    {
         return view('identity.nopermission');
     }
 }
