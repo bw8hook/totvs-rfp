@@ -63,11 +63,7 @@ class SAMLController extends Controller
 
             if (!$user)
             {
-                return back()
-                    ->withInput($request->only('email'))
-                    ->withErrors([
-                        'email' => 'As credenciais fornecidas não correspondem aos nossos registros.',
-                    ]);
+                return $this->nouser();
             }
 
             if ($user->status == "inativo")
@@ -142,5 +138,9 @@ class SAMLController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function nouser(){
+        return view('identity.nouser');
     }
 }

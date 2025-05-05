@@ -260,9 +260,11 @@ Route::middleware('auth')->group(function () {
     // Route::get('/user/{id}', [ProfileController::class, 'editUser'])->name('users.edit');
 });
 
+//LOGIN TOTVS IDENTITY
 Route::get('/saml/login', [SAMLController::class, 'login']);
 Route::post('/saml', [SAMLController::class, 'acs']);
 Route::get('/saml/metadata', [SAMLController::class, 'metadata']);
+Route::get('/nouser', [SAMLController::class, 'nouser'])->name('nouser');
 
 
 

@@ -1,40 +1,40 @@
 <x-guest-layout>
     <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <x-auth-session-status class="mb-4" :status="session('status')"/>
 
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
         <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
+            <x-input-label for="email" :value="__('Email')"/>
             <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required
-                autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                          autofocus autocomplete="username"/>
+            <x-input-error :messages="$errors->get('email')" class="mt-2"/>
         </div>
 
         <!-- Password -->
         <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+            <x-input-label for="password" :value="__('Password')"/>
 
             <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required
-                autocomplete="current-password" />
+                          autocomplete="current-password"/>
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            <x-input-error :messages="$errors->get('password')" class="mt-2"/>
         </div>
 
-         <!-- Status Error Message -->
+        <!-- Status Error Message -->
         @error('status')
-            <div class="text-red-500 mt-2">
-                {{ $message }}
-            </div>
+        <div class="text-red-500 mt-2">
+            {{ $message }}
+        </div>
         @enderror
 
         <!-- Remember Me -->
         <div class="block mt-4">
             <label for="remember_me" class="inline-flex items-center">
                 <input id="remember_me" type="checkbox"
-                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
+                       class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
                 <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
             </label>
         </div>
@@ -42,20 +42,30 @@
         <div class="flex flex-col items-center justify-center mt-2 gap-4" style="display: block;">
             @if (Route::has('password.request'))
                 <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    href="{{ route('password.request') }}" style="float:right; color:#5E6470; text-decoration:none; margin-bottom:10px;">
+                   href="{{ route('password.request') }}"
+                   style="float:right; color:#5E6470; text-decoration:none; margin-bottom:10px;">
                     {{ __('Esqueci minha senha') }}
                 </a>
             @endif
 
-            <x-primary-button class="ms-3" style=" background: #5570F1; width: 100%; height: 50px; text-align: center; display: block; margin-left: 0px; margin-top: 20px;">
+            <x-primary-button class="ms-3"
+                              style=" background: #5570F1; width: 100%; height: 50px; text-align: center; display: block; margin-left: 0px; margin-top: 20px;">
                 {{ __('Entrar') }}
             </x-primary-button>
         </div>
     </form>
+
+    <a href='https://tdi.customerfi.com/cloudpass/launchpad/launchApp/99e9d94a0f914ae0974f817277fac0f5/9lndgj53tx3zysjx1410282663331'>
+        <x-primary-button class="ms-3"
+                          style=" background: #0E2ECF; width: 100%; height: 50px; text-align: center; display: block; margin-left: 0px; margin-top: 20px;">
+            {{ __('Entrar com Totvs Identity') }}
+        </x-primary-button>
+    </a>
+
     <!-- <div class="flex flex-col items-center justify-center mt-4" style="">
         <p class="text-gray-600 rounded-md focus:outline-none">
             {{ __("Não possui uma conta?") }}
-            <a href="{{ route('register2') }}" style="color: #3A57E8;
+    <a href="{{ route('register2') }}" style="color: #3A57E8;
 "> {{ __('Cadastre-se') }} </a>
         </p>
     </div> -->
