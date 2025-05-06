@@ -345,14 +345,24 @@
 
                         console.log(record);
 
+                        let highlighted_error = true;
+                        let AnwserOptions = '';
+
                         // Verifica se record.resposta está presente em ListRespostas
-                        let existsInList = ListAnswers.some(resposta => resposta.anwser === record.answers.aderencia_na_mesma_linha);
-                        let AnwserOptions = !existsInList  ? `<option disabled selected>${record.answers.aderencia_na_mesma_linha ? record.answers.aderencia_na_mesma_linha : ''} </option>` : '';
-                        let highlighted_error = !existsInList  ? false : true;
-                        console.log(existsInList);
-                        ListAnswers.forEach(resposta => {
-                            AnwserOptions += `<option value="${resposta.id}" ${resposta.anwser === record.answers.aderencia_na_mesma_linha ? 'selected' : ''}>${resposta.anwser}</option>`;
-                        });
+                        if (record.answers && record.answers.aderencia_na_mesma_linha) {                       
+                            let existsInList = ListAnswers.some(resposta => resposta.anwser === record.answers.aderencia_na_mesma_linha);
+                            AnwserOptions = !existsInList  ? `<option disabled selected>${record.answers.aderencia_na_mesma_linha ? record.answers.aderencia_na_mesma_linha : ''} </option>` : '';
+                            highlighted_error = !existsInList  ? false : true;
+                            console.log(existsInList);
+                            ListAnswers.forEach(resposta => {
+                                AnwserOptions += `<option value="${resposta.id}" ${resposta.anwser === record.answers.aderencia_na_mesma_linha ? 'selected' : ''}>${resposta.anwser}</option>`;
+                            });
+                        }else{
+                             // Adiciona as opções da lista
+                            ListAnswers.forEach(resposta => {
+                                AnwserOptions += `<option value="${resposta.id}" selected} > Desconhecido </option>`;
+                            });
+                        }
 
                         let user_edit_record =  record.status == "user edit" ? false : true;
 
@@ -416,10 +426,10 @@
                                       ${AnwserOptions}
                                     </select>
                                 </td>
-                                <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.modulo ? record.answers.modulo : ''} </td>
-                                <td style="width:42%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.resposta ? record.answers.resposta : ''} </td>
-                                <td style="width:12%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #D2E4FF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #0E2ECF;"> ${record.answers.acuracidade_porcentagem ? record.answers.acuracidade_porcentagem : ''} </span> </td>
-                                <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #C7EBFF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #141824;"> ${record.answers.linha_produto ? record.answers.linha_produto : ' Produto não encontrado'}   </span></td>
+                                <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers?.modulo ? record.answers.modulo : ''} </td>
+                                <td style="width:42%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers?.resposta ? record.answers.resposta : ''} </td>
+                                <td style="width:12%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #D2E4FF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #0E2ECF;"> ${record.answers?.acuracidade_porcentagem ? record.answers.acuracidade_porcentagem : '0%'} </span> </td>
+                                <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #C7EBFF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #141824;"> ${record.answers?.linha_produto ? record.answers.linha_produto : ' Produto não encontrado'}   </span></td>
                                 <td style="width:10%;  display: flex; align-items: center;">
                                     ${btnEdit}
                                 </td>

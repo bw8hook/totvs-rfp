@@ -593,7 +593,6 @@ class ProjectRecordsController extends Controller
                 $Project = Project::with('user')->findOrFail($ProjectFile->project_id);
        
                 $ListClassificacaoRecebidas = ProjectRecord::where('project_file_id', $ProjectFile->id)->groupBy('processo')->pluck('processo');
-                
 
                 $ListRespostaRecebidas = ProjectAnswer::whereHas('requisito', function($query) use ($id) {
                     $query->where('project_file_id', $id);
@@ -611,7 +610,6 @@ class ProjectRecordsController extends Controller
                 ->pluck('linha_produto');
         
                 $UsersDepartaments = UsersDepartaments::where('departament_type', '!=', 'Admin')->orderBy('departament', 'asc')->get();
-
 
                 $AllAnswers = RfpAnswer::orderBy('order', 'asc')->get();
                 $AllBundles = RfpBundle::orderBy('bundle', 'asc')->get();
@@ -633,7 +631,6 @@ class ProjectRecordsController extends Controller
                     $CountRecords++;
                 }
 
-
                 $countIA = ProjectRecord::where('project_file_id', $ProjectFile->id)
                     ->where('status', 'respondido ia')
                     ->whereHas('answers', function ($query) {
@@ -652,7 +649,6 @@ class ProjectRecordsController extends Controller
                 })
                 ->count();
 
-                
                 $registrosSemResposta = $CountRecords - ($countIA + $countUser);
                 $porcentagemSemResposta = ($registrosSemResposta / $CountRecords) * 100;
 
@@ -697,6 +693,7 @@ class ProjectRecordsController extends Controller
             $Project = ProjectFiles::findOrFail($id);
             $query = ProjectRecord::query()->with('bundles')->with('answers');
 
+
             // Adicionando explicitamente a cláusula where para garantir que o filtro está correto
             $query->where('project_file_id', '=', $Project->id);
 
@@ -712,6 +709,7 @@ class ProjectRecordsController extends Controller
                 });
             }
             
+
             $processo = $request->processo === "null" ? null : $request->processo;
             if (filled($processo)) {
                 $query->where('processo', 'like', '%' . $request->processo . '%');
@@ -721,6 +719,7 @@ class ProjectRecordsController extends Controller
             if (filled($process)) {
                 $query->where('processo', 'like', '%' . $request->process . '%');
             }
+            
                        
             $resposta = $request->answer === "null" ? null : $request->answer;
             if (filled($resposta)) {
@@ -728,6 +727,8 @@ class ProjectRecordsController extends Controller
                     $q->where('aderencia_na_mesma_linha', 'like', '%' . $request->answer . '%');
                 });
             }
+
+            
 
             $bundle = $request->bundle === "null" ? null : $request->bundle;
             if (filled($bundle)) {
@@ -746,12 +747,20 @@ class ProjectRecordsController extends Controller
                 $minPercent = $request->min_percent;
                 $maxPercent = $request->max_percent;
         
-                $query->whereHas('answers', function ($q) use ($minPercent, $maxPercent) {
-                    $q->whereRaw('CAST(REPLACE(acuracidade_porcentagem, "%", "") AS UNSIGNED) >= ?', [$minPercent])
-                      ->whereRaw('CAST(REPLACE(acuracidade_porcentagem, "%", "") AS UNSIGNED) <= ?', [$maxPercent]);
+                // $query->whereHas('answers', function ($q) use ($minPercent, $maxPercent) {
+                //     $q->whereRaw('CAST(REPLACE(acuracidade_porcentagem, "%", "") AS UNSIGNED) >= ?', [$minPercent])
+                //       ->whereRaw('CAST(REPLACE(acuracidade_porcentagem, "%", "") AS UNSIGNED) <= ?', [$maxPercent]);
+                // });
+
+                $query->where(function ($q) use ($minPercent, $maxPercent) {
+                    $q->whereHas('answers', function ($subQuery) use ($minPercent, $maxPercent) {
+                        $subQuery->whereRaw('CAST(REPLACE(acuracidade_porcentagem, "%", "") AS UNSIGNED) >= ?', [$minPercent])
+                                 ->whereRaw('CAST(REPLACE(acuracidade_porcentagem, "%", "") AS UNSIGNED) <= ?', [$maxPercent]);
+                    })->orDoesntHave('answers');
                 });
+
             }
-        
+            
             //$results = $query->with('answers')->get();
             
             // Paginação
