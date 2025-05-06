@@ -76,8 +76,9 @@ class UserProjectController extends Controller
     }
 
 
-    public function listUsers(Request $request): View
+    public function listUsers(Request $request):RedirectResponse|View
     {
+        if (Auth::user()->hasAnyPermission(['users.add', 'users.edit', 'users.delete'])) {
           $AllUsers = User::all();
           $ListUsers = array();
           $permissionNames = Auth::user()->getPermissionsViaRoles();
@@ -111,7 +112,10 @@ class UserProjectController extends Controller
   
           //return view('auth.register')->with($data);
 
-        return view('usersProject.list', ['user' => $request->user(), ])->with($data);
+            return view('usersProject.list', ['user' => $request->user(), ])->with($data);
+        }else{
+            return redirect()->back()->with('error', 'Você não tem permissão para acessar essa página.');
+        }
     }
 
 
@@ -120,48 +124,56 @@ class UserProjectController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(): RedirectResponse|View
     {
-        $userDepartaments = UsersDepartaments::all();
-        $roles = Role::with('permissions')->get();
+        if (Auth::user()->hasAnyPermission(['users.add'])) {
+            $userDepartaments = UsersDepartaments::all();
+            $roles = Role::with('permissions')->get();
 
-        $data = array(
-            'userDepartaments' => $userDepartaments,
-            'roles' => $roles,
-        );
-            
-        return view('usersProject.register')->with($data);
-            
+            $data = array(
+                'userDepartaments' => $userDepartaments,
+                'roles' => $roles,
+            );
+                
+            return view('usersProject.register')->with($data);
+                
+        }else{
+            return redirect()->back()->with('error', 'Você não tem permissão para acessar essa página.');
+        }
     }
 
 
     /**
      * Display the registration view.
      */
-    public function edit($id): View|RedirectResponse
+    public function edit($id): RedirectResponse|View
     {
-        $userDepartaments = UsersDepartaments::all();
-        $roles = Role::with('permissions')->get();
+        if (Auth::user()->hasAnyPermission(['users.edit'])) {
+            $userDepartaments = UsersDepartaments::all();
+            $roles = Role::with('permissions')->get();
 
-        //if(Auth::user()->can('users.manage')){
-            $user = User::findOrFail($id);
-            $role = $user->getRoleNames();
+            //if(Auth::user()->can('users.manage')){
+                $user = User::findOrFail($id);
+                $role = $user->getRoleNames();
 
-            if ($user) {
-                $data = array(
-                    'user' => $user,
-                    'userDepartaments' => $userDepartaments,
-                    'roles' => $roles,
-                    'user_role' => $role,
-                );
-                return view('usersProject.edit')->with($data);
-                //return view('usersProject.edit')->with($user);
-            } else {
-                return redirect(route('users.list', absolute: false))->with('error', 'Usuário sem permissão para editar.');
-            }
-        //}else{
-        //    return redirect(route('users.list', absolute: false))->with('error', 'Usuário sem permissão para editar.');
-        //}
+                if ($user) {
+                    $data = array(
+                        'user' => $user,
+                        'userDepartaments' => $userDepartaments,
+                        'roles' => $roles,
+                        'user_role' => $role,
+                    );
+                    return view('usersProject.edit')->with($data);
+                    //return view('usersProject.edit')->with($user);
+                } else {
+                    return redirect(route('users.list', absolute: false))->with('error', 'Usuário sem permissão para editar.');
+                }
+            //}else{
+            //    return redirect(route('users.list', absolute: false))->with('error', 'Usuário sem permissão para editar.');
+            //}
+        }else{
+            return redirect()->back()->with('error', 'Você não tem permissão para acessar essa página.');
+        }
     }
     
 
@@ -172,69 +184,73 @@ class UserProjectController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
-        $id= $request->id;
+        if (Auth::user()->hasAnyPermission(['users.edit'])) {
+            $id= $request->id;
 
-        // Encontre o registro existente
-        $user = User::findOrFail($id);
+            // Encontre o registro existente
+            $user = User::findOrFail($id);
 
-        // Valide os dados do formulário
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                \Illuminate\Validation\Rule::unique('users')->ignore($user->id),
-            ]
-        ]);
-
-        // Validação da imagem
-        $request->validate([
-            'profile_picture' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-        
-        // Verifica se o arquivo foi enviado
-        if ($request->hasFile('profile_picture')) {
-            $image = $request->file('profile_picture');
-            $filePath = 'cdn/profile';
-            $UploadedFile = Storage::disk('s3')->put($filePath, $image);
-            $relativePath = Storage::disk('s3')->url($UploadedFile);
-
-            $userUpdate = ([
-                'profile_picture' => $relativePath,
-                'name' => $request->name,
-                'email' => $request->email,
-                'idtotvs' => $request->idtotvs,
-                'position' => $request->position,
-                'departament' => $request->departament[0],
-                //'password' => Hash::make($request->password),
+            // Valide os dados do formulário
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => [
+                    'required',
+                    'email',
+                    'max:255',
+                    \Illuminate\Validation\Rule::unique('users')->ignore($user->id),
+                ]
             ]);
+
+            // Validação da imagem
+            $request->validate([
+                'profile_picture' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+            
+            // Verifica se o arquivo foi enviado
+            if ($request->hasFile('profile_picture')) {
+                $image = $request->file('profile_picture');
+                $filePath = 'cdn/profile';
+                $UploadedFile = Storage::disk('s3')->put($filePath, $image);
+                $relativePath = Storage::disk('s3')->url($UploadedFile);
+
+                $userUpdate = ([
+                    'profile_picture' => $relativePath,
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'idtotvs' => $request->idtotvs,
+                    'position' => $request->position,
+                    'departament' => $request->departament[0],
+                    //'password' => Hash::make($request->password),
+                ]);
+            }else{
+                $userUpdate = ([
+                    'profile_picture' => null,
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'idtotvs' => $request->idtotvs,
+                    'departament' => $request->departament[0],
+                    'position' => $request->position,
+                    //'password' => Hash::make($request->password),
+                ]);
+            }
+
+            $user->syncRoles([$request->account_type[0]]);
+            // Atualize os dados do registro
+
+            $user->update($userUpdate);
+        
+            // event(new Registered($user));
+            // Auth::login($user);
+
+            if($user){
+                return redirect(route('users.list', absolute: false))->with('success', 'Usuário Editado com sucesso.');
+            } else {
+                return redirect()->back()->with('error', 'Erro ao criar usuário.');
+            }
+            
         }else{
-            $userUpdate = ([
-                'profile_picture' => null,
-                'name' => $request->name,
-                'email' => $request->email,
-                'idtotvs' => $request->idtotvs,
-                'departament' => $request->departament[0],
-                'position' => $request->position,
-                //'password' => Hash::make($request->password),
-            ]);
+            return redirect()->back()->with('error', 'Você não tem permissão para acessar essa página.');
         }
-
-        $user->syncRoles([$request->account_type[0]]);
-        // Atualize os dados do registro
-
-        $user->update($userUpdate);
-       
-        // event(new Registered($user));
-        // Auth::login($user);
-
-        if($user){
-            return redirect(route('users.list', absolute: false))->with('success', 'Usuário Editado com sucesso.');
-        } else {
-            return redirect()->back()->with('error', 'Erro ao criar usuário.');
-        }
-        
        
     }
 
@@ -242,9 +258,9 @@ class UserProjectController extends Controller
       /**
      * Display the registration view.
      */
-    public function remove($id)
+    public function remove($id): RedirectResponse|View
     {
-        if (Auth::user()->hasRole('Administrador')) {
+        if (Auth::user()->hasAnyPermission(['users.delete'])) {
             // Encontrar o usuário pelo ID
             $user = User::find($id);
 
@@ -262,7 +278,7 @@ class UserProjectController extends Controller
 
     public function status($id, Request $request): RedirectResponse
     {
-        if (Auth::user()->hasRole('Administrador')) {
+        if (Auth::user()->hasAnyPermission(['users.edit'])) {
         
             // Encontrar o usuário pelo ID
             $user = User::find($id);
@@ -292,40 +308,45 @@ class UserProjectController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-        ]);
+        if (Auth::user()->hasAnyPermission(['users.add'])) {
 
-        $HashPassword = Str::random(12);
+            $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($HashPassword),
-            'idtotvs' => $request->idtotvs,
-            'position' => $request->position,
-            'departament_id' => $request->departament[0],
-            'user_role_id' => 1,
-        ]);
+            $HashPassword = Str::random(12);
 
-        $user->syncRoles([$request->account_type[0]]);
-
-
-        if($user){
-            $data = [
+            $user = User::create([
                 'name' => $request->name,
-                'data' =>  date('d/m/y \à\s H:i'),
                 'email' => $request->email,
-                'senha' => $HashPassword,
-                'url' => 'https://totvs.bw8.tech/'
-            ];
+                'password' => Hash::make($HashPassword),
+                'idtotvs' => $request->idtotvs,
+                'position' => $request->position,
+                'departament_id' => $request->departament[0],
+                'user_role_id' => 1,
+            ]);
 
-            Mail::to($request->email)->send(new NewUserEmail($data));
+            $user->syncRoles([$request->account_type[0]]);
 
-            return redirect(route('users.list', absolute: false));
+
+            if($user){
+                $data = [
+                    'name' => $request->name,
+                    'data' =>  date('d/m/y \à\s H:i'),
+                    'email' => $request->email,
+                    'senha' => $HashPassword,
+                    'url' => 'https://totvs.bw8.tech/'
+                ];
+
+                Mail::to($request->email)->send(new NewUserEmail($data));
+
+                return redirect(route('users.list', absolute: false));
+            }
+
+        }else{
+            return redirect()->back()->with('error', 'Usuário sem permissão para editar.');
         }
-
         
 
        // event(new Registered($user));
