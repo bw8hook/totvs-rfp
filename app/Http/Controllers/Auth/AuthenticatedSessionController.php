@@ -76,7 +76,17 @@ class AuthenticatedSessionController extends Controller
         // Regenerar a sessão
         $request->session()->regenerate();
 
-        return redirect()->intended(route('knowledge.list', absolute: false));
+        if (Auth::user()->hasAnyPermission(['knowledge.add', 'knowledge.edit', 'knowledge.delete'])) {
+            //return redirect()->intended(route('knowledge.list', absolute: false));
+            return redirect()->route('knowledge.list');
+        } elseif (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
+            //return redirect()->intended(route('project.list', absolute: false));
+            return redirect()->route('project.list');
+        }else{
+            return redirect()->intended(route('knowledge.list', absolute: false));
+        }
+
+       
     }
 
     /**
