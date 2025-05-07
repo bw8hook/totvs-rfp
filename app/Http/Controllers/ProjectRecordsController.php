@@ -723,12 +723,23 @@ class ProjectRecordsController extends Controller
                        
             $resposta = $request->answer === "null" ? null : $request->answer;
             if (filled($resposta)) {
-                $query->whereHas('answers', function($q) use ($request) {
-                    $q->where('aderencia_na_mesma_linha', 'like', '%' . $request->answer . '%');
-                });
+                if($resposta == "Desconhecido"){
+                    // $query->whereHas('answers', function($q) use ($request) {
+                    //     $q->where('aderencia_na_mesma_linha', 'like',  $request->answer);
+                    // })->orDoesntHave('answers');
+                    $query->where('project_file_id', $Project->id)
+                        ->where(function($q) use ($request) {
+                            $q->whereHas('answers', function($subQ) use ($request) {
+                                $subQ->where('aderencia_na_mesma_linha', 'like', $request->answer);
+                            })->orDoesntHave('answers');
+                        });
+                    
+                }else{
+                    $query->whereHas('answers', function($q) use ($request) {
+                        $q->where('aderencia_na_mesma_linha', 'like',  $request->answer);
+                    });
+                }
             }
-
-            
 
             $bundle = $request->bundle === "null" ? null : $request->bundle;
             if (filled($bundle)) {
@@ -760,7 +771,7 @@ class ProjectRecordsController extends Controller
                 });
 
             }
-            
+
             //$results = $query->with('answers')->get();
             
             // Paginação
