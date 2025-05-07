@@ -353,15 +353,18 @@
                             let existsInList = ListAnswers.some(resposta => resposta.anwser === record.answers.aderencia_na_mesma_linha);
                             AnwserOptions = !existsInList  ? `<option disabled selected>${record.answers.aderencia_na_mesma_linha ? record.answers.aderencia_na_mesma_linha : ''} </option>` : '';
                             highlighted_error = !existsInList  ? false : true;
-                            console.log(existsInList);
                             ListAnswers.forEach(resposta => {
                                 AnwserOptions += `<option value="${resposta.id}" ${resposta.anwser === record.answers.aderencia_na_mesma_linha ? 'selected' : ''}>${resposta.anwser}</option>`;
                             });
                         }else{
+                            highlighted_error = false;
                              // Adiciona as opções da lista
                             ListAnswers.forEach(resposta => {
-                                AnwserOptions += `<option value="${resposta.id}" selected} > Desconhecido </option>`;
+                                AnwserOptions += `<option disabled selected > Desconhecido </option>`;
                             });
+
+                            console.log("highlighted_error");
+                            console.log(highlighted_error);
                         }
 
                         let user_edit_record =  record.status == "user edit" ? false : true;
