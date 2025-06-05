@@ -16,12 +16,59 @@
                         </defs>
                     </svg>
 
-
                     <span>Configurações</span>
                 </div>
             </div>
             
+            <div style=" display: flex;;">
+                <div class="chart-container" style="min-width: 50%;">
+                    <h2>Perguntas por Período</h2>
+                    <div class="date-filter">
+                        <input type="text" id="filtro-data" placeholder="Selecione o período" value="{{ $inicio }} to {{ $fim }}">
+                    </div>
+                    <canvas id="graficoLinha"></canvas>
+
+                    <div id="resumo" class="mt-4 text-lg font-semibold text-gray-700">
+                        Total: <span id="total-geral"></span> Perguntas
+                    </div>
+                </div>
+
+
+                <div style="margin-left: 20px; height: 240px; width: calc(50% - 20px);">
+
+                    @can('agents.manage')
+                        <div class="chart-container" style="margin-left: 20px; height: 240px; width: calc(50% - 20px); margin-bottom: 35px; ">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 100% !important; height: 40px; text-align: center; margin: 11px 0px; display: block; font-size: 18px; font-weight: bolder; color: #5570f1;" >
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+
+                            <span style=" width: 100% !important; text-align: center; margin: 11px 0px; display: block; font-size: 23px; font-weight: bolder; color: #5570f1;"> Agentes </span>
+                            <div style="width: 100% !important; text-align: center; margin: 11px 0px; display: block; font-size: 23px; font-weight: bolder; color: #7b7b7b;"> {{$AgentesAtivos}} de {{$AgentesConta}}</div>
+                        </div>
+                    @endcan
+
+                    @can('roles.manage')
+                        <div class="chart-container" style="margin-left: 20px; height: 240px; width: calc(50% - 20px);">
+                            <svg width="40" height="40" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg" style=" margin: auto; ">
+                                <path d="M7.25 8.43335C6.44899 8.43335 5.66596 8.19582 4.99994 7.7508C4.33392 7.30578 3.81482 6.67325 3.50829 5.93321C3.20175 5.19317 3.12155 4.37885 3.27782 3.59323C3.43409 2.80761 3.81981 2.08597 4.38622 1.51956C4.95262 0.95316 5.67426 0.567435 6.45988 0.411165C7.24551 0.254895 8.05983 0.335098 8.79987 0.641633C9.53991 0.948168 10.1724 1.46727 10.6175 2.13329C11.0625 2.7993 11.3 3.58233 11.3 4.38335C11.2988 5.45711 10.8717 6.48655 10.1125 7.24581C9.3532 8.00508 8.32376 8.43216 7.25 8.43335ZM7.25 2.13335C6.80499 2.13335 6.36998 2.26531 5.99997 2.51254C5.62996 2.75977 5.34157 3.11117 5.17127 3.52231C5.00097 3.93344 4.95642 4.38584 5.04323 4.8223C5.13005 5.25876 5.34434 5.65967 5.65901 5.97434C5.97368 6.289 6.37459 6.5033 6.81105 6.59011C7.2475 6.67693 7.6999 6.63237 8.11104 6.46208C8.52217 6.29178 8.87357 6.00339 9.12081 5.63338C9.36804 5.26337 9.5 4.82835 9.5 4.38335C9.5 3.78661 9.26295 3.21431 8.84099 2.79236C8.41903 2.3704 7.84674 2.13335 7.25 2.13335ZM14 17.4333V16.9833C14 15.1931 13.2888 13.4762 12.023 12.2104C10.7571 10.9445 9.04021 10.2333 7.25 10.2333C5.45979 10.2333 3.7429 10.9445 2.47703 12.2104C1.21116 13.4762 0.5 15.1931 0.5 16.9833L0.5 17.4333C0.5 17.672 0.594821 17.901 0.763604 18.0697C0.932387 18.2385 1.16131 18.3333 1.4 18.3333C1.63869 18.3333 1.86761 18.2385 2.0364 18.0697C2.20518 17.901 2.3 17.672 2.3 17.4333V16.9833C2.3 15.6705 2.82152 14.4115 3.74982 13.4832C4.67813 12.5549 5.93718 12.0333 7.25 12.0333C8.56282 12.0333 9.82187 12.5549 10.7502 13.4832C11.6785 14.4115 12.2 15.6705 12.2 16.9833V17.4333C12.2 17.672 12.2948 17.901 12.4636 18.0697C12.6324 18.2385 12.8613 18.3333 13.1 18.3333C13.3387 18.3333 13.5676 18.2385 13.7364 18.0697C13.9052 17.901 14 17.672 14 17.4333Z" fill="#5570F1"></path>
+                            </svg>
+                        
+                            <span style=" width: 100% !important; text-align: center; margin: 11px 0px; display: block; font-size: 23px; font-weight: bolder; color: #5570f1;"> Usuários </span>
+                            <div style="width: 100% !important; text-align: center; margin: 11px 0px; display: block; font-size: 23px; font-weight: bolder; color: #7b7b7b;">  {{$UsersAtivos}} de {{$UsersConta}}</div>
+                        </div>
+                    @endcan
+                </div>
+
+            </div>
+            
+
+
+
+
+
             <div class="bloco_config grid grid-cols-4 gap-4" style=" max-width: 100%;" >
+
             
                 @can('bundles.manage')
                     <a href="{{ route('bundles.list') }}" class="btnConfig">
@@ -121,3 +168,126 @@
         </div>
     </div>
 </x-app-layout>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+
+    <style>
+        .chart-container {
+            max-width: 800px;
+            background: #fff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .date-filter {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 250px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+    </style>
+
+
+
+<script>
+        const ctx = document.getElementById('graficoLinha').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(75, 192, 192, 0.4)');
+        gradient.addColorStop(1, 'rgba(75, 192, 192, 0)');
+
+        let grafico = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Perguntas',
+                    data: [],
+                    backgroundColor: gradient,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    tension: 0.4,
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // function atualizarGrafico(inicio, fim) {
+        //     $.post('/config-grafico', {
+        //         _token: '{{ csrf_token() }}',
+        //         inicio: inicio,
+        //         fim: fim
+        //     }, function(response) {
+        //         grafico.data.labels = response.labels;
+        //         grafico.data.datasets[0].data = response.valores;
+        //         grafico.update();
+        //     });
+        // }
+
+
+        function atualizarGrafico(inicio, fim) {
+            $.ajax({
+                url: '/config-grafico',
+                method: 'GET',
+                data: {
+                    inicio: inicio,
+                    fim: fim
+                },
+                success: function (response) {
+                    // Atualiza o gráfico
+                    grafico.data.labels = response.dates;
+                    grafico.data.datasets[0].data = response.values;
+                    grafico.update();
+
+                    // Calcula e mostra o total
+                    const total = response.values.reduce((soma, valor) => soma + Number(valor), 0);
+
+                    document.getElementById('total-geral').textContent = total.toLocaleString('pt-BR', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    });
+
+                    console.log(total);
+                }
+            });
+        }
+
+
+
+        flatpickr("#filtro-data", {
+            locale: "pt",
+            mode: "range",
+          dateFormat: "d/m/Y", // <-- Formato brasileiro
+    defaultDate: ["{{ \Carbon\Carbon::parse($inicio)->format('d/m/Y') }}", "{{ \Carbon\Carbon::parse($fim)->format('d/m/Y') }}"],
+            onClose: function(selectedDates) {
+                if (selectedDates.length === 2) {
+                    const inicio = selectedDates[0].toISOString().split('T')[0];
+                    const fim = selectedDates[1].toISOString().split('T')[0];
+                    atualizarGrafico(inicio, fim);
+                }
+            }
+        });
+
+        // Inicializa o gráfico automaticamente com os dados do mês atual
+        $(document).ready(function () {
+            atualizarGrafico("{{ $inicio }}", "{{ $fim }}");
+        });
+    </script>

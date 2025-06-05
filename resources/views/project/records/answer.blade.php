@@ -98,6 +98,7 @@
                                 @foreach($ListRespostaRecebidas as $ListRespostaRecebida)
                                     <option value="{{$ListRespostaRecebida}}">{{$ListRespostaRecebida}}</option>
                                 @endforeach
+                                <option value="Não Processado">Não Processado</option>
                             </select>
                         </div>
                         
@@ -259,6 +260,31 @@
 
 
 
+
+                <div id="ModalRetry">
+                    <div class="content">
+                        <div class="loading" style="background: #ffffffcf; position: absolute; width: 100%; height: 100%; top: 0px; left: 0px;">
+                            <div id="lottie-container3" style="width: 100px; height:100px; position: absolute; top: 50%; left: 50%; transform: translate(-50px, -50px);"></div>
+                        </div>
+
+                        <div class="Title">
+                            <svg width="23" height="23" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12.6931 7.46553H15.3069V10.0793H12.6931V7.46553ZM14 20.5345C14.7188 20.5345 15.3069 19.9464 15.3069 19.2276V14C15.3069 13.2812 14.7188 12.6931 14 12.6931C13.2812 12.6931 12.6931 13.2812 12.6931 14V19.2276C12.6931 19.9464 13.2812 20.5345 14 20.5345ZM14 0.93103C6.78594 0.93103 0.93103 6.78594 0.93103 14C0.93103 21.2141 6.78594 27.069 14 27.069C21.2141 27.069 27.069 21.2141 27.069 14C27.069 6.78594 21.2141 0.93103 14 0.93103ZM14 24.4552C8.2366 24.4552 3.54483 19.7635 3.54483 14C3.54483 8.2366 8.2366 3.54483 14 3.54483C19.7635 3.54483 24.4552 8.2366 24.4552 14C24.4552 19.7635 19.7635 24.4552 14 24.4552Z" fill="#0097EB"/>
+                            </svg>
+                            <h2>Referências selecionadas pela IA para respostas do requisito:</h2>
+                        </div>
+                        <div class="ListaRetry">
+                            <div class="listAll">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
                 <!-- Template para o conteúdo do Popover -->
                 <div id="popover-content" style="display: none;">
                     <div id="slider" class="mb-3"></div>
@@ -281,14 +307,13 @@
     const ListAnswers = @json($AllAnswers);
 </script>
 
-
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
     var totalRequisitos = {{$CountCountRecordsResultado}};
     var totalRespostasIA = {{$CountAnswerIA}};
     var respostasUsuario = {{$CountAnswerUser}};
+    var UserType = {{$InfoUser}};
 </script>
 
 <script>
@@ -360,7 +385,7 @@
                             highlighted_error = false;
                              // Adiciona as opções da lista
                             ListAnswers.forEach(resposta => {
-                                AnwserOptions += `<option disabled selected > Desconhecido </option>`;
+                                AnwserOptions += `<option disabled selected > Não Processado </option>`;
                             });
 
                             console.log("highlighted_error");
@@ -419,6 +444,24 @@
                                     </div>`;
                         }
 
+
+
+
+                        if(UserType == 1){
+                            btnRetry = `
+                                    <div class="btnInfoRetry" style="margin: 0px; float:left; cursor:pointer; width:50%; margin-left: 10px; margin-top: 12px;">
+                                        <button type="submit" class="records_info">                      
+                                            <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill="#000000" d="M14.9547098,7.98576084 L15.0711,7.99552 C15.6179,8.07328 15.9981,8.57957 15.9204,9.12636 C15.6826,10.7983 14.9218,12.3522 13.747,13.5654 C12.5721,14.7785 11.0435,15.5888 9.37999,15.8801 C7.7165,16.1714 6.00349,15.9288 4.48631,15.187 C3.77335,14.8385 3.12082,14.3881 2.5472,13.8537 L1.70711,14.6938 C1.07714,15.3238 3.55271368e-15,14.8776 3.55271368e-15,13.9867 L3.55271368e-15,9.99998 L3.98673,9.99998 C4.87763,9.99998 5.3238,11.0771 4.69383,11.7071 L3.9626,12.4383 C4.38006,12.8181 4.85153,13.1394 5.36475,13.3903 C6.50264,13.9466 7.78739,14.1285 9.03501,13.9101 C10.2826,13.6916 11.4291,13.0839 12.3102,12.174 C13.1914,11.2641 13.762,10.0988 13.9403,8.84476 C14.0181,8.29798 14.5244,7.91776 15.0711,7.99552 L14.9547098,7.98576084 Z M11.5137,0.812976 C12.2279,1.16215 12.8814,1.61349 13.4558,2.14905 L14.2929,1.31193 C14.9229,0.681961 16,1.12813 16,2.01904 L16,6.00001 L12.019,6.00001 C11.1281,6.00001 10.6819,4.92287 11.3119,4.29291 L12.0404,3.56441 C11.6222,3.18346 11.1497,2.86125 10.6353,2.60973 C9.49736,2.05342 8.21261,1.87146 6.96499,2.08994 C5.71737,2.30841 4.57089,2.91611 3.68976,3.82599 C2.80862,4.73586 2.23802,5.90125 2.05969,7.15524 C1.98193,7.70202 1.47564,8.08224 0.928858,8.00448 C0.382075,7.92672 0.00185585,7.42043 0.0796146,6.87364 C0.31739,5.20166 1.07818,3.64782 2.25303,2.43465 C3.42788,1.22148 4.95652,0.411217 6.62001,0.119916 C8.2835,-0.171384 9.99651,0.0712178 11.5137,0.812976 Z"/>
+                                            </svg>
+                                        </button>
+                                    </div>`;
+                        } else {
+                            btnRetry = ``;
+                        }
+
+
+
                         rows += `
                             <tr class="listaTabela ${highlighted_error ? '' : 'highlighted_error'} ${user_edit_record ? '' : 'user_edit_record'}" data-id="${record.id}" style="min-height:60px; max-height: 100%;">                                
                                 <td style="width:15%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.processo ? record.processo : ''} </td>
@@ -433,8 +476,12 @@
                                 <td style="width:42%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers?.resposta ? record.answers.resposta : ''} </td>
                                 <td style="width:12%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #D2E4FF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #0E2ECF;"> ${record.answers?.acuracidade_porcentagem ? record.answers.acuracidade_porcentagem : '0%'} </span> </td>
                                 <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #C7EBFF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #141824;"> ${record.answers?.linha_produto ? record.answers.linha_produto : ' Produto não encontrado'}   </span></td>
-                                <td style="width:10%;  display: flex; align-items: center;">
+                                
+                                ${UserType == 1 ? '<td style="width:13%;  display: flex; align-items: center;">' : '<td style="width:10%;  display: flex; align-items: center;">'}
                                     ${btnEdit}
+
+                                    ${btnRetry}
+
                                 </td>
                             </tr>
                         `;
@@ -664,6 +711,104 @@
         $(document).on('click', '#ModalEdit', function (event) { if (event.target === this) { $(this).hide(); }});
         $(document).on('click', '.btnCancelDelete', function (event) {$('#ModalEdit').hide(); });
 
+        function getBarColor(score) {
+            if (score <= 20) return '#8B0000'; // vermelho escuro
+            if (score <= 40) return '#FF0000'; // vermelho
+            if (score <= 60) return '#FFA500'; // laranja
+            if (score <= 80) return '#228B22'; // verde escuro
+            return '#45bc4a'; // verde
+        }        
+
+        $(document).on('click', '.btnInfoRetry', function () {
+            const IdRecord = $(this).parent().parent().data('id');
+            $('.ListaRetry .listAll').html('');
+            $('#ModalRetry .loading').fadeIn();
+            if (IdRecord) {
+                let url = `{{ route('project.answer.reprocessing', ':id') }}`.replace(':id', IdRecord);
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    success: function (response) {
+                        console.log(response);
+
+                        $('#ModalRetry .loading').fadeOut();
+
+                        // Atualizar tabela
+                        let rows = '';
+                        //response.ReferenciasBanco.forEach(record => {
+                            let urlKnowledge = `{{ route('knowledge.records', ['id' => ':id', 'record_id' => ':record_id']) }}`.replace(':id', response.knowledge_base_id).replace(':record_id', response.id_record);
+
+                            console.log(response);
+
+                            rows += `
+                                    <div class="Referencia">
+                                        <h3 style="font-size: 12px; font-weight: bold; margin-bottom: 10px;">A similaridade entre o requisito e a referência foi de: ${response.acuracidade_porcentagem}% </h3>
+                                        <div class="barra-container" style=" width: 100%; background-color: #e0e0e0; border-radius: 20px; margin-bottom:20px; overflow: hidden; height: 7px;">
+                                            <div class="barra-preenchida" title="A similaridade entre o requisito e a referência foi de: ${response.acuracidade_porcentagem}%" style="height: 100%; width: ${response.acuracidade_porcentagem}%; background-color: ${getBarColor(response.acuracidade_porcentagem)}; text-align: center; color: white; line-height: 25px; transition: width 0.5s ease;"></div>
+                                        </div>
+
+                                        <div class="list">
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Descrição do Requisito</div>
+                                                <div class="textoProcesso">${response.resposta}</div>
+                                            </div>
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Resposta</div>
+                                                <div class="textoProcesso">${response.aderencia_na_mesma_linha}</div>
+                                            </div>
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Módulo</div>
+                                                <div class="textoProcesso">${response.modulo ? response.modulo : '-'}</div>
+                                            </div>
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Observações</div>
+                                                <div class="textoProcesso">${response.observacao ? response.observacao : '-'}</div>
+                                            </div>
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Produto</div>
+                                                <div class="textoProcesso">${response.linha_produto ? response.linha_produto : '-'} </div>
+                                            </div> 
+
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Acuracidade</div>
+                                                <div class="textoProcesso">${response.acuracidade_porcentagem ? response.acuracidade_porcentagem+'%' : '-'} </div>
+                                            </div> 
+
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Explicação</div>
+                                                <div class="textoProcesso">${response.acuracidade_explicacao ? response.acuracidade_explicacao : '-'} </div>
+                                            </div>
+
+                                            <div class="processoList">
+                                                <div class="labelProcesso">Referência</div>
+                                                <div class="textoProcesso">${response.referencia ? response.referencia : '-'} </div>
+                                            </div> 
+
+                                        </div>
+                                    </div>`;
+                        //});
+
+                        // Adiciona ou substitui os itens da tabela
+                        $('.ListaRetry .listAll').html(rows);
+                        
+                    }
+                })
+
+                $("#ModalRetry form").attr('action', url);
+                $("#ModalDelete form").attr('data-id', IdRecord);
+                $("#ModalRetry").show();
+               
+                console.log(url);// Passa "true" para adicionar itens ao invés de substituir
+
+            }
+            
+        });
+
+
+
+
+
+
         $(document).on('click', '.btnInfoRecord', function () {
             const IdRecord = $(this).parent().parent().data('id');
             $('.ListaReferencia .listAll').html('');
@@ -687,7 +832,14 @@
                             console.log(record);
                             rows += `
                                     <div class="Referencia">
-                                        <h2>ID REQUISITO: <a href="${urlKnowledge}" target="_blank" class="idrequisito">${record.id_record}</a></h2>
+
+
+                                        <h3 style="font-size: 12px; font-weight: bold; margin-bottom: 10px;">A similaridade entre o requisito e a referência foi de: ${record.score}% </h3>
+                                        <div class="barra-container" style=" width: 100%; background-color: #e0e0e0; border-radius: 20px; margin-bottom:20px; overflow: hidden; height: 7px;">
+                                            <div class="barra-preenchida" title="A similaridade entre o requisito e a referência foi de: ${record.score}%" style="height: 100%; width: ${record.score}%; background-color: ${getBarColor(record.score)}; text-align: center; color: white; line-height: 25px; transition: width 0.5s ease;"></div>
+                                        </div>
+
+                                        <h2><a href="${urlKnowledge}" target="_blank" class="idrequisito">${record.id_record} - VER REQUISITO DE REFERÊNCIA</a></h2>
                                         <div class="list">
                                             <div class="processoList">
                                                 <div class="labelProcesso">Processo</div>
@@ -736,6 +888,11 @@
             }
             
         });
+
+        $(document).on('click', '#ModalRetry', function (event) { if (event.target === this) { $(this).hide(); }});
+        $(document).on('click', '.btnCancelRetry', function (event) {$('#ModalRetry').hide(); });
+
+
 
         $(document).on('click', '#ModalReferencia', function (event) { if (event.target === this) { $(this).hide(); }});
         $(document).on('click', '.btnCancelReferencia', function (event) {$('#ModalReferencia').hide(); });

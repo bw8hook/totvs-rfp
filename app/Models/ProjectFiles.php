@@ -34,10 +34,19 @@ class ProjectFiles extends Model
     }
 
 
+    // public function projectRecords()
+    // {
+    //     return $this->hasMany(ProjectRecord::class, 'project_file_id');
+    // }
+
     public function projectRecords()
     {
-        return $this->hasMany(ProjectRecord::class, 'project_file_id');
+        return $this->hasMany(ProjectRecord::class, 'id')
+            ->leftJoin('project_answer', 'project_records.id', '=', 'project_answer.requisito_id');
     }
+
+
+
 
     public function project()
     {
@@ -54,6 +63,32 @@ class ProjectFiles extends Model
         return $this->projectRecords->where('status', 'respondido ia')->count();
     }
     
+    public function getRespondidosDesconhecidos($id)
+    {
+        //return $this->projectRecords->where('status', 'respondido ia');
+        // return ProjectRecord::join('project_answers', 'project_answers.id', '=', 'project_records.project_answer_id')
+        //     ->where('status', 'respondido ia')
+        //     ->where('project_answers', 'respondido ia');
+
+
+        return ProjectRecord::join('project_answer', function($join) {
+            $join->on('project_answer.id', '=', 'project_records.project_answer_id');
+        })
+        ->where('status', 'respondido ia')
+        ->where('project_records.project_file_id', $id)
+        ->where('project_answer.aderencia_na_mesma_linha', 'desconhecido')
+        ->whereRaw('project_answer.id = (
+            SELECT MAX(id) 
+            FROM project_answer AS sub 
+            WHERE sub.requisito_id = project_answer.requisito_id 
+            AND sub.requisito_id = project_answer.requisito_id
+        )')->count();
+        
+
+      
+    }
+
+
     public function getRespondidosUser()
     {
         return $this->projectRecords->where('status', 'user edit')->count();

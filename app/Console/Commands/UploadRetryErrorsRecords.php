@@ -15,14 +15,14 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Pool;
 
 
-class UploadRetryRecords extends Command
+class UploadRetryErrorsRecords extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:upload-retry-records';
+    protected $signature = 'app:upload-retry-error-records';
 
     /**
      * The console command description.
@@ -37,28 +37,19 @@ class UploadRetryRecords extends Command
     public function handle()
     {
         try {
-            $ProjectFiles = ProjectFiles::where('status', 'em processamento')
+            $ProjectFiles = ProjectFiles::where('status', 'processado')
             ->with('bundles')
             ->orderBy('id', 'asc')
             ->get();
             
             $clientHookIA = new Client([
-                'base_uri' => 'https://ubuntu-bw8-mac-server.hook.app.br/v1/',
+                'base_uri' => 'http://57.129.138.26/v1/',
                 'timeout' => 60,
                 'headers' => [
-                    'Authorization' => 'Bearer app-2KkTmPKykDJPnyufxnN7H9bw',
+                    'Authorization' => 'Bearer app-yS9ZY7Rc1GR9Y19IKpX22XRO',
                     'Accept' => 'application/json',
                 ],
             ]);
-
-            // $clientHookIA = new Client([
-            //     'base_uri' => 'http://57.129.138.26/v1/',
-            //     'timeout' => 60,
-            //     'headers' => [
-            //         'Authorization' => 'Bearer app-yS9ZY7Rc1GR9Y19IKpX22XRO',
-            //         'Accept' => 'application/json',
-            //     ],
-            // ]);
 
             $requestsHook = function () use ($ProjectFiles, $clientHookIA) {
                 foreach ($ProjectFiles as $File) {
@@ -89,75 +80,49 @@ class UploadRetryRecords extends Command
                         foreach ($Records as $Record) {
 
                             if($Record->ia_attempts <= 1){
-                                //$Agent = Agent::where('id', $Record->agent_id)->first();
                                 $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
                                 $BundlesProcess = $Processo->rfpBundles;
-
-                                // Coleções de bundles
-                                $bundlesDoProcesso = $Processo->rfpBundles; // Collection de bundles do processo
-                                $bundlesDoProjeto = $File->bundles;         // Collection de bundles do projeto
-
-                                // Filtra apenas os que estão nos dois (interseção por id)
-                                $produtosComProcesso = $bundlesDoProjeto->filter(function ($bundle) use ($bundlesDoProcesso) {
-                                    return $bundlesDoProcesso->contains('bundle_id', $bundle->bundle_id);
-                                });
-                                $produtosComProcessoString = implode(', ', $produtosComProcesso->pluck('bundle')->unique()->values()->toArray());
-
-
-                                // Filtra os que NÃO estão no processo
-                                $produtosSemProcesso = $bundlesDoProjeto->filter(function ($bundle) use ($bundlesDoProcesso) {
-                                    return !$bundlesDoProcesso->contains('bundle_id', $bundle->bundle_id);
-                                });
-                                $produtosSemProcessoString = implode(', ', $produtosSemProcesso->pluck('bundle')->unique()->values()->toArray());
-
-
-                                // Agrupa os Produtos com base nos Agentes e depois itera para listsa só o ID dos AGENTES
-                                // ISSO APENAS NOS PRIORITÁRIOS
-                                $produtosComProcessoAgrupadosPorAgente = $produtosComProcesso->groupBy('agent_id');
-                                $AgentesPrioritariosArray = [];
-                                foreach ($produtosComProcessoAgrupadosPorAgente as $IdAgente => $AgenteProcesso) {
-                                    $DadosAgentePrioritario = Agent::find($IdAgente);
-                                    if ($DadosAgentePrioritario && $DadosAgentePrioritario->knowledge_id_hook) {
-                                        $AgentesPrioritariosArray[] = $DadosAgentePrioritario->knowledge_id_hook;
-                                    }
+    
+                                $ProdutosArray = [];
+                                $AgentesArray = [];
+        
+                                foreach ($BundlesProcess as $bundleProcess) {
+                                    $DadosAgentePrioritario = Agent::where('id', $bundleProcess->agent_id)->first();
+                                    $ProdutosArray[] = $bundleProcess->bundle;
+                                    $AgentesArray[] = $DadosAgentePrioritario->knowledge_id_hook;
                                 }
-                                $AgenteComProcessoString = implode(', ', $AgentesPrioritariosArray);
-
-
-                                // Agrupa os Produtos com base nos Agentes e depois itera para listsa só o ID dos AGENTES
-                                // ISSO APENAS NOS SECUNDÁRIOS
-                                $produtosSemProcessoAgrupadosPorAgente = $produtosSemProcesso->groupBy('agent_id');
-                                $AgentesSecundariosArray = [];
-                                foreach ($produtosSemProcessoAgrupadosPorAgente as $IdAgente => $AgenteSemProcesso) {
-                                    $DadosAgenteSecundario = Agent::find($IdAgente);
-                                    if ($DadosAgenteSecundario && $DadosAgenteSecundario->knowledge_id_hook) {
-                                        $AgentesSecundariosArray[] = $DadosAgenteSecundario->knowledge_id_hook;
-                                    }
-                                }
-
-                                $AgentesSecundariosArray = array_diff($AgentesSecundariosArray, $AgentesPrioritariosArray);
-                                $AgenteSemProcessoString = implode(', ', $AgentesSecundariosArray);
-
+        
+                                // Pega os AGENTES e remove os itens repetidos e converte pra string
+                                $AgentesUnique = array_values(array_unique($AgentesArray));
+                                $AgentesPrimarios = implode(',', $AgentesUnique);
+                                    $agentIds = $bundles->pluck('agent_id')->unique();
+                                    $agentsList = Agent::whereIn('id', $agentIds)->get();
+                                    $AgentesSecundarios = $agentsList->pluck('knowledge_id_hook')->filter()->diff($AgentesUnique)->implode(', ');
+        
+                                // Pega os PRODUTOS e remove os itens repetidos e converte pra string
+                                $ProdutosUnique = array_values(array_unique($ProdutosArray));
+                                $ProdutosPrimarios = implode(',', $ProdutosUnique);
+                                    $ProdutosAdicionais = collect($bundles->pluck('bundle')->unique())->diff($ProdutosUnique)->implode(', ');
+    
                                 $requisito = $Record->requisito;
                                 $processo = $Processo->process;
-                       
+                    
                                 $body = [
-                                     'inputs' =>  [
-                                         'base_id_primarios' => $AgenteComProcessoString,
-                                         'base_id_secundarios' => $AgenteSemProcessoString,    
-                                     ],
-                                     'query' => json_encode([
-                                             'requisito' => $requisito,
-                                             'processo' => $processo,
-                                             'produto' => $produtosComProcessoString,
-                                             'produtos_adicionais' => $produtosSemProcessoString
-                                     ], JSON_UNESCAPED_UNICODE),
-                                     'response_mode' => 'blocking',
-                                     "conversation_id" => "",
-                                     "user" => "RFP-API-ONLINE-RETRY",
-                                     "files" => [],
+                                    'inputs' =>  [
+                                        'base_id_primarios' => $AgentesPrimarios,
+                                        'base_id_secundarios' => $AgentesSecundarios,    
+                                    ],
+                                    'query' => json_encode([
+                                            'requisito' => $requisito,
+                                            'processo' => $processo,
+                                            'produto' => $ProdutosPrimarios,
+                                            'produtos_adicionais' => $ProdutosAdicionais
+                                    ], JSON_UNESCAPED_UNICODE),
+                                    'response_mode' => 'blocking',
+                                    "conversation_id" => "",
+                                    "user" => "RFP-API-ONLINE-RETRY",
+                                    "files" => [],
                                 ];  
-    
 
                                 yield function () use ($clientHookIA, $body, $Record) { 
 
@@ -182,6 +147,24 @@ class UploadRetryRecords extends Command
                                 }; 
                             }else{
 
+                                $DadosResposta = new ProjectAnswer;
+                                $DadosResposta->bundle_id = $bundleId->bundle_id ?? null;
+                                $DadosResposta->user_id = $Record->user_id;
+                                $DadosResposta->requisito_id = $Record->id;
+                                $DadosResposta->requisito = $Record->requisito;    
+                                $DadosResposta->aderencia_na_mesma_linha = $Answer->aderencia_na_mesma_linha ?? null;
+                                $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
+                                $DadosResposta->resposta = $Answer->resposta ?? null;
+                                $DadosResposta->modulo = $Answer->modulo ?? null;
+                                $DadosResposta->referencia = $Answer->referencia ?? null;
+                                $DadosResposta->retriever_resources = $Referencia ?? null;
+                                $DadosResposta->observacao = $Answer->observacao ?? null;
+                                $DadosResposta->acuracidade_porcentagem = $Answer->acuracidade_porcentagem ?? null;
+                                $DadosResposta->acuracidade_explicacao = $Answer->acuracidade_explicacao ?? null;
+            
+                                $DadosResposta->save();
+
+                                
                                 $Record->update(['status' => 'erro']);
                                 $Record->save();
                             } 
@@ -192,18 +175,18 @@ class UploadRetryRecords extends Command
            
     
             $pool = new Pool($clientHookIA, $requestsHook(), [
-                'concurrency' => 1,
+                'concurrency' => 2,
                 'fulfilled' => function ($result, $index) {
                     Log::info("Resposta Recebida");
 
                     $response = $result['response'];
-
+                    
                     $data = json_decode($response->getBody(), true);
                     $Answer = json_decode($data['answer']);
-                    //$Referencia = json_encode($data['metadata']['retriever_resources']);
-                        
+                    $Referencia = json_encode($data['metadata']['retriever_resources']);
+                    
                     $bundleId = RfpBundle::where('bundle', 'like', '%' . $Answer->linha_produto . '%')->first();
-                        
+                    
                     $Record = $result['record'];
                     $Record->ia_attempts = intval($Record->ia_attempts) + 1;
                     $Record->save();
@@ -220,8 +203,8 @@ class UploadRetryRecords extends Command
                         $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
                         $DadosResposta->resposta = $Answer->resposta ?? null;
                         $DadosResposta->modulo = $Answer->modulo ?? null;
-                        $DadosResposta->referencia = json_encode($Answer->sources) ?? null;
-                        //$DadosResposta->retriever_resources = $Referencia ?? null;
+                        $DadosResposta->referencia = $Answer->referencia ?? null;
+                        $DadosResposta->retriever_resources = $Referencia ?? null;
                         $DadosResposta->observacao = $Answer->observacao ?? null;
                         $DadosResposta->acuracidade_porcentagem = $Answer->acuracidade_porcentagem ?? null;
                         $DadosResposta->acuracidade_explicacao = $Answer->acuracidade_explicacao ?? null;

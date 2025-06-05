@@ -833,7 +833,7 @@ table {
                     background-color: #FFF;
                     min-width: 450px;
                     height: 80vh;
-                    padding: 50px;
+                    padding: 38px;
                     max-height: 80vh;
                     overflow: scroll;
                     position: absolute;
@@ -868,12 +868,14 @@ table {
 
                     #ModalReferencia .ListaReferencia .Referencia{
                         color: #525B75;
+                        padding: 20px;
                         text-align: left;
                         font-weight: 400;
                         font-size: 17px;
                         margin-bottom: 20px;
                         margin-left: 0px;
                         margin-top: 1px;
+                        background: #f6f9fc;
                         border-bottom: 2px solid #e1e6f5;
                     }
 
@@ -914,10 +916,129 @@ table {
                                 font-weight: 400;
                                 font-size: 17px;
                                 margin-bottom: 5px;
-                                background-color: #F9F9F9;
+                                background-color: #eaf0f5;
                                 padding: 5px 10px;
                                 border-radius: 5px;;
                             }
+
+
+
+
+
+
+
+
+
+
+
+                #ModalRetry{
+                    display: none;
+                }
+                
+                #ModalRetry::before{
+                    content: " ";
+                    width: 100vw;
+                    height: 100vh;
+                    background-color: #00000085;
+                    position: fixed;
+                    top: 0px;
+                    left: 0px;
+                    right: 0px;
+                    z-index: 99999;
+                }
+            
+                #ModalRetry .content{
+                    background-color: #FFF;
+                    min-width: 450px;
+                    height: 80vh;
+                    padding: 38px;
+                    max-height: 80vh;
+                    overflow: scroll;
+                    position: absolute;
+                    display: block;
+                    z-index: 9999999;
+                    border-radius: 10px;
+                    top: 50%;
+                    left: 50%;
+                    bottom: 50%;
+                    right: 50%;
+                    transform: translate(-50%, -50%);
+                }
+            
+                    #ModalRetry .Title{
+                        display: inline-flex;
+                        text-align: left;
+                    }
+                    
+                    #ModalRetry .Title svg{
+                        width: 32px;
+                    }
+
+                    #ModalRetry .Title h2{
+                        color: #525B75;
+                        text-align: left;
+                        font-weight: 400;
+                        font-size: 17px;
+                        margin-bottom: 20px;
+                        margin-left: 8px;
+                        margin-top: 1px;
+                    }
+
+                    #ModalRetry .ListaRetry .Referencia{
+                        color: #525B75;
+                        padding: 20px;
+                        text-align: left;
+                        font-weight: 400;
+                        font-size: 17px;
+                        margin-bottom: 20px;
+                        margin-left: 0px;
+                        margin-top: 1px;
+                        background: #f6f9fc;
+                        border-bottom: 2px solid #e1e6f5;
+                    }
+
+
+                        #ModalRetry .ListaRetry .Referencia h2{
+                            color: #525B75;
+                            text-align: left;
+                            font-weight: 400;
+                            font-size: 14px;
+                            margin-bottom: 20px;
+                            margin-left: 0px;
+                            margin-top: 1px;
+                        }
+
+
+                        #ModalRetry .ListaRetry .Referencia .list .processoList{
+                            color: #525B75;
+                            text-align: left;
+                            font-weight: 400;
+                            font-size: 17px;
+                            margin-bottom: 20px;
+                            margin-left: 0px;
+                            margin-top: 1px;
+                        }
+    
+    
+                            #ModalRetry .ListaRetry .Referencia .list .processoList .labelProcesso{
+                                color: #8A94AD;
+                                text-align: left;
+                                font-weight: 400;
+                                font-size: 15px;
+                                margin-bottom: 10px;
+                            }
+
+                            #ModalRetry .ListaRetry .Referencia .list .processoList .TextoProcesso{
+                                color: #525B75;
+                                text-align: left;
+                                font-weight: 400;
+                                font-size: 17px;
+                                margin-bottom: 5px;
+                                background-color: #eaf0f5;
+                                padding: 5px 10px;
+                                border-radius: 5px;;
+                            }
+
 
                     
 

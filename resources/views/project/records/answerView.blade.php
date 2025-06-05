@@ -205,6 +205,7 @@
     var totalRequisitos = {{$CountCountRecordsResultado}};
     var totalRespostasIA = {{$CountAnswerIA}};
     var respostasUsuario = {{$CountAnswerUser}};
+    var UserType = {{$Auth::user()}};
 </script>
 
 <script>
@@ -261,8 +262,16 @@
 
                         console.log(record);
 
+                        console.log('record');
+                        
                         // Verifica se record.resposta está presente em ListRespostas
-                        let existsInList = ListAnswers.some(resposta => resposta.anwser === record.answers.aderencia_na_mesma_linha);
+                        let existsInList = ListAnswers.some(resposta => 
+                            record.answers && 
+                            record.answers.aderencia_na_mesma_linha && 
+                            resposta.anwser === record.answers.aderencia_na_mesma_linha
+                        );
+
+                        //let existsInList = ListAnswers.some(resposta => resposta.anwser === record.answers.aderencia_na_mesma_linha);
                         let AnwserOptions = !existsInList  ? `<option disabled selected>${record.answers.aderencia_na_mesma_linha ? record.answers.aderencia_na_mesma_linha : ''} </option>` : '';
                         let highlighted_error = !existsInList  ? false : true;
                         console.log(existsInList);
@@ -299,7 +308,12 @@
                                     </div>`;
                         }
 
+
+
                         
+
+
+
 
                         rows += `
                             <tr class="listaTabela ${highlighted_error ? '' : 'highlighted_error'} ${user_edit_record ? '' : 'user_edit_record'}" data-id="${record.id}" style="min-height:60px; max-height: 100%;">                                
@@ -474,7 +488,7 @@
                         $('#ModalEdit .loading').hide();
                         $('#ModalEdit form').show();
 
-                        console.log(response.ProjectAnswer.aderencia_na_mesma_linha);
+        
 
                         $('#resposta').val(response.ProjectAnswer.answer_id);
                         $('#modulo').val(response.ProjectAnswer.modulo);

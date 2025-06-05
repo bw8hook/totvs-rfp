@@ -86,6 +86,7 @@ class ProjectController extends Controller
                 $AllProject = Project::withCount('records')->where('iduser_responsable', Auth::id())->get();
                 $AllFiles = ProjectFiles::withCount('records')->where('user_id', Auth::id())->get();
 
+
                 // Último atualizado
                 $lastUpdated = ProjectFiles::where('user_id', Auth::id())->orderBy('updated_at', 'desc')->first();
                 if ($lastUpdated) {
@@ -189,7 +190,12 @@ class ProjectController extends Controller
     { 
         $Detail = Project::with('user')->find($id);
         if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
-            $AllFiles = ProjectFiles::where('project_id', $id)->withCount('records')->get();
+            //$AllFiles = ProjectFiles::where('project_id', $id)->withCount('records')->get();
+            
+            $AllFiles = ProjectFiles::where('project_id', $id)
+                ->with(['records.answers']) // Carregamento eager com relacionamentos
+                ->withCount('records')
+                ->get();
 
             $lastUpdated = ProjectFiles::where('user_id', Auth::id())->orderBy('updated_at', 'desc')->first();
             if ($lastUpdated) {
@@ -206,6 +212,7 @@ class ProjectController extends Controller
             $CountAnswerUser = 0;
             $CountAnswerIA = 0;
             $CountNotAnswer = 0;
+            $CountAnswerIADesconhecido = 0;
 
             $ListProducts = array();
 
@@ -225,11 +232,22 @@ class ProjectController extends Controller
                     $CountAnswerUser += $File->records->where('status', 'user edit')->count();
                     $CountAnswerIA += $File->records->where('status', 'respondido ia')->count();
 
+                     $AllAnswered = $File->getRespondidosDesconhecidos($File->id);
+                    
+                    // dd($AllAnswered);
+
+                    // $CountAnswerIADesconhecido = $AllAnswered->filter(function($record) {
+                    //     return $record->projectAnswer && 
+                    //         $record->projectAnswer->aderencia_na_mesma_linha === "Desconhecido";
+                    // })->count();
+
                     $ListProducts[] = $ListFile['bundle'];
                     $ListProducts = array_unique($ListProducts);
                     
                     $ListFiles[] = $ListFile;
             }
+
+            //dd($CountAnswerIADesconhecido);
 
             $data = array(
                 'Detail' => $Detail,
@@ -241,8 +259,9 @@ class ProjectController extends Controller
                 'CountRFPs' => $CountRFPs,
                 'CountRequisitos' => $CountRequisitos,
                 'CountAnswerUser' => $CountAnswerUser,
-                'CountAnswerIA' => $CountAnswerIA,
+                'CountAnswerIA' => $CountAnswerIADesconhecido,
                 'CountNotAnswer' => $CountNotAnswer,
+                'CountAnswerIADesconhecido' => $CountAnswerIADesconhecido
             );
     
             return view('project.detail')->with($data);
@@ -253,51 +272,80 @@ class ProjectController extends Controller
     }
 
 
-    public function filterDetail(Request $request)
+     public function filterDetail(Request $request)
     { 
         // Valida a Permissão do usuário
         if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) {
             //$query = ProjectFiles::query()->with('user')->with('rfp_bundles')->withCount('projectRecords')->where('project_id', $request->id);
             
+           // Consulta inicial com relacionamentos
             $query = ProjectFiles::query()
             ->with(['user', 'rfp_bundles'])
-            ->withCount([
-                'projectRecords',
-                'projectRecords as respondidos_ia_count' => function ($query) {
-                    $query->where('status', 'respondido ia');
-                },
-                'projectRecords as respondidos_user_count' => function ($query) {
-                    $query->where('status', 'respondido user');
-                }
-            ])
             ->where('project_id', $request->id);
 
-
-            
             // Aplicar filtros
             if ($request->has('filter')) {
-                foreach ($request->filter as $field => $value) {
-                    if (!empty($value)) {
-                        $query->where($field, 'like', '%' . $value . '%');
-                    }
+            foreach ($request->filter as $field => $value) {
+                if (!empty($value)) {
+                    $query->where($field, 'like', '%' . $value . '%');
                 }
+            }
             }
 
             // Aplicar ordenação
             if ($request->has('sort_by') && $request->has('sort_order')) {
-                $sortBy = $request->sort_by;
-                $sortOrder = $request->sort_order;
+            $sortBy = $request->sort_by;
+            $sortOrder = $request->sort_order;
 
-                if (in_array($sortBy, ['name', 'id', 'gestor','email', 'account_type', 'status', 'created_at']) && in_array($sortOrder, ['asc', 'desc'])) {
-                    $query->orderBy($sortBy, $sortOrder);
-                }
+            if (in_array($sortBy, ['name', 'id', 'gestor', 'email', 'account_type', 'status', 'created_at']) && 
+                in_array($sortOrder, ['asc', 'desc'])) {
+                $query->orderBy($sortBy, $sortOrder);
+            }
             }
 
             // Paginação
-            $data = $query->paginate(40);          
+            $projectFiles = $query->paginate(40);
+
+            // Processamento adicional após a paginação
+            $projectFiles->transform(function ($projectFile) {
+                // Contagem de registros IA para cada arquivo de projeto
+                $countIA = ProjectRecord::where('project_file_id', $projectFile->id)
+                    ->where('status', 'respondido ia')
+                    ->whereHas('answers', function ($query) {
+                        $query->whereNotNull('id')
+                            ->where('aderencia_na_mesma_linha', '!=', 'Desconhecido');
+                    })
+                    ->count();
+
+                $countUser = ProjectRecord::where('project_file_id', $projectFile->id)
+                    ->where('status', 'user edit') 
+                    ->whereHas('answers', function ($query) {
+                        $query->whereNotNull('id'); // Garante que answer_id está preenchido
+                    })
+                    ->whereHas('answers', function ($query) {
+                        $query->where('aderencia_na_mesma_linha', '!=', 'Desconhecido');
+                    })
+                    ->count();
+
+                // Contagem de registros IA para cada arquivo de projeto
+                $countTotal = ProjectRecord::where('project_file_id', $projectFile->id)
+                    ->where('status', 'respondido ia')
+                    ->count();
+
+                // Adicionar contagem IA ao objeto do arquivo de projeto
+                $projectFile->respondidos_ia_count = $countIA;
+                $projectFile->respondidos_user_count = $countUser;
+                $projectFile->project_records_count = $countTotal;
+
+                return $projectFile;
+            });
+
+
+            // Retornar dados paginados
+            return response()->json($projectFiles);      
 
             // Retornar dados em JSON
-            return response()->json($data);
+            //return response()->json($data);
         }else{
             return redirect()->back()->with('error', 'Você não tem permissão para acessar essa página.');
         }
@@ -581,6 +629,10 @@ class ProjectController extends Controller
 
     public function projectExport(Request $request, $id)
     {
+
+        set_time_limit(0); // Desativa limite de tempo
+        ini_set('memory_limit', '1024M'); // Aumenta limite de memória
+        
         Log::info('Iniciando o processamento da base de conhecimento');
         try {
             $ProjectFile = ProjectFiles::where('id', $id)
@@ -589,16 +641,13 @@ class ProjectController extends Controller
 
             if($ProjectFile->status == 'processado' || $ProjectFile->status == 'concluído' ){
                 try {
-
                     if($ProjectFile->status == 'concluído'){
                          // Baixar arquivo do S3 para processamento local
                         $tempInputFile = tempnam(sys_get_temp_dir(), 'excel');
                         $contents = Storage::disk('s3')->get($ProjectFile->filepath);
                         file_put_contents($tempInputFile, $contents);
-
                         // Criar instância de importação
                         $import = new DownloadAnsweredProjectImport($ProjectFile->id);
-
                         // Importar arquivo
                         Excel::import($import, $tempInputFile, null, \Maatwebsite\Excel\Excel::XLSX);
 
@@ -655,25 +704,8 @@ class ProjectController extends Controller
                         
                         // Tentar salvar
                         $writer->save($tempFile);
-
-
-                        // $dataArray = $ProjectRecords->map(function($record) {
-                        //     return [
-                        //         'PROCESSO' => $record->processo,
-                        //         'SUBPROCESSO' => $record->subprocesso,
-                        //         'DESCRIÇÃO DO REQUISITO' => $record->requisito,
-                        //         'RESPOSTA' => optional($record->answers)->aderencia_na_mesma_linha,
-                        //         'MÓDULOS' => $record->answers->modulo,
-                        //         'PRODUTO PRINCIPAL' => $record->answers->linha_produto,
-                        //         'OBSERVAÇÕES' => $record->answers->observacao,
-                        //         'PRODUTOS ADICIONAIS' => ''
-                        //     ];
-                        // })->toArray();
-
-                        // Criar instância de importação
                         $import = new DownloadAnsweredProjectImport($ProjectFile->id);
-                        
-
+                
                         // Importar arquivo
                         Excel::import($import, $tempFile);
                     }                    
@@ -720,14 +752,8 @@ class ProjectController extends Controller
                             ]
                         )->deleteFileAfterSend(true);
                     }
-                    
-                   
-                   
 
                 } catch (\Exception $e) {
-
-                    dd($e);
-
 
                     Log::error('Erro no processamento do Excel', [
                         'message' => $e->getMessage(),
@@ -738,6 +764,8 @@ class ProjectController extends Controller
                 }        
             }
         } catch (\Exception $e) {
+            dd($e);
+
             Log::error("Erro: " . $e->getMessage());
         }
           
@@ -747,19 +775,10 @@ class ProjectController extends Controller
 
 
 
-
-
-
-
-
-
-
     public function cron(Request $request)
     {
         try {
-            //$ProjectFiles = ProjectFiles::where('status', "em processamento")
-
-            $ProjectFiles = ProjectFiles::where('status', "em processamento")
+            $ProjectFiles = ProjectFiles::where('id', "28")
             ->with('bundles')
             ->orderBy('id', 'asc')
             ->get();
@@ -789,80 +808,88 @@ class ProjectController extends Controller
 
                     if($agents[0]->search_engine == "Open IA"){
 
-                        $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
-                            ->where('project_records.status', "processando")
+                         $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
+                            ->where('project_records.id', 22369)
                             ->orderBy('id', 'asc')
                             ->get();
 
+                            foreach ($Records as $Record) {
 
-                        foreach ($Records as $Record) {
+                                dd($Record);
 
-                            //$Agent = Agent::where('id', $Record->agent_id)->first();
-                            $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
-                            $BundlesProcess = $Processo->rfpBundles;
 
-                            $ProdutosArray = [];
-                            $AgentesArray = [];
+                                //$Agent = Agent::where('id', $Record->agent_id)->first();
+                                $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
+                                $BundlesProcess = $Processo->rfpBundles;
+    
+                                $ProdutosArray = [];
+                                $AgentesArray = [];
+    
+                                foreach ($BundlesProcess as $bundleProcess) {
+                                    $DadosAgentePrioritario = Agent::where('id', $bundleProcess->agent_id)->first();
+    
+                                    $ProdutosArray[] = $bundleProcess->bundle;
+                                    $AgentesArray[] = $DadosAgentePrioritario->knowledge_id_hook;
+                                }
+    
+                                // Pega os AGENTES e remove os itens repetidos e converte pra string
+                                $AgentesUnique = array_values(array_unique($AgentesArray));
+                                $AgentesPrimarios = implode(',', $AgentesUnique);
+                                    $agentIds = $bundles->pluck('agent_id')->unique();
+                                    $agentsList = Agent::whereIn('id', $agentIds)->get();
+                                    $AgentesSecundarios = $agentsList->pluck('knowledge_id_hook')->filter()->diff($AgentesUnique)->implode(', ');
+    
+                                // Pega os PRODUTOS e remove os itens repetidos e converte pra string
+                                $ProdutosUnique = array_values(array_unique($ProdutosArray));
+                                $ProdutosPrimarios = implode(',', $ProdutosUnique);
+                                    $ProdutosAdicionais = collect($bundles->pluck('bundle')->unique())->diff($ProdutosUnique)->implode(', ');
+    
+                                $requisito = $Record->requisito;
+                                $processo = $Processo->process;
+    
+                                $body = [
+                                    'inputs' =>  [
+                                        'base_id_primarios' => $AgentesPrimarios,
+                                        'base_id_secundarios' => $AgentesSecundarios,    
+                                    ],
+                                    'query' => json_encode([
+                                            'requisito' => $requisito,
+                                            'processo' => $processo,
+                                            'produto' => $ProdutosPrimarios,
+                                            'produtos_adicionais' => $ProdutosAdicionais
+                                    ], JSON_UNESCAPED_UNICODE),
+                                    'response_mode' => 'blocking',
+                                    "conversation_id" => "",
+                                    "user" => "RFP-API-ONLINE",
+                                    "files" => [],
+                                ];  
+    
+                                dd($body);
 
-                            foreach ($BundlesProcess as $bundleProcess) {
-                                $DadosAgentePrioritario = Agent::where('id', $bundleProcess->agent_id)->first();
+                                
+                                yield function () use ($clientHookIA, $body, $Record) { 
 
-                                $ProdutosArray[] = $bundleProcess->bundle;
-                                $AgentesArray[] = $DadosAgentePrioritario->knowledge_id_hook;
+                                    $Record->update(['status' => 'enviado']);
+                                    $Record->update(['ia_attempts' => 1]);
+                                    $Record->save();
+
+                                    return $clientHookIA->postAsync('/v1/chat-messages', [
+                                        'json' => $body,
+                                        'headers' => ['Content-Type' => 'application/json'],
+                                    ])->then(function ($response) use ($Record) {
+                                        Log::info("Enviado");
+                                        return ['response' => $response, 'record' => $Record];
+                                        
+                                    });
+                                };               
                             }
-
-                            // Pega os AGENTES e remove os itens repetidos e converte pra string
-                            $AgentesUnique = array_values(array_unique($AgentesArray));
-                            $AgentesPrimarios = implode(',', $AgentesUnique);
-                                $agentIds = $bundles->pluck('agent_id')->unique();
-                                $agentsList = Agent::whereIn('id', $agentIds)->get();
-                                $AgentesSecundarios = $agentsList->pluck('knowledge_id_hook')->filter()->diff($AgentesUnique)->implode(', ');
-
-                            // Pega os PRODUTOS e remove os itens repetidos e converte pra string
-                            $ProdutosUnique = array_values(array_unique($ProdutosArray));
-                            $ProdutosPrimarios = implode(',', $ProdutosUnique);
-                                $ProdutosAdicionais = collect($bundles->pluck('bundle')->unique())->diff($ProdutosUnique)->implode(', ');
-
-                            $requisito = $Record->requisito;
-                            $processo = $Processo->process;
-
-               
-                            $body = [
-                                'inputs' =>  [
-                                    'base_id_primarios' => $AgentesPrimarios,
-                                    'base_id_secundarios' => $AgentesSecundarios,    
-                                ],
-                                'query' => json_encode([
-                                        'requisito' => $requisito,
-                                        'processo' => $processo,
-                                        'produto' => $ProdutosPrimarios,
-                                        'produtos_adicionais' => $ProdutosAdicionais
-                                ], JSON_UNESCAPED_UNICODE),
-                                'response_mode' => 'blocking',
-                                "conversation_id" => "",
-                                "user" => "RFP-API-TESTE",
-                                "files" => [],
-                            ];  
-
-
-                            yield function () use ($clientHookIA, $body, $Record) { 
-                                return $clientHookIA->postAsync('/v1/chat-messages', [
-                                    'json' => $body,
-                                    'headers' => ['Content-Type' => 'application/json'],
-                                ])->then(function ($response) use ($Record) {
-                                    Log::info("Enviado");
-                                    return ['response' => $response, 'record' => $Record];
-                                    
-                                });
-                            };               
-                        }
                     }
                 }
             };
            
     
             $pool = new Pool($clientHookIA, $requestsHook(), [
-                'concurrency' => 10,
+                'concurrency' => 2,
                 'fulfilled' => function ($result, $index) {
                     Log::info("Resposta Recebida");
 
@@ -920,6 +947,8 @@ class ProjectController extends Controller
         } catch (\Exception $e) {
             Log::error( $e);
         }
+
+
     }
 
 

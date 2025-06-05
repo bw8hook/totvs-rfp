@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers;
+use App\Models\Agent;
 use Carbon\Carbon;
 use App\Models\Project;
 use App\Models\ProjectFiles;
@@ -16,6 +17,9 @@ use App\Exports\KnowledgeBaseExport;
 use App\Models\KnowledgeRecord;
 use App\Models\ProjectAnswer;
 use App\Models\ProjectHistory;
+use GuzzleHttp\Client;
+use GuzzleHttp\Pool;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -23,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Illuminate\Support\Str;
+
 use DateTime;
 
 
@@ -652,6 +657,11 @@ class ProjectRecordsController extends Controller
                 $registrosSemResposta = $CountRecords - ($countIA + $countUser);
                 $porcentagemSemResposta = ($registrosSemResposta / $CountRecords) * 100;
 
+                $UserType = 0;
+                if( Auth::user()->hasRole('Administrador')){
+                    $UserType = 1;
+                }
+
                 $data = array(
                     'idProjectFile' => $id,
                     'Project' => $Project,
@@ -670,7 +680,10 @@ class ProjectRecordsController extends Controller
                     'progress' => $porcentagemSemResposta,
                     'registrosSemResposta' => $registrosSemResposta,
                     'CountCountRecordsResultado' => $CountRecords,
+                    'InfoUser' => $UserType,
                 );
+
+        
                 
                 if($ProjectFile->status != "processado"){
                     return view('project.records.answerView')->with($data);
@@ -723,17 +736,20 @@ class ProjectRecordsController extends Controller
                        
             $resposta = $request->answer === "null" ? null : $request->answer;
             if (filled($resposta)) {
-                if($resposta == "Desconhecido"){
+                if($resposta == "Não Processado"){
                     // $query->whereHas('answers', function($q) use ($request) {
                     //     $q->where('aderencia_na_mesma_linha', 'like',  $request->answer);
                     // })->orDoesntHave('answers');
+
                     $query->where('project_file_id', $Project->id)
-                        ->where(function($q) use ($request) {
-                            $q->whereHas('answers', function($subQ) use ($request) {
-                                $subQ->where('aderencia_na_mesma_linha', 'like', $request->answer);
-                            })->orDoesntHave('answers');
-                        });
-                    
+                    ->where(function($q) use ($request) {
+                        $q->whereHas('answers', function($subQ) use ($request) {
+                            $subQ->where('aderencia_na_mesma_linha', 'like', $request->answer);
+                        })->orDoesntHave('answers');
+                    });
+                
+
+                   
                 }else{
                     $query->whereHas('answers', function($q) use ($request) {
                         $q->where('aderencia_na_mesma_linha', 'like',  $request->answer);
@@ -785,6 +801,444 @@ class ProjectRecordsController extends Controller
 
 
 
+    public function answerReprocessing(string $id)
+    { 
+      
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) { 
+            try {
+
+                $GetRecordProject = ProjectRecord::where('project_records.id', $id)->first();
+
+                //$ProjectFile = ProjectFiles::with('rfp_bundles')->findOrFail($id);
+
+
+                $ProjectFiles = ProjectFiles::where('id', $GetRecordProject->project_file_id)
+                ->with('bundles')
+                ->orderBy('id', 'asc')
+                ->get();
+
+                $clientHookIA = new Client([
+                    'base_uri' => 'https://ubuntu-bw8-mac-server.hook.app.br/v1/',
+                    'timeout' => 60,
+                    'headers' => [
+                        'Authorization' => 'Bearer app-2KkTmPKykDJPnyufxnN7H9bw',
+                        'Accept' => 'application/json',
+                    ],
+                ]);
+    
+                $requestsHook = function () use ($ProjectFiles, $clientHookIA, $id) {
+                    foreach ($ProjectFiles as $File) {
+
+                        // Pega os IDs dos bundles vinculados
+                        $bundleIds = $File->bundles->pluck('bundle_id')->toArray();
+    
+                        // Busca os dados completos dos RfpBundles
+                        $bundles = RfpBundle::whereIn('bundle_id', $bundleIds)->get();
+    
+                        // Primeiro pega os agent_ids dos bundles
+                        $agentIds = $bundles->pluck('agent_id')->unique()->toArray();
+    
+                        // Depois busca os agents
+                        $agents = Agent::whereIn('id', $agentIds)->get();
+    
+                        if($agents[0]->search_engine == "Open IA"){
+
+                             $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
+                                ->where('project_records.id', $id)
+                                ->orderBy('id', 'asc')
+                                ->get();
+
+                                foreach ($Records as $Record) {
+    
+                                    //$Agent = Agent::where('id', $Record->agent_id)->first();
+                                    $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
+                                    $BundlesProcess = $Processo->rfpBundles;
+
+                                    // Coleções de bundles
+                                    $bundlesDoProcesso = $Processo->rfpBundles; // Collection de bundles do processo
+                                    $bundlesDoProjeto = $File->bundles;         // Collection de bundles do projeto
+
+                                    // Filtra apenas os que estão nos dois (interseção por id)
+                                    $produtosComProcesso = $bundlesDoProjeto->filter(function ($bundle) use ($bundlesDoProcesso) {
+                                        return $bundlesDoProcesso->contains('bundle_id', $bundle->bundle_id);
+                                    });
+                                    $produtosComProcessoString = implode(', ', $produtosComProcesso->pluck('bundle')->unique()->values()->toArray());
+
+
+                                    // Filtra os que NÃO estão no processo
+                                    $produtosSemProcesso = $bundlesDoProjeto->filter(function ($bundle) use ($bundlesDoProcesso) {
+                                        return !$bundlesDoProcesso->contains('bundle_id', $bundle->bundle_id);
+                                    });
+                                    $produtosSemProcessoString = implode(', ', $produtosSemProcesso->pluck('bundle')->unique()->values()->toArray());
+
+
+                                    // Agrupa os Produtos com base nos Agentes e depois itera para listsa só o ID dos AGENTES
+                                    // ISSO APENAS NOS PRIORITÁRIOS
+                                    $produtosComProcessoAgrupadosPorAgente = $produtosComProcesso->groupBy('agent_id');
+                                    $AgentesPrioritariosArray = [];
+                                    foreach ($produtosComProcessoAgrupadosPorAgente as $IdAgente => $AgenteProcesso) {
+                                        $DadosAgentePrioritario = Agent::find($IdAgente);
+                                        if ($DadosAgentePrioritario && $DadosAgentePrioritario->knowledge_id_hook) {
+                                            $AgentesPrioritariosArray[] = $DadosAgentePrioritario->knowledge_id_hook;
+                                        }
+                                    }
+                                    $AgenteComProcessoString = implode(', ', $AgentesPrioritariosArray);
+
+
+                                    // Agrupa os Produtos com base nos Agentes e depois itera para listsa só o ID dos AGENTES
+                                    // ISSO APENAS NOS SECUNDÁRIOS
+                                    $produtosSemProcessoAgrupadosPorAgente = $produtosSemProcesso->groupBy('agent_id');
+                                    $AgentesSecundariosArray = [];
+                                    foreach ($produtosSemProcessoAgrupadosPorAgente as $IdAgente => $AgenteSemProcesso) {
+                                        $DadosAgenteSecundario = Agent::find($IdAgente);
+                                        if ($DadosAgenteSecundario && $DadosAgenteSecundario->knowledge_id_hook) {
+                                            $AgentesSecundariosArray[] = $DadosAgenteSecundario->knowledge_id_hook;
+                                        }
+                                    }
+
+                                    $AgentesSecundariosArray = array_diff($AgentesSecundariosArray, $AgentesPrioritariosArray);
+                                    $AgenteSemProcessoString = implode(', ', $AgentesSecundariosArray);
+
+
+
+                                    $requisito = $Record->requisito;
+                                    $processo = $Processo->process;
+                          
+                                    $body = [
+                                        'inputs' =>  [
+                                            'base_id_primarios' => $AgenteComProcessoString,
+                                            'base_id_secundarios' => $AgenteSemProcessoString,    
+                                        ],
+                                        'query' => json_encode([
+                                                'requisito' => $requisito,
+                                                'processo' => $processo,
+                                                'produto' => $produtosComProcessoString,
+                                                'produtos_adicionais' => $produtosSemProcessoString
+                                        ], JSON_UNESCAPED_UNICODE),
+                                        'response_mode' => 'blocking',
+                                        "conversation_id" => "",
+                                        "user" => "RFP-API-REPROCESSING",
+                                        "files" => [],
+                                    ];  
+
+                                    yield function () use ($clientHookIA, $body, $Record) { 
+    
+                                        //$Record->update(['status' => 'enviado']);
+                                        //$Record->update(['ia_attempts' => 1]);
+                                        //$Record->save();
+    
+                                        return $clientHookIA->postAsync('/v1/chat-messages', [
+                                            'json' => $body,
+                                            'headers' => ['Content-Type' => 'application/json'],
+                                        ])->then(function ($response) use ($Record) {
+                                            Log::info("Enviado");
+                                            return ['response' => $response, 'record' => $Record];
+                                            
+                                        });
+                                    };               
+                                }
+                        }
+                    }
+                };
+               
+                $answers = '';
+
+                $pool = new Pool($clientHookIA, $requestsHook(), [
+                    'concurrency' => 2,
+                    'fulfilled' => function ($result, $index) use (&$answers) {
+                        Log::info("Resposta Recebida");
+                        $response = $result['response'];
+
+                        $data = json_decode($response->getBody(), true);
+                        $Answer = json_decode($data['answer']);
+                        //$Referencia = json_encode($data['metadata']['retriever_resources']);
+
+                        $bundleId = RfpBundle::where('bundle', 'like', '%' . $Answer->linha_produto . '%')->first();
+                        
+                        
+                        $Record = $result['record'];
+                        $Record->ia_attempts = intval($Record->ia_attempts) + 1;
+                        $Record->save();
+
+                        // Atualizar o status do Recorde
+                        if($Record->ia_attempts >= 0){
+                            $DadosResposta = new ProjectAnswer;
+                            $DadosResposta->bundle_id = $bundleId->bundle_id ?? null;
+                            $DadosResposta->user_id = $Record->user_id;
+                            $DadosResposta->requisito_id = $Record->id;
+                            $DadosResposta->requisito = $Record->requisito;    
+                            $DadosResposta->aderencia_na_mesma_linha = $Answer->aderencia_na_mesma_linha ?? null;
+                            $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
+                            $DadosResposta->resposta = $Answer->resposta ?? null;
+                            $DadosResposta->modulo = $Answer->modulo ?? null;
+                            $DadosResposta->referencia = json_encode($Answer->sources) ?? null;
+                            //$DadosResposta->retriever_resources = $Referencia ?? null;
+                            $DadosResposta->observacao = $Answer->observacao ?? null;
+                            $DadosResposta->acuracidade_porcentagem = $Answer->acuracidade_porcentagem ?? null;
+                            $DadosResposta->acuracidade_explicacao = $Answer->acuracidade_explicacao ?? null;
+        
+                            $DadosResposta->save();
+                            
+                            $Record->update(['status' => 'respondido ia']);
+                            $Record->update(['project_answer_id' => $DadosResposta->id]);
+                            $Record->save();
+                        }
+                        
+                        $answers = $Answer;
+    
+                        //Log::info("Processamento de todos os arquivos concluído com sucesso");
+        
+                    },
+                    'rejected' => function ($reason, $index) {
+                        
+                        return response()->json($reason);
+
+                        //dd("reason");
+                                            
+                        Log::error("Request failed: " . $reason->getMessage());
+                        // Você pode querer atualizar o status do Record aqui também
+                    },
+                ]);
+
+            
+                Log::info("Finalizado com sucesso");
+                // Executa o pool
+                $promise = $pool->promise();
+                $promise->wait();
+
+                return response()->json($answers);
+
+            } catch (\Exception $e) {
+                Log::error( $e);
+                return response()->json($e);
+            }
+
+
+
+
+
+        }
+    }
+
+
+
+    public function ProjectReprocessing(string $id)
+    { 
+      
+        if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) { 
+            try {
+                $ProjectFile = ProjectFiles::with('rfp_bundles')->findOrFail($id);
+
+                $ProjectFiles = ProjectFiles::where('id', $ProjectFile->id)
+                ->with('bundles')
+                ->orderBy('id', 'asc')
+                ->get();
+
+                $clientHookIA = new Client([
+                    'base_uri' => 'https://ubuntu-bw8-mac-server.hook.app.br/v1/',
+                    'timeout' => 60,
+                    'headers' => [
+                        'Authorization' => 'Bearer app-2KkTmPKykDJPnyufxnN7H9bw',
+                        'Accept' => 'application/json',
+                    ],
+                ]);
+//app-2KkTmPKykDJPnyufxnN7H9bw
+                
+    
+                $requestsHook = function () use ($ProjectFiles, $clientHookIA, $id) {
+                    foreach ($ProjectFiles as $File) {
+
+                        // Pega os IDs dos bundles vinculados
+                        $bundleIds = $File->bundles->pluck('bundle_id')->toArray();
+    
+                        // Busca os dados completos dos RfpBundles
+                        $bundles = RfpBundle::whereIn('bundle_id', $bundleIds)->get();
+    
+                        // Primeiro pega os agent_ids dos bundles
+                        $agentIds = $bundles->pluck('agent_id')->unique()->toArray();
+    
+                        // Depois busca os agents
+                        $agents = Agent::whereIn('id', $agentIds)->get();
+    
+                        if($agents[0]->search_engine == "Open IA"){
+
+                            $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
+                                ->where('project_records.last_attempt_at', '<', '2025-06-04 00:00:00')
+                                ->orderBy('id', 'asc')
+                                ->get();
+
+                                foreach ($Records as $Record) {
+    
+                                    //$Agent = Agent::where('id', $Record->agent_id)->first();
+                                    $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
+                                    $BundlesProcess = $Processo->rfpBundles;
+
+                                    // Coleções de bundles
+                                    $bundlesDoProcesso = $Processo->rfpBundles; // Collection de bundles do processo
+                                    $bundlesDoProjeto = $File->bundles;         // Collection de bundles do projeto
+
+                                    // Filtra apenas os que estão nos dois (interseção por id)
+                                    $produtosComProcesso = $bundlesDoProjeto->filter(function ($bundle) use ($bundlesDoProcesso) {
+                                        return $bundlesDoProcesso->contains('bundle_id', $bundle->bundle_id);
+                                    });
+                                    $produtosComProcessoString = implode(', ', $produtosComProcesso->pluck('bundle')->unique()->values()->toArray());
+
+
+                                    // Filtra os que NÃO estão no processo
+                                    $produtosSemProcesso = $bundlesDoProjeto->filter(function ($bundle) use ($bundlesDoProcesso) {
+                                        return !$bundlesDoProcesso->contains('bundle_id', $bundle->bundle_id);
+                                    });
+                                    $produtosSemProcessoString = implode(', ', $produtosSemProcesso->pluck('bundle')->unique()->values()->toArray());
+
+
+                                    // Agrupa os Produtos com base nos Agentes e depois itera para listsa só o ID dos AGENTES
+                                    // ISSO APENAS NOS PRIORITÁRIOS
+                                    $produtosComProcessoAgrupadosPorAgente = $produtosComProcesso->groupBy('agent_id');
+                                    $AgentesPrioritariosArray = [];
+                                    foreach ($produtosComProcessoAgrupadosPorAgente as $IdAgente => $AgenteProcesso) {
+                                        $DadosAgentePrioritario = Agent::find($IdAgente);
+                                        if ($DadosAgentePrioritario && $DadosAgentePrioritario->knowledge_id_hook) {
+                                            $AgentesPrioritariosArray[] = $DadosAgentePrioritario->knowledge_id_hook;
+                                        }
+                                    }
+                                    $AgenteComProcessoString = implode(', ', $AgentesPrioritariosArray);
+
+
+                                    // Agrupa os Produtos com base nos Agentes e depois itera para listsa só o ID dos AGENTES
+                                    // ISSO APENAS NOS SECUNDÁRIOS
+                                    $produtosSemProcessoAgrupadosPorAgente = $produtosSemProcesso->groupBy('agent_id');
+                                    $AgentesSecundariosArray = [];
+                                    foreach ($produtosSemProcessoAgrupadosPorAgente as $IdAgente => $AgenteSemProcesso) {
+                                        $DadosAgenteSecundario = Agent::find($IdAgente);
+                                        if ($DadosAgenteSecundario && $DadosAgenteSecundario->knowledge_id_hook) {
+                                            $AgentesSecundariosArray[] = $DadosAgenteSecundario->knowledge_id_hook;
+                                        }
+                                    }
+
+                                    $AgentesSecundariosArray = array_diff($AgentesSecundariosArray, $AgentesPrioritariosArray);
+                                    $AgenteSemProcessoString = implode(', ', $AgentesSecundariosArray);
+
+
+
+                                    $requisito = $Record->requisito;
+                                    $processo = $Processo->process;
+                          
+                                    $body = [
+                                        'inputs' =>  [
+                                            'base_id_primarios' => $AgenteComProcessoString,
+                                            'base_id_secundarios' => $AgenteSemProcessoString,    
+                                        ],
+                                        'query' => json_encode([
+                                                'requisito' => $requisito,
+                                                'processo' => $processo,
+                                                'produto' => $produtosComProcessoString,
+                                                'produtos_adicionais' => $produtosSemProcessoString
+                                        ], JSON_UNESCAPED_UNICODE),
+                                        'response_mode' => 'blocking',
+                                        "conversation_id" => "",
+                                        "user" => "RFP-API-REPROCESSING",
+                                        "files" => [],
+                                    ];  
+
+                                    yield function () use ($clientHookIA, $body, $Record) { 
+    
+                                        //$Record->update(['status' => 'enviado']);
+                                        //$Record->update(['ia_attempts' => 1]);
+                                        //$Record->save();
+    
+                                        return $clientHookIA->postAsync('/v1/chat-messages', [
+                                            'json' => $body,
+                                            'headers' => ['Content-Type' => 'application/json'],
+                                        ])->then(function ($response) use ($Record) {
+                                            Log::info("Enviado");
+                                            return ['response' => $response, 'record' => $Record];
+                                            
+                                        });
+                                    };               
+                                }
+                        }
+                    }
+                };
+               
+        
+                $pool = new Pool($clientHookIA, $requestsHook(), [
+                    'concurrency' => 2,
+                    'fulfilled' => function ($result, $index) {
+                        Log::info("Resposta Recebida");
+                        $response = $result['response'];
+
+                        $data = json_decode($response->getBody(), true);
+                        $Answer = json_decode($data['answer']);
+                        //$Referencia = json_encode($data['metadata']['retriever_resources']);
+                        
+                        $bundleId = RfpBundle::where('bundle', 'like', '%' . $Answer->linha_produto . '%')->first();
+                        
+                        $Record = $result['record'];
+                        $Record->ia_attempts = intval($Record->ia_attempts) + 1;
+                        $Record->save();
+
+                        // Atualizar o status do Recorde
+                        if($Record->ia_attempts >= 0){
+                            $DadosResposta = new ProjectAnswer;
+                            $DadosResposta->bundle_id = $bundleId->bundle_id ?? null;
+                            $DadosResposta->user_id = $Record->user_id;
+                            $DadosResposta->requisito_id = $Record->id;
+                            $DadosResposta->requisito = $Record->requisito;    
+                            $DadosResposta->aderencia_na_mesma_linha = $Answer->aderencia_na_mesma_linha ?? null;
+                            $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
+                            $DadosResposta->resposta = $Answer->resposta ?? null;
+                            $DadosResposta->modulo = $Answer->modulo ?? null;
+                            $DadosResposta->referencia = json_encode($Answer->sources) ?? null;
+                            //$DadosResposta->retriever_resources = $Referencia ?? null;
+                            $DadosResposta->observacao = $Answer->observacao ?? null;
+                            $DadosResposta->acuracidade_porcentagem = $Answer->acuracidade_porcentagem ?? null;
+                            $DadosResposta->acuracidade_explicacao = $Answer->acuracidade_explicacao ?? null;
+        
+                            $DadosResposta->save();
+                            
+                            $Record->update(['status' => 'respondido ia']);
+                            $Record->update(['project_answer_id' => $DadosResposta->id]);
+                            $Record->save();
+                        }
+                        
+                        //dd($Answer);
+    
+                        Log::info("Processamento de todos os arquivos concluído com sucesso");
+        
+                    },
+                    'rejected' => function ($reason, $index) {
+                        
+                        //dd("reason");
+                                            
+                        Log::error("Request failed: " . $reason->getMessage());
+                        // Você pode querer atualizar o status do Record aqui também
+                    },
+                ]);
+        
+                Log::info("Finalizado com sucesso");
+                // Executa o pool
+                $promise = $pool->promise();
+                $promise->wait();
+            } catch (\Exception $e) {
+                dd($e);
+                Log::error( $e);
+            }
+
+
+
+
+
+        }
+    }
+
+
+    
+
+
+
+
+
+
     public function references(string $id)
     { 
         $Project = ProjectRecord::findOrFail($id);
@@ -795,35 +1249,50 @@ class ProjectRecordsController extends Controller
             $ReferenciasResources = json_decode($ProjectAnswer->referencia);
             $Referencias = $ProjectAnswer->referencia;
 
-
-
             $Referencias = $ProjectAnswer->referencia;
 
             $dados = [];
             $KnowledgeRecords = [];
 
             // Dividir referências por ponto e vírgula
-            $ListaReferencia = explode(';', $Referencias);
+            //$ListaReferencia = explode(';', $Referencias);
+
+            $ListaReferencia =  json_decode($Referencias);
+            
 
             foreach($ListaReferencia as $index => $Referencia) {
                 if(!empty(trim($Referencia))) {
+
+                    $dados = json_decode($Referencia, true);
+
+                    // Acessando os valores
+                    $idRequisito = $dados['id-requisto'];
+                    $requisito = $dados['requisito'];
+                    $documento = $dados['documento'];
+                    $score = $dados['score'];
+
                     $dados[$index] = $this->parseReferencia($Referencia);
                     
                     // Buscar Knowledge Records
-                    if (!empty($dados[$index]['ID Registro'])) {
+                    if (!empty($dados['id-requisto'])) {
                         $KnowledgeAll = KnowledgeRecord::with('bundles')
-                            ->where('id_record', '=', $dados[$index]['ID Registro'])
+                            ->where('id_record', '=', $dados['id-requisto'])
                             ->get();
                         
                         if(count($KnowledgeAll) >= 1 ){
                             foreach ($KnowledgeAll as $Knowledge) {
-                                $KnowledgeRecords[] = $Knowledge->toArray();  
+                                $knowledgeArray = $Knowledge->toArray();
+                                $knowledgeArray['score'] = $dados['score'];
+                                
+                                $KnowledgeRecords[] = $knowledgeArray;
+
+                               //$KnowledgeRecords[] = $Knowledge->toArray();  
+                                //dd($idRequisito);
                             }
                         }
                     }
                 }
             }
-
 
             $data = array(
                 'ReferenciasIA' => $dados,

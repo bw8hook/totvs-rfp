@@ -28,6 +28,15 @@ document.addEventListener("DOMContentLoaded", function () {
         path: "/icons/lottie/loading.json", // Caminho gerado pelo Storage
     });
 
+
+    lottie.loadAnimation({
+        container: document.getElementById("lottie-container3"),
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+        path: "/icons/lottie/loading.json", // Caminho gerado pelo Storage
+    });
+
     lottie.loadAnimation({
         container: document.getElementById("lottie-empty"),
         renderer: "svg",

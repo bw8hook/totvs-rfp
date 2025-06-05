@@ -24,7 +24,7 @@ class UploadProjectToAnswerHook extends Command
      *
      * @var string
      */
-    protected $signature = 'app:upload-project-to-answer-hook';
+    protected $signature = 'app:upload-project-to-answer-hook-retry';
 
     /**
      * The console command description.
@@ -39,7 +39,7 @@ class UploadProjectToAnswerHook extends Command
     public function handle()
     {
         try {
-            $ProjectFiles = ProjectFiles::where('status', "em processamento")
+            $ProjectFiles = ProjectFiles::where('id', 19)
             ->with('bundles')
             ->orderBy('id', 'asc')
             ->get();
@@ -62,20 +62,11 @@ class UploadProjectToAnswerHook extends Command
                 ],
             ]);
 
-            // $clientHookIA = new Client([
-            //     'base_uri' => 'https://totvs-ia.hook.app.br/v1/',
-            //     'timeout' => 60,
-            //     'headers' => [
-            //         'Authorization' => 'Bearer app-y133Gvf5qZvY8yM3gyojkOzR',
-            //         'Accept' => 'application/json',
-            //     ],
-            // ]);
-
             $requestsHook = function () use ($ProjectFiles, $clientHookIA) {
                 foreach ($ProjectFiles as $File) {
                     // Pega os IDs dos bundles vinculados
                     $bundleIds = $File->bundles->pluck('bundle_id')->toArray();
-    
+
                     // Busca os dados completos dos RfpBundles
                     $bundles = RfpBundle::whereIn('bundle_id', $bundleIds)->get();
 
@@ -94,74 +85,51 @@ class UploadProjectToAnswerHook extends Command
 
                             foreach ($Records as $Record) {
 
-                                 //$Agent = Agent::where('id', $Record->agent_id)->first();
-                                 $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
-                                 $BundlesProcess = $Processo->rfpBundles;
-
-                                 // Coleções de bundles
-                                 $bundlesDoProcesso = $Processo->rfpBundles; // Collection de bundles do processo
-                                 $bundlesDoProjeto = $File->bundles;         // Collection de bundles do projeto
-
-                                 // Filtra apenas os que estão nos dois (interseção por id)
-                                 $produtosComProcesso = $bundlesDoProjeto->filter(function ($bundle) use ($bundlesDoProcesso) {
-                                     return $bundlesDoProcesso->contains('bundle_id', $bundle->bundle_id);
-                                 });
-                                 $produtosComProcessoString = implode(', ', $produtosComProcesso->pluck('bundle')->unique()->values()->toArray());
-
-
-                                 // Filtra os que NÃO estão no processo
-                                 $produtosSemProcesso = $bundlesDoProjeto->filter(function ($bundle) use ($bundlesDoProcesso) {
-                                     return !$bundlesDoProcesso->contains('bundle_id', $bundle->bundle_id);
-                                 });
-                                 $produtosSemProcessoString = implode(', ', $produtosSemProcesso->pluck('bundle')->unique()->values()->toArray());
-
-
-                                 // Agrupa os Produtos com base nos Agentes e depois itera para listsa só o ID dos AGENTES
-                                 // ISSO APENAS NOS PRIORITÁRIOS
-                                 $produtosComProcessoAgrupadosPorAgente = $produtosComProcesso->groupBy('agent_id');
-                                 $AgentesPrioritariosArray = [];
-                                 foreach ($produtosComProcessoAgrupadosPorAgente as $IdAgente => $AgenteProcesso) {
-                                     $DadosAgentePrioritario = Agent::find($IdAgente);
-                                     if ($DadosAgentePrioritario && $DadosAgentePrioritario->knowledge_id_hook) {
-                                         $AgentesPrioritariosArray[] = $DadosAgentePrioritario->knowledge_id_hook;
-                                     }
-                                 }
-                                 $AgenteComProcessoString = implode(', ', $AgentesPrioritariosArray);
-
-
-                                 // Agrupa os Produtos com base nos Agentes e depois itera para listsa só o ID dos AGENTES
-                                 // ISSO APENAS NOS SECUNDÁRIOS
-                                 $produtosSemProcessoAgrupadosPorAgente = $produtosSemProcesso->groupBy('agent_id');
-                                 $AgentesSecundariosArray = [];
-                                 foreach ($produtosSemProcessoAgrupadosPorAgente as $IdAgente => $AgenteSemProcesso) {
-                                     $DadosAgenteSecundario = Agent::find($IdAgente);
-                                     if ($DadosAgenteSecundario && $DadosAgenteSecundario->knowledge_id_hook) {
-                                         $AgentesSecundariosArray[] = $DadosAgenteSecundario->knowledge_id_hook;
-                                     }
-                                 }
-
-                                 $AgentesSecundariosArray = array_diff($AgentesSecundariosArray, $AgentesPrioritariosArray);
-                                 $AgenteSemProcessoString = implode(', ', $AgentesSecundariosArray);
-
-                                 $requisito = $Record->requisito;
-                                 $processo = $Processo->process;
-                       
-                                 $body = [
-                                     'inputs' =>  [
-                                         'base_id_primarios' => $AgenteComProcessoString,
-                                         'base_id_secundarios' => $AgenteSemProcessoString,    
-                                     ],
-                                     'query' => json_encode([
-                                             'requisito' => $requisito,
-                                             'processo' => $processo,
-                                             'produto' => $produtosComProcessoString,
-                                             'produtos_adicionais' => $produtosSemProcessoString
-                                     ], JSON_UNESCAPED_UNICODE),
-                                     'response_mode' => 'blocking',
-                                     "conversation_id" => "",
-                                     "user" => "RFP-API-ONLINE",
-                                     "files" => [],
-                                 ];  
+                                //$Agent = Agent::where('id', $Record->agent_id)->first();
+                                $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
+                                $BundlesProcess = $Processo->rfpBundles;
+    
+                                $ProdutosArray = [];
+                                $AgentesArray = [];
+    
+                                foreach ($BundlesProcess as $bundleProcess) {
+                                    $DadosAgentePrioritario = Agent::where('id', $bundleProcess->agent_id)->first();
+    
+                                    $ProdutosArray[] = $bundleProcess->bundle;
+                                    $AgentesArray[] = $DadosAgentePrioritario->knowledge_id_hook;
+                                }
+    
+                                // Pega os AGENTES e remove os itens repetidos e converte pra string
+                                $AgentesUnique = array_values(array_unique($AgentesArray));
+                                $AgentesPrimarios = implode(',', $AgentesUnique);
+                                    $agentIds = $bundles->pluck('agent_id')->unique();
+                                    $agentsList = Agent::whereIn('id', $agentIds)->get();
+                                    $AgentesSecundarios = $agentsList->pluck('knowledge_id_hook')->filter()->diff($AgentesUnique)->implode(', ');
+    
+                                // Pega os PRODUTOS e remove os itens repetidos e converte pra string
+                                $ProdutosUnique = array_values(array_unique($ProdutosArray));
+                                $ProdutosPrimarios = implode(',', $ProdutosUnique);
+                                    $ProdutosAdicionais = collect($bundles->pluck('bundle')->unique())->diff($ProdutosUnique)->implode(', ');
+    
+                                $requisito = $Record->requisito;
+                                $processo = $Processo->process;
+    
+                                $body = [
+                                    'inputs' =>  [
+                                        'base_id_primarios' => $AgentesPrimarios,
+                                        'base_id_secundarios' => $AgentesSecundarios,    
+                                    ],
+                                    'query' => json_encode([
+                                            'requisito' => $requisito,
+                                            'processo' => $processo,
+                                            'produto' => $ProdutosPrimarios,
+                                            'produtos_adicionais' => $ProdutosAdicionais
+                                    ], JSON_UNESCAPED_UNICODE),
+                                    'response_mode' => 'blocking',
+                                    "conversation_id" => "",
+                                    "user" => "RFP-API-RETRY",
+                                    "files" => [],
+                                ];  
     
                                 yield function () use ($clientHookIA, $body, $Record) { 
 
@@ -190,19 +158,19 @@ class UploadProjectToAnswerHook extends Command
                     Log::info("Resposta Recebida");
 
                     $response = $result['response'];
-
+                    
                     $data = json_decode($response->getBody(), true);
                     $Answer = json_decode($data['answer']);
-                    //$Referencia = json_encode($data['metadata']['retriever_resources']);
-                        
+                    $Referencia = json_encode($data['metadata']['retriever_resources']);
+                    
                     $bundleId = RfpBundle::where('bundle', 'like', '%' . $Answer->linha_produto . '%')->first();
-                        
+                    
                     $Record = $result['record'];
                     $Record->ia_attempts = intval($Record->ia_attempts) + 1;
                     $Record->save();
                     
                     // Atualizar o status do Record
-                    if($Record->ia_attempts >= 3){
+                    if($Answer->aderencia_na_mesma_linha != '3esconhecido' || $Record->ia_attempts >= 3){
 
                         $DadosResposta = new ProjectAnswer;
                         $DadosResposta->bundle_id = $bundleId->bundle_id ?? null;
@@ -213,8 +181,8 @@ class UploadProjectToAnswerHook extends Command
                         $DadosResposta->linha_produto = $Answer->linha_produto ?? null;
                         $DadosResposta->resposta = $Answer->resposta ?? null;
                         $DadosResposta->modulo = $Answer->modulo ?? null;
-                        $DadosResposta->referencia = json_encode($Answer->sources) ?? null;
-                        //$DadosResposta->retriever_resources = $Referencia ?? null;
+                        $DadosResposta->referencia = $Answer->referencia ?? null;
+                        $DadosResposta->retriever_resources = $Referencia ?? null;
                         $DadosResposta->observacao = $Answer->observacao ?? null;
                         $DadosResposta->acuracidade_porcentagem = $Answer->acuracidade_porcentagem ?? null;
                         $DadosResposta->acuracidade_explicacao = $Answer->acuracidade_explicacao ?? null;
@@ -230,8 +198,6 @@ class UploadProjectToAnswerHook extends Command
     
                 },
                 'rejected' => function ($reason, $index) {
-
-                    
                     //dd($reason);
                     Log::error("Request failed: " . $reason->getMessage());
                     // Você pode querer atualizar o status do Record aqui também

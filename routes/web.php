@@ -104,6 +104,11 @@ Route::middleware('auth')->group(function () {
 
     // REGISTROS DA BASE DE CONHECIMENTO
     Route::get('/project/answers/{id}', [ProjectRecordsController::class,'answer'])->name('project.answer');
+
+    Route::get('/project/answers/reprocessing/{id}', [ProjectRecordsController::class,'answerReprocessing'])->name('project.answer.reprocessing');
+    Route::get('/project/answers/reprocessing-full/{id}', [ProjectRecordsController::class,'ProjectReprocessing'])->name('project.answerfull.reprocessing');
+
+
     Route::get('/project/answers-errors/{id}', [ProjectRecordsController::class,'answerErrors'])->name('project.answer.errors');
     Route::get('/project/records/{id}', [ProjectRecordsController::class,'index'])->name('project.records');
     Route::get('/project/records-errors/{id}', [ProjectRecordsController::class,'errors'])->name('project.recordsErrors');
@@ -193,6 +198,8 @@ Route::get('/teste-email', [PermissionsController::class,'new_email'])->middlewa
 
 // Cadastro de Configurações
 Route::get('/config', [ConfigController::class,'index'])->middleware(['auth', 'verified'])->name('config.index');
+Route::get('/config-grafico', [ConfigController::class,'dadosPorPeriodo'])->middleware(['auth', 'verified'])->name('config.grafico');
+
 
 
 // Listar todos os produtos

@@ -35,6 +35,12 @@ class ProjectRecord extends Model
         )->withTimestamps();
     }
 
+
+        // No modelo ProjectRecord
+        public function projectAnswers()
+        {
+            return $this->hasMany(ProjectAnswer::class, 'requisito_id');
+        }
     
 
 
