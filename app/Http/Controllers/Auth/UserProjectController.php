@@ -29,7 +29,7 @@ class UserProjectController extends Controller
     public function filter(Request $request)
     {
         // Iniciar a query
-         $query = User::query()->with(['departament']);
+        $query = User::query()->with(['departament']);
 
         // Aplicar filtros
         if ($request->has('nome') && !empty($request->nome)) {
@@ -60,7 +60,6 @@ class UserProjectController extends Controller
                 $q->where('name', 'like', '%' . $request->role . '%');
             });
         }
-
 
         // Paginação e execução da query
         $users = $query->paginate(40);
@@ -378,7 +377,6 @@ class UserProjectController extends Controller
     }
 
 
-   
     private function SendCurl($Type = "GET", $URL, $Data = null, $UserId){
         $curl = curl_init();
 

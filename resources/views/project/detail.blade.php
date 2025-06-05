@@ -171,6 +171,7 @@
     var totalRequisitos = {{$CountRequisitos}};
     var totalRespostasIA = {{$CountAnswerIA}};
     var respostasUsuario = {{$CountAnswerUser}};
+
 </script>
 
 <script>
@@ -254,10 +255,7 @@
                                                     <clipPath id="clip0_2032_702"> <rect width="13.8667" height="16" fill="white"></rect></clipPath>
                                                 </svg>
                                             </button>
-                                        </form>
-
-
-                                        `;
+                                        </form> `;
                         } else   if (record.status === 'em processamento' || record.status === 'na fila') {
                             status = '<div style="background: #d5edff; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #2196F3; width: auto; padding: 0px 20px; position: relative; display: inline-block;"> em processamento </div>';
                             btnEdit = `<div style="margin: 0px; float:left; min-width:70px;">
@@ -311,17 +309,14 @@
                         // DADOS DE CADA LINHA
                         rows += `
                             <tr class="listaTabela" style="min-height:60px; max-height: 100%;">
-                                    <td style="width:19%; text-align:left; line-height: 33px;" title="${record.filename_original}">${record.filename_original}</td>
-                                    <td style="width:19%; line-height: 33px;">${formattedDate}</td>
-                                    
-                                    <td style="width:19%; line-height: 33px;">${record.project_records_count}</td>
-                                    <td style="width:19%; line-height: 33px;">${record.respondidos_ia_count}</td>
-                                    <td style="width:19%; line-height: 33px;">${record.respondidos_user_count}</td>
-                                    <td style="width:20%; line-height: 33px;"> ${status}</td>
-                                    <td style="width:3%; margin-left:2%; display:contents;"> 
-                                        ${btnEdit}
-                                    </td>
-                                </tr>
+                                <td style="width:19%; text-align:left; line-height: 33px;" title="${record.filename_original}">${record.filename_original}</td>
+                                <td style="width:19%; line-height: 33px;">${formattedDate}</td>
+                                <td style="width:19%; line-height: 33px;">${record.project_records_count} </td>
+                                <td style="width:19%; line-height: 33px;">${record.respondidos_ia_count}  </td>
+                                <td style="width:19%; line-height: 33px;">${record.respondidos_user_count}</td>
+                                <td style="width:20%; line-height: 33px;">${status}</td>
+                                <td style="width:3%; margin-left:2%; display:contents;">  ${btnEdit} </td>
+                            </tr>
                         `;
                     });
 
