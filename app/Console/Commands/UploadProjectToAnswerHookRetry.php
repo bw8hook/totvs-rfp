@@ -17,7 +17,7 @@ use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Exception\RequestException;
 
 
-class UploadProjectToAnswerHook extends Command
+class UploadProjectToAnswerHookRetry extends Command
 {
     /**
      * The name and signature of the console command.
