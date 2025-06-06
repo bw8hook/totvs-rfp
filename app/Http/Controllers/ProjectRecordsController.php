@@ -1245,7 +1245,7 @@ class ProjectRecordsController extends Controller
         if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) { 
             //$query = ProjectRecord::query()->with('rfp_bundles');
 
-            $ProjectAnswer = ProjectAnswer::where('id', '=', $Project->project_answer_id)->first();
+            $ProjectAnswer = ProjectAnswer::where('id', '=', $Project->project_answer_id)->latest('id')->first();
             $ReferenciasResources = json_decode($ProjectAnswer->referencia);
             $Referencias = $ProjectAnswer->referencia;
 
