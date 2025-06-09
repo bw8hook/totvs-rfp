@@ -1023,8 +1023,7 @@ class ProjectRecordsController extends Controller
 
 
     public function ProjectReprocessing(string $id)
-    { 
-      
+    {       
         if (Auth::user()->hasAnyPermission(['projects.all', 'projects.my', 'projects.all.manage',  'projects.all.add', 'projects.all.edit', 'projects.all.delete', 'projects.my.manage', 'projects.my.add', 'projects.my.edit', 'projects.my.delete'])) { 
             try {
                 $ProjectFile = ProjectFiles::with('rfp_bundles')->findOrFail($id);
@@ -1063,7 +1062,7 @@ class ProjectRecordsController extends Controller
                         if($agents[0]->search_engine == "Open IA"){
 
                             $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
-                                ->where('project_records.last_attempt_at', '<', '2025-06-04 00:00:00')
+                                ->where('project_records.status', '!=', 'enviado')
                                 ->orderBy('id', 'asc')
                                 ->get();
 
@@ -1117,8 +1116,6 @@ class ProjectRecordsController extends Controller
 
                                     $AgentesSecundariosArray = array_diff($AgentesSecundariosArray, $AgentesPrioritariosArray);
                                     $AgenteSemProcessoString = implode(', ', $AgentesSecundariosArray);
-
-
 
                                     $requisito = $Record->requisito;
                                     $processo = $Processo->process;
