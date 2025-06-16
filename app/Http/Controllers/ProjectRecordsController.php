@@ -821,7 +821,7 @@ class ProjectRecordsController extends Controller
                     'base_uri' => 'https://ubuntu-bw8-mac-server.hook.app.br/v1/',
                     'timeout' => 60,
                     'headers' => [
-                        'Authorization' => 'Bearer app-2KkTmPKykDJPnyufxnN7H9bw',
+                        'Authorization' => 'Bearer app-asJTuy7ecdFVPegNcYi7cW7a',
                         'Accept' => 'application/json',
                     ],
                 ]);
@@ -1037,15 +1037,22 @@ class ProjectRecordsController extends Controller
                     'base_uri' => 'https://ubuntu-bw8-mac-server.hook.app.br/v1/',
                     'timeout' => 60,
                     'headers' => [
-                        'Authorization' => 'Bearer app-2KkTmPKykDJPnyufxnN7H9bw',
+                        'Authorization' => 'Bearer app-asJTuy7ecdFVPegNcYi7cW7a',
                         'Accept' => 'application/json',
                     ],
                 ]);
-//app-2KkTmPKykDJPnyufxnN7H9bw
-                
+                //app-2KkTmPKykDJPnyufxnN7H9bw
+
     
                 $requestsHook = function () use ($ProjectFiles, $clientHookIA, $id) {
                     foreach ($ProjectFiles as $File) {
+
+                        $shouldStop = DB::table('configs')->where('id', 1)->value('stop_sending_requests');
+                        if ($shouldStop == 0) {
+                            Log::info("Parada manual detectada. Interrompendo processamento.");
+                            dd('break ');
+                            break;
+                        }
 
                         // Pega os IDs dos bundles vinculados
                         $bundleIds = $File->bundles->pluck('bundle_id')->toArray();
@@ -1062,11 +1069,21 @@ class ProjectRecordsController extends Controller
                         if($agents[0]->search_engine == "Open IA"){
 
                             $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
-                                ->where('project_records.status', '!=', 'enviado')
+                                ->where('project_records.updated_at', '>=', '2025-06-13 15:48:21')
+                                ->where('project_records.status', 'enviado')
                                 ->orderBy('id', 'asc')
+                                ->limit(value: 200)
                                 ->get();
+                            
 
                                 foreach ($Records as $Record) {
+
+                                    $shouldStop = DB::table('configs')->where('id', 1)->value('stop_sending_requests');
+                                    if ($shouldStop  == 0) {
+                                        Log::info("Parada manual detectada dentro do foreach de records. Encerrando.");
+                                        dd('break 2');
+                                        break 2; // Sai de ambos os loops
+                                    }
     
                                     //$Agent = Agent::where('id', $Record->agent_id)->first();
                                     $Processo = RfpProcess::with('rfpBundles')->where('id', $Record->processo_id)->first();
@@ -1133,15 +1150,23 @@ class ProjectRecordsController extends Controller
                                         ], JSON_UNESCAPED_UNICODE),
                                         'response_mode' => 'blocking',
                                         "conversation_id" => "",
-                                        "user" => "RFP-API-REPROCESSING",
+                                        "user" => "API-REPROCESSING-PROJECT",
                                         "files" => [],
                                     ];  
 
+
                                     yield function () use ($clientHookIA, $body, $Record) { 
     
-                                        //$Record->update(['status' => 'enviado']);
+                                        $shouldStop = DB::table('configs')->where('id', 1)->value('stop_sending_requests');
+                                        if ($shouldStop  == 0) {
+                                            Log::info("Parada detectada dentro do yield.");
+                                            dd('break 3');
+                                            return null;
+                                        }
+                                        
+                                        $Record->update(['status' => 'enviado']);
                                         //$Record->update(['ia_attempts' => 1]);
-                                        //$Record->save();
+                                        $Record->save();
     
                                         return $clientHookIA->postAsync('/v1/chat-messages', [
                                             'json' => $body,
@@ -1205,7 +1230,7 @@ class ProjectRecordsController extends Controller
                     },
                     'rejected' => function ($reason, $index) {
                         
-                        //dd("reason");
+                        //dd($reason);
                                             
                         Log::error("Request failed: " . $reason->getMessage());
                         // Você pode querer atualizar o status do Record aqui também
@@ -1217,7 +1242,7 @@ class ProjectRecordsController extends Controller
                 $promise = $pool->promise();
                 $promise->wait();
             } catch (\Exception $e) {
-                dd($e);
+                //dd($e);
                 Log::error( $e);
             }
 
@@ -1255,41 +1280,140 @@ class ProjectRecordsController extends Controller
             //$ListaReferencia = explode(';', $Referencias);
 
             $ListaReferencia =  json_decode($Referencias);
-            
 
-            foreach($ListaReferencia as $index => $Referencia) {
-                if(!empty(trim($Referencia))) {
+           
+            foreach ($ListaReferencia as $index => $Referencia) {
+                // Inicializa $dados como null
+                $dados = null;
 
+                // Verifica o tipo da referência e processa adequadamente
+                if (is_string($Referencia)) {
+                    // Se for string, tenta decodificar o JSON
                     $dados = json_decode($Referencia, true);
+                } elseif (is_object($Referencia)) {
+                    // Se já for objeto, converte para array
+                    $dados = json_decode(json_encode($Referencia), true);
+                } elseif (is_array($Referencia)) {
+                    // Se já for array, usa diretamente
+                    $dados = $Referencia;
+                }
 
-                    // Acessando os valores
+                // Se não conseguiu obter dados válidos, pula para a próxima iteração
+                if (empty($dados)) {
+                    continue;
+                }
+
+                
+
+                // Verificar qual formato está sendo recebido e normalizar os dados
+                if (isset($dados['id-requisto'])) {
+                    // Formato antigo
                     $idRequisito = $dados['id-requisto'];
                     $requisito = $dados['requisito'];
-                    $documento = $dados['documento'];
                     $score = $dados['score'];
+                    $documento = $dados['documento'] ?? null;
+                    $coverage = '';
+                } elseif (isset($dados['id'])) {
+                    // Formato novo
+                    $idRequisito = $dados['id'];
+                    $requisito = $dados['requirement'];
+                    $score = $dados['similarity'];
+                    $documento = null;
+                    $coverage = $dados['coverage'] ?? '';
+                } else {
+                    // Formato desconhecido - pular
+                    continue;
+                }
 
-                    $dados[$index] = $this->parseReferencia($Referencia);
-                    
-                    // Buscar Knowledge Records
-                    if (!empty($dados['id-requisto'])) {
-                        $KnowledgeAll = KnowledgeRecord::with('bundles')
-                            ->where('id_record', '=', $dados['id-requisto'])
-                            ->get();
+
+                
+
+                // Buscar Knowledge Records
+                if (!empty($idRequisito)) {
+
+                   
+
+                    $KnowledgeAll = KnowledgeRecord::with('bundles')
+                        ->where('id_record', '=', $idRequisito)
+                        ->get();
+
                         
-                        if(count($KnowledgeAll) >= 1 ){
-                            foreach ($KnowledgeAll as $Knowledge) {
-                                $knowledgeArray = $Knowledge->toArray();
-                                $knowledgeArray['score'] = $dados['score'];
-                                
-                                $KnowledgeRecords[] = $knowledgeArray;
 
-                               //$KnowledgeRecords[] = $Knowledge->toArray();  
-                                //dd($idRequisito);
+                    if ($KnowledgeAll->isNotEmpty()) {
+                        foreach ($KnowledgeAll as $Knowledge) {
+                            $knowledgeArray = $Knowledge->toArray();
+                            $knowledgeArray['score'] = $score;
+
+                            // Adicionando campos adicionais conforme disponível
+                            if ($documento !== null) {
+                                $knowledgeArray['documento'] = $documento;
+                            }
+                            if (!empty($coverage)) {
+                                $knowledgeArray['coverage'] = $coverage;
+                            }
+
+                            $KnowledgeRecords[] = $knowledgeArray;
+                        }
+                    }else{
+
+                        $KnowledgeAllRequisito = KnowledgeRecord::with('bundles')
+                            ->where('requisito', '=', $requisito)
+                            ->get();
+
+                        if ($KnowledgeAllRequisito->isNotEmpty()) {
+                            foreach ($KnowledgeAllRequisito as $KnowledgeRequisito) {
+                                $knowledgeRequisitoArray = $KnowledgeRequisito->toArray();
+                                $knowledgeRequisitoArray['score'] = $score;
+
+                                // Adicionando campos adicionais conforme disponível
+                                if ($documento !== null) {
+                                    $knowledgeRequisitoArray['documento'] = $documento;
+                                }
+                                if (!empty($coverage)) {
+                                    $knowledgeRequisitoArray['coverage'] = $coverage;
+                                }
+
+                                $KnowledgeRecords[] = $knowledgeRequisitoArray;
                             }
                         }
-                    }
+                    }  
                 }
             }
+
+
+            // foreach($ListaReferencia as $index => $Referencia) {
+            //     if(!empty(trim($Referencia))) {
+
+            //         $dados = json_decode($Referencia, true);
+
+            //         // Acessando os valores
+            //         $idRequisito = $dados['id-requisto'];
+            //         $requisito = $dados['requisito'];
+            //         $documento = $dados['documento'];
+            //         $score = $dados['score'];
+
+            //         $dados[$index] = $this->parseReferencia($Referencia);
+                    
+            //         // Buscar Knowledge Records
+            //         if (!empty($dados['id-requisto'])) {
+            //             $KnowledgeAll = KnowledgeRecord::with('bundles')
+            //                 ->where('id_record', '=', $dados['id-requisto'])
+            //                 ->get();
+                        
+            //             if(count($KnowledgeAll) >= 1 ){
+            //                 foreach ($KnowledgeAll as $Knowledge) {
+            //                     $knowledgeArray = $Knowledge->toArray();
+            //                     $knowledgeArray['score'] = $dados['score'];
+                                
+            //                     $KnowledgeRecords[] = $knowledgeArray;
+
+            //                    //$KnowledgeRecords[] = $Knowledge->toArray();  
+            //                     //dd($idRequisito);
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
 
             $data = array(
                 'ReferenciasIA' => $dados,
