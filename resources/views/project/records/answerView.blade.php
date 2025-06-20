@@ -308,13 +308,6 @@
                                     </div>`;
                         }
 
-
-
-                        
-
-
-
-
                         rows += `
                             <tr class="listaTabela ${highlighted_error ? '' : 'highlighted_error'} ${user_edit_record ? '' : 'user_edit_record'}" data-id="${record.id}" style="min-height:60px; max-height: 100%;">                                
                                 <td style="width:15%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.processo ? record.processo : ''} </td>
@@ -326,7 +319,7 @@
                                     </select>
                                 </td>
                                 <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.modulo ? record.answers.modulo : ''} </td>
-                                <td style="width:42%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.resposta ? record.answers.resposta : ''} </td>
+                                <td style="width:42%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers.resposta ? record.answers.resposta : ''}  </td>
                                 <td style="width:12%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #D2E4FF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #0E2ECF;"> ${record.answers.acuracidade_porcentagem ? record.answers.acuracidade_porcentagem : ''} </span> </td>
                                 <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #C7EBFF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #141824;"> ${record.answers.linha_produto ? record.answers.linha_produto : ' Produto não encontrado'}   </span></td>
                                 <td style="width:10%;  display: flex; align-items: center;">
@@ -371,7 +364,6 @@
         });
 
         
-
         $(document).on('click', '#loadMore', function () {
             const nextPage = $(this).data('next-page');
             if (nextPage) {
@@ -562,6 +554,7 @@
             const IdRecord = $(this).parent().parent().data('id');
             $('.ListaReferencia .listAll').html('');
             $('#ModalReferencia .loading').fadeIn();
+             console.log('answerView');
             if (IdRecord) {
                 let url = `{{ route('project.records.references', ':id') }}`.replace(':id', IdRecord);
                 $.ajax({
