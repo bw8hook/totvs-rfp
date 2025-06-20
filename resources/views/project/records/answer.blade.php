@@ -473,7 +473,10 @@
                                     </select>
                                 </td>
                                 <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers?.modulo ? record.answers.modulo : ''} </td>
-                                <td style="width:42%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers?.resposta ? record.answers.resposta : ''} </td>
+                                <td style="width:42%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> ${record.answers?.resposta || ''} 
+${!record.answers?.resposta && record.answers?.aderencia_na_mesma_linha === "Desconhecido" 
+  ? record.answers?.acuracidade_explicacao 
+  : ""} </td>
                                 <td style="width:12%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #D2E4FF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #0E2ECF;"> ${record.answers?.acuracidade_porcentagem ? record.answers.acuracidade_porcentagem : '0%'} </span> </td>
                                 <td style="width:20%; display: flex; align-items: center; word-wrap: break-word; white-space:normal; overflow:visible; text-align: left; margin-right: 10px;"> <span style=" width: 80%; background: #C7EBFF; text-align: center; margin: auto; padding: 5px; border-radius: 8px; color: #141824;"> ${record.answers?.linha_produto ? record.answers.linha_produto : ' Produto não encontrado'}   </span></td>
                                 
@@ -721,6 +724,7 @@
 
         $(document).on('click', '.btnInfoRetry', function () {
             const IdRecord = $(this).parent().parent().data('id');
+            const $Record = $(this).parent().parent();
             $('.ListaRetry .listAll').html('');
             $('#ModalRetry .loading').fadeIn();
             if (IdRecord) {
@@ -729,7 +733,30 @@
                     url: url,
                     method: 'GET',
                     success: function (response) {
+
+
+                        let $tds = $Record.find('td');
+                        let valorResposta;
+
+                        if(response.aderencia_na_mesma_linha == 'Atende'){
+                            valorResposta = 1;
+                        }else if(response.aderencia_na_mesma_linha == 'Atende Parcial'){
+                            valorResposta = 2;
+                        }else if(response.aderencia_na_mesma_linha == 'Não Atende'){
+                            valorResposta = 4;
+                        }else if(response.aderencia_na_mesma_linha == 'Customizável'){
+                            valorResposta = 4;
+                        }
+
+                        $tds.eq(3).find('select[name="classificacao_id"]').val(valorResposta); 
+                        $tds.eq(4).text(response.modulo);
+                        $tds.eq(5).text(response.resposta);
+                        $tds.eq(6).find('span').text(response.acuracidade_porcentagem);
+                        $tds.eq(7).find('span').text('Produto atualizado');
+            
+
                         console.log(response);
+                        console.log($Record);
 
                         $('#ModalRetry .loading').fadeOut();
 
@@ -813,6 +840,7 @@
             const IdRecord = $(this).parent().parent().data('id');
             $('.ListaReferencia .listAll').html('');
             $('#ModalReferencia .loading').fadeIn();
+            console.log('answer');
             if (IdRecord) {
                 let url = `{{ route('project.records.references', ':id') }}`.replace(':id', IdRecord);
                 $.ajax({
@@ -833,11 +861,13 @@
                             rows += `
                                     <div class="Referencia">
 
-
-                                        <h3 style="font-size: 12px; font-weight: bold; margin-bottom: 10px;">A similaridade entre o requisito e a referência foi de: ${record.score}% </h3>
-                                        <div class="barra-container" style=" width: 100%; background-color: #e0e0e0; border-radius: 20px; margin-bottom:20px; overflow: hidden; height: 7px;">
+                                       ${record.coverage ? `<h3 style="font-size: 14px; margin-bottom: 20px;color: #86939d;background: #eaf0f5;padding: 10px;border-radius: 6px;"> <b>Explicação: </b>${record.coverage} </h3>` : ''}
+                                        
+                                        <div class="barra-container" style=" width: 100%; background-color: #e0e0e0; border-radius: 20px; margin-bottom:10px; overflow: hidden; height: 7px;">
                                             <div class="barra-preenchida" title="A similaridade entre o requisito e a referência foi de: ${record.score}%" style="height: 100%; width: ${record.score}%; background-color: ${getBarColor(record.score)}; text-align: center; color: white; line-height: 25px; transition: width 0.5s ease;"></div>
                                         </div>
+                                         <h3 style="font-size: 12px; font-weight: bold; margin-bottom: 20px;">A similaridade entre o requisito e a referência foi de: ${record.score}% </h3>
+
 
                                         <h2><a href="${urlKnowledge}" target="_blank" class="idrequisito">${record.id_record} - VER REQUISITO DE REFERÊNCIA</a></h2>
                                         <div class="list">
