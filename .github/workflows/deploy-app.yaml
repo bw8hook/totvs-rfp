@@ -20,7 +20,7 @@ env:
   SSH_OPTS: "-o StrictHostKeyChecking=no"
   SSH_AUTH_SOCK: /tmp/ssh_agent.sock
   DOCKER_IMAGE: ghcr.io/bw8hook/totvs-rfp:main
-  APP_PATH: /apps/totvs-rfp
+  APP_PATH: /home/deploy/totvs-rfp
 
 jobs:
   docker-image:
