@@ -57,19 +57,6 @@ jobs:
           echo "AWS_ACCESS_KEY_ID=${{ secrets.TOTVS_RFP_AWS_ACCESS_KEY_ID }}" >> .env
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.TOTVS_RFP_AWS_SECRET_ACCESS_KEY }}" >> .env
 
-      - name: Generate GitHub App token
-        id: app-token
-        uses: tibdex/github-app-token@v2
-        with:
-          app_id: ${{ secrets.GH_APP_ID }}
-          private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-
-      - name: Login to GHCR on remote server
-        run: |
-          TOKEN="${{ steps.app-token.outputs.token }}"
-          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_CONN }} "echo '${TOKEN}' | docker login ghcr.io -u x-access-token --password-stdin"
-    
-
       - name: Deploy assets
         run: |
           ssh ${{ env.SSH_OPTS }} ${{ env.SSH_CONN }} 'mkdir -p ${{ env.APP_PATH }}'
