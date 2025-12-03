@@ -14,6 +14,7 @@ class ProjectFiles extends Model
         'filepath',
         'filename_original',
         'file_extension',
+        'answered_file',
         'status',
     ];
 

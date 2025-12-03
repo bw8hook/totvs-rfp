@@ -1,26 +1,92 @@
 <x-app-layout>
+    <style>
+        .produtos_container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            max-width: 100%;
+            margin-top: 10px;
+        }
+        .produto_tag {
+            background: #ececec !important;
+            padding: 8px 16px !important;
+            border-radius: 6px !important;
+            white-space: normal !important;
+            word-break: break-word;
+            font-size: 15px !important;
+            font-weight: 500;
+            display: inline-block;
+            max-width: 100%;
+            line-height: 1.5;
+            margin: 0 !important;
+        }
+        .info_details {
+            font-size: 16px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        @media (min-width: 1920px) {
+            .produto_tag {
+                font-size: 16px !important;
+                padding: 10px 18px !important;
+            }
+            .info_details {
+                font-size: 17px;
+            }
+        }
+        @media (max-width: 1440px) {
+            #titleComponent_KnowledgeBase .block {
+                width: 100% !important;
+            }
+            .info_details {
+                font-size: 15px;
+            }
+            .produto_tag {
+                font-size: 14px !important;
+                padding: 7px 14px !important;
+            }
+        }
+        @media (max-width: 1024px) {
+            .bloco_info_filter_records form {
+                flex-wrap: wrap;
+            }
+            .inputField {
+                min-width: 200px;
+            }
+            .info_details {
+                font-size: 14px;
+            }
+            .produto_tag {
+                font-size: 13px !important;
+                padding: 6px 12px !important;
+            }
+        }
+    </style>
     <div class="" style=" padding-bottom: 130px;">
         <div class="max-w-full mx-auto">
 
-            <div id="titleComponent_KnowledgeBase" style=" padding-top: 20px; min-height: 100px; height: auto; justify-content: space-between; align-items: flex-start;" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative" >  
-                <div class="block" style="width: 50%;">    
+            <div id="titleComponent_KnowledgeBase" style=" padding-top: 20px; min-height: 100px; height: auto; justify-content: space-between; align-items: flex-start;" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative" >
+                <div class="block" style="width: 50%; max-width: 100%;">
                     <div class="flex" style="width: 100%;">
                     <img src="{{ asset('icons/base_conhecimento.svg') }}" alt="Upload Icon" style="height: 33%; padding-right: 18px;">
-                        <span>{{$Project->name}}</span>
+                        <span style="word-break: break-word;">{{$Project->name}}</span>
                     </div>
-                    <div class="relative block items-center" style="padding-bottom: 12px; padding-left:7px;">        
-                        <div class="info_details" style="color:#3A57E8"> {{$ProjectFile->filename_original}} </div>
+                    <div class="relative block items-center" style="padding-bottom: 12px; padding-left:7px;">
+                        <div class="info_details" style="color:#3A57E8; overflow: hidden; text-overflow: ellipsis;"> {{$ProjectFile->filename_original}} </div>
                         <div class="info_details"> Requisitos:<span> {{$CountCountRecordsResultado}}</span></div>
-                        
-                        <div class="info_details" style="width: 100%;"> Produto:<span>
+
+                        <div class="info_details" style="width: 100%; max-width: 100%; display: block;">
+                            <div style="margin-bottom: 5px;">Produto:</div>
+                            <div class="produtos_container">
                             @isset($ProjectFile->rfp_bundles->bundle)
-                                {{$ProjectFile->rfp_bundles->bundle}}
+                                <span class="produto_tag">{{$ProjectFile->rfp_bundles->bundle}}</span>
                             @else
                                 @foreach ($ProjectFile->bundles as $bundleProject)
-                                    <span style="background: #ececec; padding: 5px 10px; margin-left: 5px; border-radius: 5px;">{{$bundleProject->bundle}}</span>
+                                    <span class="produto_tag">{{$bundleProject->bundle}}</span>
                                 @endforeach
                             @endisset
-                        </span></div>
+                            </div>
+                        </div>
                         <div class="info_details"> Responsável:<span> {{$Project->user->name}}</span></div>
                     </div>
                 </div>

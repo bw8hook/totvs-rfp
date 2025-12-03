@@ -249,6 +249,8 @@ class ProjectController extends Controller
 
             //dd($CountAnswerIADesconhecido);
 
+            $isAdmin = Auth::user()->hasRole('Administrador') ? 1 : 0;
+
             $data = array(
                 'Detail' => $Detail,
                 'lastUpdated' => $lastUpdated,
@@ -261,7 +263,8 @@ class ProjectController extends Controller
                 'CountAnswerUser' => $CountAnswerUser,
                 'CountAnswerIA' => $CountAnswerIADesconhecido,
                 'CountNotAnswer' => $CountNotAnswer,
-                'CountAnswerIADesconhecido' => $CountAnswerIADesconhecido
+                'CountAnswerIADesconhecido' => $CountAnswerIADesconhecido,
+                'isAdmin' => $isAdmin
             );
     
             return view('project.detail')->with($data);
@@ -773,6 +776,60 @@ class ProjectController extends Controller
     }
 
 
+    public function changeStatus(Request $request, string $id)
+    {
+        // Verifica se o usuário é administrador
+        if (!Auth::user()->hasRole('Administrador')) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Você não tem permissão para alterar o status.'
+            ], 403);
+        }
+
+        try {
+            $projectFile = ProjectFiles::findOrFail($id);
+            $newStatus = $request->new_status;
+
+            // Valida os status permitidos
+            $allowedStatuses = ['não enviado', 'em processamento', 'processado', 'concluído'];
+            if (!in_array($newStatus, $allowedStatuses)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Status inválido.'
+                ], 400);
+            }
+
+            // Lógica especial para "em processamento"
+            if ($newStatus === 'em processamento') {
+                // Atualizar todos os registros para serem processados
+                $atualizados = ProjectRecord::where('project_file_id', $id)
+                    ->update([
+                        'status' => 'processando'
+                    ]);
+
+                Log::info("Status alterado para 'em processamento'. {$atualizados} registros marcados para processamento.");
+            }
+
+            // Atualizar o status do arquivo
+            $oldStatus = $projectFile->status;
+            $projectFile->status = $newStatus;
+            $projectFile->save();
+
+            Log::info("Status do arquivo {$id} alterado de '{$oldStatus}' para '{$newStatus}' por " . Auth::user()->name);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Status alterado de '{$oldStatus}' para '{$newStatus}' com sucesso!"
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao alterar status: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Erro ao alterar status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 
 
     public function cron(Request $request)

@@ -210,6 +210,7 @@ class GlobalFuncoes
         if(!empty($_GET['teste'])){
             // dd( $dataToSend, json_encode($dataToSend) );
         }
+        
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $lambdaEndpoint);
         curl_setopt($ch, CURLOPT_POST, 1);
@@ -220,7 +221,7 @@ class GlobalFuncoes
         // Defina o tempo limite da conexão em segundos (ajuste conforme necessário)
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
 
-        set_time_limit(20);  // Define o limite de tempo de execução para 60 segundos
+        set_time_limit(0);  // Define o limite de tempo de execução para 60 segundos
         // Defina o tempo limite total da solicitação em segundos (ajuste conforme necessário)
         curl_setopt($ch, CURLOPT_TIMEOUT, 20); // Define o tempo limite da solicitação para 30 segundos
 

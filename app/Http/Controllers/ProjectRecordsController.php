@@ -821,7 +821,7 @@ class ProjectRecordsController extends Controller
                     'base_uri' => 'https://ubuntu-bw8-mac-server.hook.app.br/v1/',
                     'timeout' => 60,
                     'headers' => [
-                        'Authorization' => 'Bearer app-asJTuy7ecdFVPegNcYi7cW7a',
+                        'Authorization' => 'Bearer app-v2QZ4qzxagIC0L2U68NWZgy6',
                         'Accept' => 'application/json',
                     ],
                 ]);
@@ -932,6 +932,7 @@ class ProjectRecordsController extends Controller
                                             'headers' => ['Content-Type' => 'application/json'],
                                         ])->then(function ($response) use ($Record) {
                                             Log::info("Enviado");
+                                            dd($response);
                                             return ['response' => $response, 'record' => $Record];
                                             
                                         });
@@ -953,8 +954,8 @@ class ProjectRecordsController extends Controller
                         $Answer = json_decode($data['answer']);
                         //$Referencia = json_encode($data['metadata']['retriever_resources']);
 
+
                         $bundleId = RfpBundle::where('bundle', 'like', '%' . $Answer->linha_produto . '%')->first();
-                        
                         
                         $Record = $result['record'];
                         $Record->ia_attempts = intval($Record->ia_attempts) + 1;
@@ -985,6 +986,8 @@ class ProjectRecordsController extends Controller
                         }
                         
                         $answers = $Answer;
+
+                        
     
                         //Log::info("Processamento de todos os arquivos concluído com sucesso");
         
@@ -993,7 +996,7 @@ class ProjectRecordsController extends Controller
                         
                         return response()->json($reason);
 
-                        //dd("reason");
+                        dd("reason");
                                             
                         Log::error("Request failed: " . $reason->getMessage());
                         // Você pode querer atualizar o status do Record aqui também
@@ -1006,17 +1009,12 @@ class ProjectRecordsController extends Controller
                 $promise = $pool->promise();
                 $promise->wait();
 
-                return response()->json($answers);
+                //return response()->json($answers);
 
             } catch (\Exception $e) {
                 Log::error( $e);
                 return response()->json($e);
             }
-
-
-
-
-
         }
     }
 
@@ -1043,7 +1041,6 @@ class ProjectRecordsController extends Controller
                 ]);
                 //app-2KkTmPKykDJPnyufxnN7H9bw
 
-    
                 $requestsHook = function () use ($ProjectFiles, $clientHookIA, $id) {
                     foreach ($ProjectFiles as $File) {
 
@@ -1069,12 +1066,12 @@ class ProjectRecordsController extends Controller
                         if($agents[0]->search_engine == "Open IA"){
 
                             $Records = ProjectRecord::where('project_records.project_file_id', $File->id)
-                                ->where('project_records.updated_at', '>=', '2025-06-13 15:48:21')
-                                ->where('project_records.status', 'enviado')
+                                //->where('project_records.last_attempt_at', '<=', '2025-08-05 17:59:21')
+                                ->where('project_records.status','!=', 'respondido ia')
                                 ->orderBy('id', 'asc')
-                                ->limit(value: 200)
+                                ->limit(value: 700)
                                 ->get();
-                            
+
 
                                 foreach ($Records as $Record) {
 
@@ -1150,7 +1147,7 @@ class ProjectRecordsController extends Controller
                                         ], JSON_UNESCAPED_UNICODE),
                                         'response_mode' => 'blocking',
                                         "conversation_id" => "",
-                                        "user" => "API-REPROCESSING-PROJECT",
+                                        "user" => "API-ODILON-ENVIADOS",
                                         "files" => [],
                                     ];  
 
@@ -1303,21 +1300,24 @@ class ProjectRecordsController extends Controller
                     continue;
                 }
 
-                
+                // Log para debug - remover em produção
+                if (!isset($dados['id-requisto']) && !isset($dados['id'])) {
+                    Log::warning('Formato de referência desconhecido', ['dados' => $dados]);
+                }
 
                 // Verificar qual formato está sendo recebido e normalizar os dados
                 if (isset($dados['id-requisto'])) {
                     // Formato antigo
-                    $idRequisito = $dados['id-requisto'];
-                    $requisito = $dados['requisito'];
-                    $score = $dados['score'];
+                    $idRequisito = $dados['id-requisto'] ?? null;
+                    $requisito = $dados['requisito'] ?? '';
+                    $score = $dados['score'] ?? 0;
                     $documento = $dados['documento'] ?? null;
                     $coverage = '';
                 } elseif (isset($dados['id'])) {
                     // Formato novo
-                    $idRequisito = $dados['id'];
-                    $requisito = $dados['requirement'];
-                    $score = $dados['similarity'];
+                    $idRequisito = $dados['id'] ?? null;
+                    $requisito = $dados['requirement'] ?? '';
+                    $score = $dados['similarity'] ?? 0;
                     $documento = null;
                     $coverage = $dados['coverage'] ?? '';
                 } else {

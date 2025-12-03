@@ -205,7 +205,7 @@
     var totalRequisitos = {{$CountCountRecordsResultado}};
     var totalRespostasIA = {{$CountAnswerIA}};
     var respostasUsuario = {{$CountAnswerUser}};
-    var UserType = {{$Auth::user()}};
+    var UserType = {{$InfoUser}};
 </script>
 
 <script>

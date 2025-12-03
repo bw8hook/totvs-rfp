@@ -99,9 +99,14 @@ Route::middleware('auth')->group(function () {
 
 
     Route::get('/project/{id}/export', [ProjectController::class,'projectExport'])->name('project.export');
+    Route::post('/project/change-status/{id}', [ProjectController::class,'changeStatus'])->name('project.changeStatus');
 
 
 
+<<<<<<< Updated upstream
+
+=======
+>>>>>>> Stashed changes
     // REGISTROS DA BASE DE CONHECIMENTO
     Route::get('/project/answers/{id}', [ProjectRecordsController::class,'answer'])->name('project.answer');
 

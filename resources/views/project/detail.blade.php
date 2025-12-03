@@ -1,4 +1,26 @@
 <x-app-layout>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        #newStatusSelect:focus {
+            outline: none;
+            border-color: #5570F1;
+            box-shadow: 0 0 0 3px rgba(85, 112, 241, 0.1);
+        }
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+    </style>
     <div class="flex flex-col">
         <div class="py-4" style=" padding-bottom: 130px;">
 
@@ -163,6 +185,45 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal para alterar status -->
+    <div id="statusModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; animation: fadeIn 0.3s ease;">
+        <div style="background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.15); animation: slideDown 0.3s ease;">
+            <h2 style="font-size: 24px; font-weight: 700; color: #141824; margin-bottom: 20px;">Alterar Status do Projeto</h2>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 14px; font-weight: 600; color: #525B75; margin-bottom: 8px;">Selecione o novo status:</label>
+                <select id="newStatusSelect" style="width: 100%; padding: 12px; border: 1px solid #CCC; border-radius: 8px; font-size: 14px; color: #141824;">
+                    <option value="">Selecione...</option>
+                    <option value="não enviado">Não Enviado</option>
+                    <option value="em processamento">Em Processamento</option>
+                    <option value="processado">Processado</option>
+                    <option value="concluído">Concluído</option>
+                </select>
+            </div>
+
+            <div id="warningMessage" style="display: none; background: #FFF3CD; border: 1px solid #FFC107; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: start;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#FFC107" style="min-width: 24px; margin-right: 10px;">
+                        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                    </svg>
+                    <div>
+                        <strong style="color: #856404; display: block; margin-bottom: 5px;">Atenção!</strong>
+                        <span style="color: #856404; font-size: 14px;" id="warningText"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="closeStatusModal()" style="padding: 10px 24px; border: 1px solid #CCC; border-radius: 8px; background: white; color: #525B75; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                    Cancelar
+                </button>
+                <button onclick="confirmStatusChange()" style="padding: 10px 24px; border: none; border-radius: 8px; background: #5570F1; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
 </x-app-layout>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -282,13 +343,25 @@
                                         `;
                         } else if (record.status === 'concluído') {
                             status = '<div style="background: #25B102; border: 1px solid #0000000D; border-radius: 8px; font-weight: 600; color: #FFF; width: auto; padding: 0px 20px; position: relative; display: inline-block;">'+record.status+'</div>';
+
+                            let changeStatusBtn = '';
+                            if ({{$isAdmin}} === 1) {
+                                changeStatusBtn = `
+                                    <button onclick="changeStatusToProcessado(${recordId})" style="margin-top: 5px; float:left; background:none; border:none; cursor:pointer;" title="Alterar para Processado">
+                                        <svg width="17" height="17" viewBox="0 0 24 24" fill="#8A94AD" xmlns="http://www.w3.org/2000/svg" style="margin: 8px;">
+                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                        </svg>
+                                    </button>
+                                `;
+                            }
+
                             btnEdit = `
                                     <a href="${projectAnswer}" style="margin-top: 5px; float:left;">
                                         <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
                                             <img src="{{ asset('icons/eye.svg') }}" alt="Edit Icon">
                                         </button>
                                     </a>
-                                    
+
                                     ${record.answered_file ? `
                                     <a href="${record.answered_file}" target="_blank" style="margin-top: 5px; float:left;">
                                         <button type="submit" style="width: 17px; text-align: center; text-transform: uppercase; font-weight: bold; font-size: 13px; margin: 8px;">
@@ -301,7 +374,8 @@
                                         </button>
                                     </a>
                                     ` : ''}
-                                    
+
+                                    ${changeStatusBtn}
                                 `;
                         }
 
@@ -355,5 +429,104 @@
 
         // Carregar lista inicial
         fetchUsers();
+    });
+
+    // Variável global para armazenar o ID do projeto
+    let currentProjectFileId = null;
+
+    // Função para abrir modal de alteração de status
+    function changeStatusToProcessado(projectFileId) {
+        currentProjectFileId = projectFileId;
+        document.getElementById('statusModal').style.display = 'flex';
+        document.getElementById('newStatusSelect').value = '';
+        document.getElementById('warningMessage').style.display = 'none';
+    }
+
+    // Função para fechar modal
+    function closeStatusModal() {
+        document.getElementById('statusModal').style.display = 'none';
+        currentProjectFileId = null;
+    }
+
+    // Detectar mudança no select e mostrar avisos
+    document.getElementById('newStatusSelect').addEventListener('change', function() {
+        const warningDiv = document.getElementById('warningMessage');
+        const warningText = document.getElementById('warningText');
+        const selectedStatus = this.value;
+
+        if (selectedStatus === 'em processamento') {
+            warningText.textContent = 'Ao alterar para "Em Processamento", o projeto inteiro será automaticamente enviado para responder com IA. Este processo pode levar algum tempo.';
+            warningDiv.style.display = 'block';
+        } else if (selectedStatus === 'não enviado') {
+            warningText.textContent = 'Ao alterar para "Não Enviado", todos os dados processados serão mantidos, mas o projeto voltará ao estado inicial.';
+            warningDiv.style.display = 'block';
+        } else {
+            warningDiv.style.display = 'none';
+        }
+    });
+
+    // Função para confirmar alteração de status
+    function confirmStatusChange() {
+        const newStatus = document.getElementById('newStatusSelect').value;
+
+        if (!newStatus) {
+            alert('Por favor, selecione um status.');
+            return;
+        }
+
+        if (!currentProjectFileId) {
+            alert('Erro: ID do projeto não encontrado.');
+            return;
+        }
+
+        // Desabilitar botão durante o processamento
+        const confirmBtn = event.target;
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Processando...';
+
+        $.ajax({
+            url: "{{ route('project.changeStatus', ':id') }}".replace(':id', currentProjectFileId),
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                new_status: newStatus
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    closeStatusModal();
+
+                    // Mostrar mensagem de sucesso personalizada
+                    const successDiv = document.createElement('div');
+                    successDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #25B102; color: white; padding: 15px 20px; border-radius: 8px; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+                    successDiv.innerHTML = `
+                        <strong>✓ Sucesso!</strong><br>
+                        ${response.message}
+                    `;
+                    document.body.appendChild(successDiv);
+
+                    setTimeout(() => {
+                        successDiv.remove();
+                        location.reload();
+                    }, 2000);
+                } else {
+                    alert(response.message);
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = 'Confirmar';
+                }
+            },
+            error: function(xhr) {
+                const response = xhr.responseJSON;
+                alert(response?.message || 'Erro ao alterar status');
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Confirmar';
+            }
+        });
+    }
+
+    // Fechar modal ao clicar fora
+    document.getElementById('statusModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeStatusModal();
+        }
     });
 </script>

@@ -1,25 +1,126 @@
 <x-app-layout>
+    <style>
+        .produto_answer {
+            background: #ececec;
+            padding: 8px 16px;
+            margin: 3px;
+            border-radius: 6px;
+            display: inline-block;
+            white-space: normal;
+            word-break: break-word;
+            font-size: 15px;
+            font-weight: 500;
+            line-height: 1.5;
+            max-width: 100%;
+        }
+        .produtos_container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            max-width: 100%;
+            margin-top: 10px;
+        }
+        .info_details {
+            font-size: 16px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        @media (min-width: 1920px) {
+            .produto_answer {
+                font-size: 16px;
+                padding: 10px 18px;
+            }
+            .info_details {
+                font-size: 17px;
+            }
+        }
+        @media (max-width: 1440px) {
+            #titleComponent_KnowledgeBase {
+                flex-wrap: wrap;
+            }
+            .info_details {
+                font-size: 15px;
+            }
+            .produto_answer {
+                font-size: 14px;
+                padding: 7px 14px;
+            }
+        }
+        @media (max-width: 1024px) {
+            #titleComponent_KnowledgeBase {
+                padding: 10px !important;
+            }
+            .bloco_info_filter_records {
+                padding: 15px;
+            }
+            .bloco_info_filter_records form {
+                flex-wrap: wrap;
+            }
+            .chart-container, .progress-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin-bottom: 15px;
+            }
+            .info_details {
+                font-size: 14px;
+            }
+            .produto_answer {
+                font-size: 13px;
+                padding: 6px 12px;
+            }
+        }
+        .chart-container {
+            width: 480px;
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #CCC;
+            border-radius: 8px;
+            margin-top: 23px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .progress-card {
+            width: 50%;
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #CCC;
+            border-radius: 8px;
+            margin-top: 23px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        @media (max-width: 1440px) {
+            .chart-container {
+                width: 45%;
+            }
+            .progress-card {
+                width: 50%;
+            }
+        }
+    </style>
     <div class="" style=" padding-bottom: 130px;">
         <div class="max-w-full mx-auto">
 
-            <div id="titleComponent_KnowledgeBase" style=" padding-top: 20px; min-height: 100px; height: auto; justify-content: space-between; align-items: flex-start;" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative" >  
-                <div class="block" style="width: 100%;">    
+            <div id="titleComponent_KnowledgeBase" style=" padding-top: 20px; min-height: 100px; height: auto; justify-content: space-between; align-items: flex-start;" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative" >
+                <div class="block" style="width: 100%; max-width: 100%;">
                     <div class="flex" style="width: 100%;">
                     <img src="{{ asset('icons/base_conhecimento.svg') }}" alt="Upload Icon" style="height: 33%; padding-right: 18px;">
-                        <span>{{$Project->name}}</span>
+                        <span style="word-break: break-word;">{{$Project->name}}</span>
                     </div>
-                    <div class="relative block items-center" style="padding-bottom: 12px; padding-left:7px;">        
-                        <div class="info_details" style="color:#3A57E8"> {{$ProjectFile->filename_original}} </div>
+                    <div class="relative block items-center" style="padding-bottom: 12px; padding-left:7px;">
+                        <div class="info_details" style="color:#3A57E8; overflow: hidden; text-overflow: ellipsis;"> {{$ProjectFile->filename_original}} </div>
                         <div class="info_details"> Requisitos:<span> {{$CountCountRecordsResultado}}</span></div>
-                        <div class="info_details" style="width: 98%;"> Produto:<span>
+                        <div class="info_details" style="width: 100%; max-width: 100%;"> Produto:
+                            <div class="produtos_container">
                             @isset($ProjectFile->rfp_bundles->bundle)
-                                {{$ProjectFile->rfp_bundles->bundle}}
+                                <span class="produto_answer">{{$ProjectFile->rfp_bundles->bundle}}</span>
                             @else
                                 @foreach ($ProjectFile->bundles as $bundleProject)
-                                    <span class="produto_answer" >{{$bundleProject->bundle}}</span>
+                                    <span class="produto_answer">{{$bundleProject->bundle}}</span>
                                 @endforeach
                             @endisset
-                        </span></div>
+                            </div>
+                        </div>
 
                         <div class="info_details"> Responsável:<span> {{$Project->user->name}}</span></div>
                     </div>
@@ -27,24 +128,23 @@
             </div>
 
 
-            <div id="titleComponent_KnowledgeBase" style=" padding-top: 20px; min-height: 100px; height: auto; justify-content: space-around; align-items: flex-start;" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative" >  
-                <div style="width: 480px; height: 300px; border: 1px solid #CCC; border-radius: 8px; margin-top: 23px; padding:20px;">
-                    <div style="display: flex; align-items: center; width:100%;">
-                        <div style="display: flex; align-items: center; width: 190px; height: 250px;">
+            <div id="titleComponent_KnowledgeBase" style=" padding-top: 20px; min-height: 100px; height: auto; justify-content: space-around; align-items: flex-start; flex-wrap: wrap;" class="text-lg font-bold flex items-center justify-between w-full px-4 space-x-2 relative" >
+                <div class="chart-container">
+                    <div style="display: flex; align-items: center; width:100%; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; width: 190px; height: 250px; min-width: 150px;">
                             <canvas id="requisitoChart" width="50" height="50"></canvas>
                         </div>
-                        <div style="margin-left: 20px; color: #8A94AD;">
+                        <div style="margin-left: 20px; color: #8A94AD; flex: 1; min-width: 200px;">
                             <div style="margin-bottom:10px; font-size: 15px;"><div style=" width: 13px; height: 13px; background: #D2E4FF; border-radius:20px; float:left; margin:14px 10px 14px 0px;"></div>Total de Requisitos <br><span style="color:#141824; font-size:20px;">{{$CountCountRecordsResultado}}</span></div>
                             <div style="margin-bottom:10px;font-size: 15px;"><div style=" width: 13px; height: 13px; background: #3A57E8; border-radius:20px; float:left; margin:14px 10px 14px 0px;"></div>Total de Respostas IA <br><span style="color:#141824; font-size:20px;">{{$CountAnswerIA}}</span></di>
                             <div style="font-size: 15px;"><div style=" width: 13px; height: 13px; background: #E5780C; border-radius:20px; float:left; margin:14px 10px 14px 0px;"></div>Respondidas por você <br><span style="color:#141824; font-size:20px;">{{$CountAnswerUser}}</span></div></div>
                         </div>
                     </div>
-                </div>     
-                
-                <div style="width: 50%; height: 300px; border: 1px solid #CCC; border-radius: 8px; margin-top: 23px; padding:20px;">
-    
-                    <div style="display: flex; align-items: center; width:100%;">
-                        <div style=" display: flex; justify-content: center; align-items: center; margin: 15px 20px;">
+                </div>
+
+                <div class="progress-card">
+                    <div style="display: flex; align-items: center; width:100%; flex-wrap: wrap;">
+                        <div style=" display: flex; justify-content: center; align-items: center; margin: 15px 20px; min-width: 150px;">
                             <div class="progress-container">
                                 <div class="circular-progress" style="background: conic-gradient(#007bff 0% {{ $progress }}%, #e0e0e0 {{ $progress }}% 100%);">
                                     <div class="inner-circle">
@@ -54,10 +154,10 @@
                                 <p class="progress-text">Perguntas sem resposta da IA</p>
                             </div>
                         </div>
-                        <div style="margin-left: 20px; color: #525B75; font-size: 20px; font-weight: 100;">
+                        <div style="margin-left: 20px; color: #525B75; font-size: 16px; font-weight: 100; flex: 1; min-width: 250px;">
                             <span style=" margin-bottom: 20px; width: 100%; display: block;">Do total de requisitos solicitados neste arquivo, {{$registrosSemResposta}} perguntas ficaram sem resposta. </span>
 
-                            <span>Identifique os requisitos de acordo com a classificação, resposta, produto ou qualidade da resposta para facilitar o processo de análise.</span>
+                            <span style="font-size: 14px;">Identifique os requisitos de acordo com a classificação, resposta, produto ou qualidade da resposta para facilitar o processo de análise.</span>
                         </div>
                     </div>
                 </div>  
