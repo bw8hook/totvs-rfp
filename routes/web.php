@@ -103,10 +103,6 @@ Route::middleware('auth')->group(function () {
 
 
 
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
     // REGISTROS DA BASE DE CONHECIMENTO
     Route::get('/project/answers/{id}', [ProjectRecordsController::class,'answer'])->name('project.answer');
 
